@@ -1,0 +1,38 @@
+@CHARSET "UTF-8";
+/* -------------------------------------------------------------- 
+
+  @file contributor.css
+  
+-------------------------------------------------------------- */
+
+.contributor-embed       { 
+	border-bottom: 0 !important;
+	padding: 0 !important; }
+
+.interview-participants { border-top: 1px solid #dcdcdc; padding-top: .5em;}
+.interview-interviewers { border-bottom: 1px solid #dcdcdc; margin-bottom: .5em;} 
+
+.contributor-edit     { 
+	float: right; 
+}
+
+.contributor-contact     { 
+  background: #fafafa; 
+  border: 1px solid #dcdcdc; 
+	float: right; 
+	margin: 0 0 1em 1em; 
+	padding: 5px; width: 38%; }
+
+.contributor-embed .contributor-title,
+.contributor-embed .contributor-content,
+.contributor-bio,
+.contributor-research-interests,
+.contributor-capacity    { margin-bottom: .2em; padding-left: 95px; }
+
+.page-node .contributor-bio { border-bottom: solid 1px #dcdcdc; margin-bottom: .5em; }
+
+.contributor-capacity, 
+.contributor-affiliation { font-size: 110%; font-style: italic; }
+
+.contributor-research-interests .terms { font-weight: normal; margin-left: 1em; }
+.contributor-research-interests .terms { display: inline; float: none; }

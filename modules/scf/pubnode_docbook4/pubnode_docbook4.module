@@ -1,0 +1,21 @@
+<?php
+
+// $Id: pubnode_docbook4.module $
+
+/**
+ * @file
+ * PubNode DocBook 4 module
+ */
+
+function pubnode_docbook4_register_pubnode_importers () {
+  return array();
+}
+
+function pubnode_docbook4_register_pubnode_processors () {
+  $procs['docbook4'] = array(
+    'doctype' => "docbook4",
+    'description' => t('DocBook 4'),
+    'class' => "DocBook4Processor"
+  );
+  return $procs;
+}

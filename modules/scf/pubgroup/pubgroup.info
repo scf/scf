@@ -1,0 +1,8 @@
+; $Id$
+name = Publication Group
+description = Provides the pubgroup node type allowing grouping of pubnodes (e.g. into books).
+dependencies[] = scf
+dependencies[] = member
+package = SCF
+version = VERSION
+core = 6.x

@@ -1,0 +1,193 @@
+<?php
+
+// $Id: scf.module $
+
+/**
+ * @file
+ * SCF module
+ */
+
+define('SCF_AUTHOR_AUTOCOMPLETE', TRUE);
+
+/**
+ * Implementation of hook_menu().
+ */
+function scf_menu () {
+  $items['admin/settings/scf'] = array(
+    'title' => 'Scientific Collaboration Framework',
+    'description' => 'Configure Scientific Collaboration Framework',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('scf_admin_settings_form'),
+    'access arguments' => array('administer scf'),
+    'file' => 'scf.admin.inc'
+  );
+  $items['scf/pub'] = array(
+    'title' => variable_get('scf_pub_title', t('Publications')),
+    'page callback' => 'scf_pub_dir',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+    'file' => 'scf.pages.inc'
+  );
+  $items['scf/resources'] = array(
+    'title' => t('Resources'),
+    'page callback' => 'scf_resources_dir',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+    'file' => 'scf.pages.inc'
+  );
+  
+  // publishing actions
+  $ops = array(
+    'publish' => array(
+      'on' => t('Publish'),
+      'off' => t('Unpublish')
+    ),
+    'feature' => array(
+      'on' => t('Feature'),
+      'off' => t('Unfeature')
+    ),
+    'promote' => array(
+      'on' => t('Promote'),
+      'off' => t('Unpromote')
+    )
+  );
+
+  foreach ($ops as $op => $titles) {
+    foreach ($titles as $val => $title) {
+      $items['node/%node/' . $op . '/' . $val] = array(
+        'title' => $title,
+        'page callback' => 'scf_set_node_publishing_options',
+        'page arguments' => array(1, 2, 3),
+        'access callback' => 'node_access',
+        'access arguments' => array('update', 1),
+        'type' => MENU_CALLBACK,
+        'file' => 'scf.pages.inc'
+      );
+    }
+  }
+
+  // special "promote and feature" 
+  $items['node/%node/promotefeature'] = array(
+    'title' => t('Promote and feature'),
+    'page callback' => 'scf_set_node_publishing_options',
+    'page arguments' => array(1, 2),
+    'access callback' => 'node_access',
+    'access arguments' => array('update', 1),
+    'type' => MENU_CALLBACK,
+    'file' => 'scf.pages.inc'
+  );
+
+  return $items;
+}
+
+function scf_menu_alter (&$callbacks) {
+  if (variable_get('scf_usurp_front_page', FALSE)) {
+    $callbacks['node']['page callback'] = 'scf_front_page';
+  }
+}
+
+
+function scf_author_rid () {
+  return variable_get('scf_author_rid', DRUPAL_AUTHENTICATED_RID);
+}
+
+/**
+ * Alternate version of home page that doesn't do any automatic load
+ * of promoted nodes (Allowing SCF's blocks to control what nodes are
+ * displayed)
+ */
+function scf_front_page () {
+  drupal_set_title('');
+
+  $msg = t('<p>If you are seeing this, then you are using a theme that does not define an SCF-specific front page.</p>');
+  $msg .= t('<p>You should probably disable the <b>!allow</b> checkbox on the !link page</p>', 
+    array(
+      '!allow' => t('Allow SCF to control front page?'),
+      '!link' => l(t('SCF settings'), 'admin/settings/scf'),
+    )
+  );
+  return $msg;
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function scf_perm() {
+  return array('administer scf');
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function scf_theme() {
+  return array(
+    'bio_resources' => array(
+      'template' => 'bio-resources',
+      'arguments' => array(
+        'nodes' => array(),
+        'pagers' => array(),
+      )
+    )
+  );
+}
+
+/**
+ * Process variables for bio-resources.tpl.php.
+ *
+ * The $variables array contains the following arguments:
+ * - $nodes
+ * - $pagers
+ *
+ * @see bio-resources.tpl.php
+ */
+function template_preprocess_bio_resources(&$variables) {
+  $tables = array();
+  $nodes = $variables['nodes'];
+  $pagers = $variables['pagers'];
+  foreach ($nodes as $mod => $mod_nodes) {
+    $format = 'table';
+    /*
+    if ($mod == 'researchstatement')
+      $format = 'list';
+    */
+    $tables[$mod] = theme($mod . '_' . $format, $mod_nodes, $pagers[$mod]);
+  }
+  $variables['tables'] = $tables;
+  $variables['search']['gene'] = l(t('Search Entrez Gene'), 'search/sciencecommons_geneproxy');
+}
+
+// Not very useful since can't be reliably used at top level (module
+// loading order is apparently not predictable despite dependency
+// settings...)  Use only if you know scf.module has been loaded.
+function scf_load_include ($file) {
+  require_once scf_include_path() . "/$file";
+}
+
+function scf_include_path () {
+  static $scf_path;
+  if (!isset($scf_path)) {
+    $scf_path = drupal_get_path('module', 'scf');
+  }
+  return $scf_path;
+}
+
+function scf_date_string ($date) {
+  return format_date($date, 'custom', 'Y-m-d');
+}
+
+function scf_date_display ($date) {
+  return format_date($date, 'custom', 'j F Y');
+}
+
+/**
+ * compat: use the one in iic_util
+ */
+function scf_current_page_node_is_of_type () {
+  $types = func_get_args();
+  $node = iic_util_current_page_node();
+  if ($node && in_array($node->type, $types)) {
+    return TRUE;
+  }
+  return FALSE;
+}
+

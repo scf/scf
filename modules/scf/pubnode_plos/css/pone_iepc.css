@@ -1,0 +1,112 @@
+/*
+----------------------------------------------------------
+IE PC fixes
+----------------------------------------------------------
+*/
+/* the next two rules fake 'min-width' and correct bad banner positioning in IE/Win */
+/* the next rule uses invalid values, but it works in IE/Win, and that's what we need */
+
+* html ul, ol, dl	{ position: relative; } /* fixes disappearing background list ie bug */
+
+
+* html #nav li a, *html #nav li a:visited { /*width:12em; w\idth:7.6em; /* hack for IE5.5 */ overflow: visible;}
+* html #nav li a:hover ul li a {
+	width:16em; w\idth:16em; /* hack for IE5.5 */
+}
+
+* html .fixed { position: absolute !important; }
+
+* html div#sectionNav {
+	position: absolute;
+	top: 100px; /* this just needs to be more than the 20px top of the position:fixed version */ 
+	width: 100%;
+}
+/* Fix IE. Hide from IE Mac \*/
+* html ul li a { height: 1%; }
+/* End */
+
+* html div.response { margin: 0;}
+* html div.response div.detail,
+* html div.response div.hd{ border: 1px solid #fff; }
+* html div.original div.detail { border: none; }
+* html div.response div.hd { border-left: 2px solid #ccc; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc;}
+* html div.response div.close a { top: -22px; right: 19px;}
+* html div.source { width: auto; }
+* html div.original { margin-bottom: 20px; margin-left: 5px; margin-right: 5px;}
+* html div.response a.icon { }
+
+/* Fix bug background color position */
+* html a.bug,
+* html a:visited.bug { margin-bottom: -10px; }
+
+/* corrects positioning of content on multiple annotation view */
+* html .multiple .contentwrap {  margin-top: -2px; margin-left: 23em;}
+
+/* ensures positioning of dropdowns in front of content */
+* html #content { position: relative; z-index: -1; }
+* html #first div.feature { float: right; } /* fixes overlapping content upon page shift */
+
+
+* html div.response div.close a	{ top: 20px;}
+
+/* fixes figure block height bug */
+/* Hides from IE-mac \*/
+* html div.figure { height: 1%;}
+/* End hide from IE-mac */
+
+* html ul#tabsContainer { margin-bottom: 14px; padding-top: 17px;}
+* html ul#tabsContainer li	{ padding-top: 0; padding-bottom: 0; }
+/* fixes disappearing background image bug */
+* html #home { height: 1% }
+html>body #home { height: auto }
+
+* html div.banner img,
+* html div.banner object { margin-top: 8px; }
+
+/* fixes positioning on header links */
+* html ul#links { height: 1%; bottom: 30px; z-index: 8000; }
+* html ul#links li { padding: 0; background-position: 100% 0; }
+* html ul#links a:link,
+* html ul#links a:visited { display: inline-block; }
+* html ul#links a:link,
+* html ul#links a:visited { padding: 1px 0 1px 18px; zoom: 1; }
+* html ul#links a { zoom:1;}
+
+* html div#browseNav { width: 220px;}
+* html #browseNav li { float: none; }
+* html #browseNav li li { float: left; }
+
+* html div#browseNav form.browseForm { width: 240px; }
+
+*:first-child+html ul#links { height: 1%; bottom: 45px;z-index: 8000; }
+/* IE 7 hax */
+*:first-child+html ul#tabsContainer 	{ }
+*:first-child+html ul#tabsContainer li 	{ padding-top: 0; padding-bottom: 0; }
+*:first-child+html ul#tabsContainer li span { padding-top: 14px; padding-bottom: 14px;}
+*:first-child+html .multiple .contentwrap { margin-top: -2px;}
+*:first-child+html input#responseTitle	{ margin-left: 22px; }
+*:first-child+html div.figure { overflow : hidden; _height : 1%; } /* float clearing for ie7 */
+*:first-child+html #first div.feature * { position: relative; height: 1%;} /* fixes overlapping content upon page shift */
+*:first-child+html div.banner img,
+*:first-child+html div.banner object { margin-top: 8px; }
+
+*:first-child+html a.bug,
+*:first-child+html a:visited.bug, { margin-bottom: -20px!important; }
+
+* html span.inline-rating { display: inline; position: relative; left: -85px; top: 14px; }
+* html div.commentview fieldset { margin-top: 3px; }
+* html div.commentview fieldset ol li { padding-bottom: -100px; margin-bottom: -2em; }
+
+* html div.ratingComment { margin: 0; border-bottom: 1px solid #ccc; }
+* html div.ratingComment div.detail,
+* html div.ratingComment div.hd{ border: 1px solid #fff; }
+* html div.ratingComment div.detail { border: none; }
+* html div.ratingComment div.hd { border: 1px solid #ccc; border-left: 2px; margin-top: -1px; margin-right: -1px;}
+* html div.source { width: auto; }
+* html div.ratingComment { margin-bottom: 20px; margin-left: 5px; margin-right: 5px;}
+* html div.ratingComment a.icon { }
+* html div.ratingComment div.ratingDetail { padding-bottom: 1px; }
+* html div.ratingDetail ol.ratingAvgs li { margin-bottom: -1.5em; }
+
+*:first-child+html .inline-rating { margin: 14px 85px -14px -85px; }
+

@@ -1,0 +1,142 @@
+<?php
+
+// $Id: contributor.module $
+
+/**
+ * @file
+ * Contributor module
+ *
+ * A contributor node is like a snapshot of a subset of a member's
+ * profile that is frozen at the point of publication of a given
+ * published node.  It is almost the same thing as a revision of a
+ * member profile, but it is possible to tailor the info specifically
+ * to a given publication, and so we couldn't quite just use a
+ * revision of a member profile.
+ */
+
+module_load_include("php", "contributor", "ContributorModule");
+
+function contributor_node_info() {
+  return contributor()->nodeInfo();
+}
+
+function contributor_menu () {
+  return contributor()->menu();
+}
+
+function contributor_perm () {
+  return contributor()->perm();
+}
+
+function contributor_access ($op, $node, $account) {
+  return contributor()->access($op, $node, $account);
+}
+
+function contributor_form (&$node, &$form_state) {
+  return contributor()->form($node, $form_state);
+}
+
+function contributor_validate($node) {
+  contributor()->validate($node);
+}
+
+function contributor_insert ($node) {
+  contributor()->insert($node);
+}
+
+function contributor_update ($node) {
+  contributor()->update($node);
+}
+
+function contributor_load ($node) {
+  return contributor()->load($node);
+}
+
+function contributor_delete ($node) {
+  contributor()->delete($node);
+}
+
+function contributor_view ($node, $teaser = FALSE, $page = FALSE) {
+  return contributor()->view($node, $teaser, $page);
+}
+
+function contributor_theme () {
+  return contributor()->theme();
+}
+
+function contributor_block ($op = 'list', $delta = 0, $edit = array()) {
+  return contributor()->block($op, $delta, $edit);
+}
+
+function contributor_populate_from_user (&$form, &$form_state) {
+  return contributor()->populateFromUser($form, $form_state);
+}
+
+function contributor_create_from_user ($account, $overrides = array()) {
+  return contributor()->createFromUser($account, $overrides);
+}
+
+function contributor_create_and_view ($account) {
+  $nid = contributor_create_from_user($account);
+  if ($nid)
+    drupal_goto('node/' . $nid);
+  else {
+    drupal_set_message('Could not create contributor from user ' . $account->uid, 'error');
+    drupal_goto('');
+  }
+}
+
+/**
+ * Process variables for contributor-embed.tpl.php.
+ *
+ * The $variables array contains the following arguments:
+ * - $node
+ *
+ * @see contributor-embed.tpl.php
+ */
+function template_preprocess_contributor_embed(&$variables) {
+  drupal_add_css(drupal_get_path('module', 'contributor') .'/contributor.css');
+  $node = $variables['node'];
+  // HACK to get $node->teaser set correctly...  This proboably doesn't belong here
+  // The build mode identifies the target for which the node is built.
+  if (!isset($node->build_mode)) {
+    $node->build_mode = NODE_BUILD_NORMAL;
+  }
+  $variables['node'] = node_prepare($node, TRUE);
+  $variables['teaser'] = TRUE;
+  $variables['page'] = FALSE;
+  if (node_access("update", $node)) {
+    $variables['edit_link'] = l(t('Edit contributor snapshot'), 'node/' . $node->nid . '/edit');
+  }
+  template_preprocess_node($variables);
+
+  // import terms and picture from associated member node...
+  // (contributor's own terms are ignored)
+  if (module_exists('member')) {
+    drupal_add_css(drupal_get_path('module', 'member') .'/member.css');
+    $mem = member_get_node($node->cuid);
+    $variables['node_url']  = url('node/'. $mem->nid);
+    if (!isset($mem->build_mode)) {
+      $mem->build_mode = NODE_BUILD_NORMAL;
+    }
+    if (module_exists('taxonomy')) {
+      $variables['taxonomy'] = taxonomy_link('taxonomy terms', $mem);
+    }
+    else {
+      $variables['taxonomy'] = array();
+    }
+    $variables['terms']     = theme('links', $variables['taxonomy'], array('class' => 'links inline'));
+    $variables['picture'] = theme('member_picture', $mem);
+    if (!empty($variables['affiliation'])) {
+      $affiliation_dir_url = 'member/dir/affiliation/' . drupal_urlencode($variables['affiliation']);
+    }
+  }
+
+  if (isset($affiliation_dir_url)) {
+    $variables['affiliation_link'] = l($variables['affiliation'], $affiliation_dir_url);
+  } else if (!empty($variables['affiliation'])) {
+    $variables['affiliation_link'] = $variables['affiliation'];
+  }
+
+}
+

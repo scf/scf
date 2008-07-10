@@ -1,0 +1,68 @@
+<?php
+
+/**
+ * Implementation of hook_install().
+ */
+function researchstatement_install() {
+  drupal_install_schema('researchstatement');
+  module_load_include("php", "researchstatement", "ResearchStatementModule");
+  // researchstatement()->installForumContainer();
+  $vocabs = array(
+    'scf_keyword_vocabulary',
+    'bio_ontologies_biological_process_vocabulary',
+    'bio_ontologies_cellular_component_vocabulary',
+    'bio_ontologies_molecular_function_vocabulary'
+  );
+  researchstatement()->addNodeTypeToVocabulariesByVarName($vocabs);
+  researchstatement()->addAssociatedTypes('*');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function researchstatement_uninstall() {
+  drupal_uninstall_schema('researchstatement');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function researchstatement_schema () {
+  $schema['researchstatement'] = array(
+    'fields' => array(
+      'nid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'vid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'pubmedid' => array(
+        'description' => t('PubMed ID'),
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'default' => '',
+        'length' => 32
+      ),
+    ),
+    'primary key' => array('vid'),
+    'unique keys' => array(
+      'nid_vid' => array('nid', 'vid'),
+    )
+  );
+  return $schema;
+}
+
+/**
+ * add associated types
+ */
+function researchstatement_update_6001 () {
+  module_load_include("php", "researchstatement", "ResearchStatementModule");
+  researchstatement()->addAssociatedTypes('*');
+  return array();
+}
+
+/**
+ * add to keyword vocab
+ */
+function researchstatement_update_6002 () {
+  module_load_include("php", "researchstatement", "ResearchStatementModule");
+  researchstatement()->addNodeTypeToVocabulariesByVarName(array('scf_keyword_vocabulary'));
+  return array();
+}
+

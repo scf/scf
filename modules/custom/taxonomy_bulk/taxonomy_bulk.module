@@ -1,0 +1,105 @@
+<?php
+
+// $Id: $
+
+/**
+ * @param $vid the id of an existing vocabulary
+ * @param $terms list of terms.  all parents must be defined before any children
+ */
+function taxonomy_bulk_import ($vid, $terms, $offset = 0, $limit = 0) {
+  if (module_exists("devel"))
+    dvm($terms);
+  static $cache = array();
+  if ($limit < 1)
+    $limit = count($terms) - $offset;
+  $endbefore = $offset + $limit;
+  for ($i = $offset; $i < $endbefore; $i++) {
+    $term = $terms[$i];
+    $name = $term['name'];
+    $parentIds = array();
+    if (isset($term['parents'])) {
+      foreach ($term['parents'] as $parentName) {
+        if (isset($cache[$parentName])) {
+          $parentIds[] = $cache[$parentName];
+        } else {
+          $parentId = taxonomy_bulk_lookup_term_id($vid, $parentName);
+          if ($parentId) {
+            $parentIds[] = $parentId;
+            // memory optimization for huge datasets: if a term contains
+            // a setting 'leaf' => TRUE, then we won't bother caching it
+            if (!isset($term['leaf']) || !$term['leaf'])
+              $cache[$parentName] = $parentId;
+          } else {
+            // silently ignore a parent name that's not found
+          }
+        }
+      }
+    }
+    // as per taxonomy module, the 'parent' key is set to an array of
+    // parent tids, or array(0) if top-level
+    $term['parent'] = count($parentIds) ? $parentIds : array(0);
+    $term['vid'] = $vid;
+    $term = (object) $term;
+    taxonomy_bulk_insert_term($vid, $term);
+    $cache[$term->name] = $term->tid;
+  }
+}
+  
+function taxonomy_bulk_lookup_term_id ($vid, $name) {
+  return db_result(db_query("SELECT tid FROM {term_data} t WHERE vid = %d AND name = '%s'", $vid, $name));
+}
+
+function taxonomy_bulk_insert_term ($vid, &$term) {
+  drupal_write_record('term_data', $term);
+  foreach ($term->parent as $parent) {
+    db_query('INSERT INTO {term_hierarchy} (tid, parent) VALUES (%d, %d)', $term->tid, $parent);
+  }
+  if (isset($term->synonyms)) {
+    taxonomy_bulk_add_synonyms_to_term($term->tid, $term->synonyms);
+  }
+}
+  
+function taxonomy_bulk_add_synonyms_to_term ($tid, $synonyms) {
+  if (isset($synonyms)) {
+    if (is_string($synonyms))
+      $synonyms = array($synonyms);
+    foreach ($synonyms as $synonym) {
+      @db_query("INSERT INTO {term_synonym} (tid, name) VALUES (%d, '%s')", $tid, $synonym);
+    }
+  }
+}
+
+/**
+ * @param $vid vocab id
+ * @param $terms an assoc array of (name => synonym) or (name => array(synonyms))
+ */
+function taxonomy_bulk_add_synonyms ($vid, $terms) {
+  foreach ($terms as $name => $syns) {
+    $tid = taxonomy_bulk_lookup_term_id($vid, $name);
+    taxonomy_bulk_add_synonyms_to_term($tid, $syns);    
+  }
+}
+
+/**
+ * return array(syn => tid) for all given synonyms, restricted to
+ * vocab vid
+ */
+function taxonomy_bulk_get_synonym_map ($vid, $synonyms) {
+  if (isset($synonyms)) {
+    if (is_string($synonyms))
+      $synonyms = array($synonyms);
+    $args = array_fill(0, count($synonyms), "'%s'");
+    $sql = "SELECT s.name AS synonym, t.tid, t.name FROM {term_data} t JOIN {term_synonym} s ON t.tid = s.tid";
+    $sql .= " WHERE t.vid = %d AND s.name IN (" . implode(', ', $args) . ")";
+    // create an array of $vid plus all the synonyms
+    $vals = $synonyms;
+    array_unshift($vals, $vid);
+    $results = db_query($sql, $vals);
+    $map = array();
+    while ($row = db_fetch_array($results)) {
+      $map[$row['synonym']] = $row;
+    }
+    return $map;
+  }
+  return array();
+}

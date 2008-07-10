@@ -1,0 +1,591 @@
+<?php
+
+// $Id: nodeproxy.module $
+
+/**
+ * @file
+ * nodeproxy module
+ */
+
+define('NODEPROXY_READONLY', 0);
+
+/**
+ * Implementation of hook_menu().
+ */
+function nodeproxy_menu() {
+  $items['nodeproxy/get/%'] = array(
+    'title' => 'View or Create',
+    'page callback' => 'nodeproxy_view_or_create',
+    'page arguments' => array(2),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK
+  );
+  return $items;
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function nodeproxy_perm() {
+  return array('create proxied nodes', 'search proxy sources', 'administer node proxies');
+}
+
+/**
+ * Implementation of hook_nodeapi().
+ */
+function nodeproxy_nodeapi (&$node, $op, $a3, $a4) {
+  $nid = isset($node->nid) ? $node->nid : "NULL";
+  // drupal_set_message("$op " . $node->type . "[$nid]: " . $node->title);
+  switch ($op) {
+    case 'delete':
+      nodeproxy_delete($node);
+      break;
+    case 'prepare':
+      // sync proxy info before editing existing node; also,
+      // eventually can inject field values into form on "add" form
+      // for supplemental proxies (i.e. when a proxy supplies some
+      // info but not enough to populate all required fields.
+      if (!isset($node->nodeproxy_executing)) {
+        nodeproxy_prepare($node);
+      }
+      break;
+    case 'view':
+      // to keep node_load cheap, only do proxy sync'ing if it's a
+      // full "page" view AND if it's not the result of a redirect
+      // right after proxying has taken place.
+      if ($a4 && (!isset($_GET['nodeproxy_nosync']) || $_GET['nodeproxy_nosync'] != 'true')) {
+        nodeproxy_page_view($node);
+      }
+      // TODO: if there are possible proxyers for this node type but
+      // none are active, offer a way to connect the existing node to
+      // a proxy (e.g. by presenting a form field to enter the
+      // extid...)
+      break;
+    default:
+      // nothing
+  }
+}
+
+/**
+ * Implementation of hook_hook_info().
+ */
+function nodeproxy_hook_info() {
+  return array(
+    'nodeproxy' => array(
+      'nodeproxy' => array(
+        'lookup' => array(
+          'runs when' => t('When determining if the requested URL could resolve to a proxied node.')
+        ),
+        'sync' => array(
+          'runs when' => t('When updating a proxied node by requesting current data from the remote source.')
+        )
+      )
+    )
+  );
+}
+
+/**
+ * This function is called from nodeapi, only while viewing a node as
+ * a full page.  In core, this only occurs from the bottom of
+ * node_build_content().  
+ *
+ * WARNING: if you proxy a node type for which the page view nodeapi
+ * call is made from somewhere else besides node_build_content
+ * (i.e. if you have installed some contrib module that does that)
+ * then the results may be wierd...
+ */
+function nodeproxy_page_view (&$node) {
+  $infos = nodeproxy_type_infos($node->type);
+  if (count($infos)) {
+    // HACK: I'm using this test to make sure we're not viewing a
+    // revision.  Could also maybe inspect the url?  Is there an
+    // official drupal way of doing this?
+    if (drupal_set_title() == check_plain($node->title)) {
+      nodeproxy_load_or_create($node, $_GET['q']);
+      // if the above didn't redirect, then no proxying was done, continue as normal
+    }
+  }
+}
+
+
+/**
+ * might use this for displaying form if create fails
+ */
+function nodeproxy_prepare (&$node) {
+  $infos = nodeproxy_type_infos($node->type);
+  // cycle through module-contributed infos, ordered by weight
+  foreach ($infos as $info) {
+    $module = $info->module;
+    if (isset($node->nid)) {
+      nodeproxy_load_or_create($node, $_GET['q']);
+    } else {
+      // add new node
+    }
+  }
+}
+
+/**
+ * delete associated nodeproxy records when proxied node is deleted
+ */
+function nodeproxy_delete (&$node) {
+  $sql = "DELETE FROM {nodeproxy} WHERE nid = %d";
+  db_query($sql, $node->nid);
+}
+
+/**
+ * if any actual proxying of remote data is done, then will redirect.
+ */
+function nodeproxy_load_or_create (&$node, $redir = NULL) {
+  if (isset($node->nid)) {
+    // if we're loading an existing node
+    $node->nodeproxies = nodeproxy_load_records($node);
+  } else {
+    // this means we're in a view_or_create callback, and there is no
+    // node nid, but we do have some extid(s) from the query string
+    // stored in $node->nodeproxies
+  }
+  $node->nodeproxy_coverage = 'none';
+  $infos = nodeproxy_type_infos($node->type);
+  // cycle through module-contributed infos, ordered by weight
+  $newdata = FALSE;
+  foreach ($infos as $info) {
+    // PROBLEM: somewhere in here is where we have to decide whether
+    // we can show the progress bar or not...
+    if (module_invoke($info->module, 'nodeproxy_sync', $node, $info))
+      $newdata = TRUE;
+  }
+  // $newdata will be TRUE iff some proxying module retrieved any
+  // external data EVEN if it turned out NOT to be different from
+  // previous data.  We must at least record this fact so the expiry
+  // can be reset.
+  if ($newdata) {
+    // are we sure there's enough data to make a good node
+    if (isset($node->nid) || ($node->nodeproxy_coverage == 'primary')) {
+      // try to make sure the node is not going to 
+      // violate any db constraints
+      nodeproxy_satisfy_db_constraints($node);
+      $nid = nodeproxy_save_node($node);
+      if (isset($nid)) {
+        $node->nid = $nid;
+        $saved = nodeproxy_save_records($node);
+        // cycle through module-contributed infos, ordered by weight
+        foreach ($infos as $info) {
+          // modules will probably not need to use this, but...
+          module_invoke($info->module, 'nodeproxy_save', $node, $info);
+        }
+        if (!isset($redir))
+          $redir = 'node/' . $nid;
+        $nosync_hack = array();
+        if (!$saved) {
+          // last ditch effort to avoid infinite redirects: if the
+          // nodeproxy records weren't successfully saved in the db,
+          // (i.e. nodeproxy_save_records() returns FALSE) then the
+          // redirect would ordinarily try to re-update the proxies
+          // infinitely.  Stick a special "nodeproxy_nosync" param in
+          // the query string in this case (though there really must
+          // be something seriously wrong for the
+          // nodeproxy_save_records() call to have failed)...
+          $nosync_hack = array('nodeproxy_nosync' => 'true');
+        }
+        drupal_goto($redir, $nosync_hack);
+      } else {
+        drupal_set_message("Form submission didn't yield a node ID...", 'error');
+        dvm($form_state);
+        drupal_goto('');
+      }
+    } else {
+      // TODO: figure out how to display the "add" node form so the
+      // user can complete the proxying process AND make it still save
+      // out the nodeproxy records when the form is finally
+      // successfully submitted...  (otherwise it won't know its
+      // extid's or that it's being proxied at all...)
+      // drupal_goto('node/add/' . $node->type);
+      // TODO: should just let it try and if all the supplementals
+      // didn't fill all the required fields, trap the error...
+      drupal_set_message("Node not found and the link contains insufficient information for proxying module(s) to create it.", 'error');
+      drupal_goto('');
+    }
+  } else {
+    // handle case where existing node tried to proxy but had errors
+    // from all proxies, so $newdata was FALSE
+    if (isset($node->nid)) {
+      nodeproxy_save_records($node);
+      $errors = _nodeproxy_get_errors($node);
+      if (count($errors)) {
+        drupal_set_message(t("There were problems updating the data for this item, so the information here may less up-to-date than expected.  See details below:"), 'warning');
+        foreach ($errors as $error) {
+          drupal_set_message("<strong>" . $error[0] . "</strong> (" . $error[1] . "): " . t($error[2]), 'warning');
+        }
+      }
+    }
+  }
+  // no new proxying occurred, so fall through
+}
+
+
+/**
+ * returns a 2-deep associative array of module -> idtype -> nodeproxy row
+ */
+function nodeproxy_load_records ($node) {
+  $proxies = array();
+  if (isset($node->nid)) {
+    $sql = "SELECT * FROM {nodeproxy} WHERE nid = %d";
+    $row = db_fetch_object(db_query($sql, $node->nid));
+    if (!empty($row)) {
+      drupal_unpack($row);
+      $proxies[$row->module][$row->idtype] = $row;
+    }
+  }
+  return $proxies;
+}
+
+/**
+ */
+function nodeproxy_save_records ($node) {
+  $allsaved = TRUE;
+  if (isset($node->nodeproxies)) {
+    foreach ($node->nodeproxies as $module => $byidtype) {
+      foreach ($byidtype as $idtype => $record) {
+        $record->nid = $node->nid;
+        if (isset($record->_dirty) && $record->_dirty) {
+          if (!drupal_write_record('nodeproxy', $record, array('nid', 'module', 'idtype')))
+            $allsaved = FALSE;
+        } else if (isset($record->_new) && $record->_new) {
+          if (!drupal_write_record('nodeproxy', $record))
+            $allsaved = FALSE;
+        }
+      }
+    }
+  }
+  return $allsaved;
+}
+
+/**
+ *
+ */
+function nodeproxy_save_node ($node) {
+  global $user;
+  $node->name = isset($user->name) ? $user->name : '';
+  $node->language = '';
+  // this is a signal to the nodeapi hook to ignore the 'prepare'
+  // operation (to avoid getting into an infinite loop)
+  $node->nodeproxy_executing = TRUE;
+  $form_state = array(
+    'values' => (array) $node
+  );
+  $form_state['values']['op'] = t('Save');
+  // HACK: must load this file or the 'node_form' function is undefined!
+  module_load_include("inc", "node", "node.pages");
+  // call drupal_execute with the form values filled in by the
+  // proxy modules for this node type
+  drupal_execute($node->type . '_node_form', $form_state, $node);
+  // HHAAAKK: clear errors just for demo!!!!
+  // drupal_get_messages('error');
+  $nid = NULL;
+  if (isset($node->nid))
+    $nid = $node->nid;
+  else if (isset($form_state['nid']))
+    $nid = $form_state['nid'];
+  return $nid;
+}
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function nodeproxy_form_alter(&$form, $form_state, $form_id) {
+  if (isset($form_id) && count(nodeproxy_form_infos($form_id))) {
+    $form['#pre_render'][] = 'nodeproxy_form_pre_render';
+  }
+}
+
+/**
+ * Form pre-render hook added by nodeproxy_form_alter to participating forms
+ */
+function nodeproxy_form_pre_render ($form) {
+  if (!isset($form['#nodeproxy_processed'])) {
+    if (isset($form['form_id']['#value']) && isset($form['nid']['#value'])) {
+      // dvm($form);
+      $form_id = $form['form_id']['#value'];
+      $infos = nodeproxy_form_infos($form_id);
+      foreach ($infos as $info) {
+        $newform = module_invoke($info->module, 'nodeproxy_affect_node_form', $form, $info);
+        if (isset($newform))
+          $form = $newform;
+      }
+      $form['#nodeproxy_processed'] = TRUE;
+    }
+  }
+  return $form;
+}
+
+
+/**
+ * Implementation of hook_node_operations().
+ */
+function nodeproxy_node_operations () {
+  // TODO: add "proxy update" operation
+  return array();
+}
+
+/**
+ * Implementation of hook_node_type().
+ *
+ * Respond to bulk node type changes (i.e. an entire node type is
+ * deleted, renamed, etc...)
+ */
+function nodeproxy_node_type ($op, $info) {
+  switch ($op) {
+    case 'delete':
+      nodeproxy_delete_all_for_type($info->type);
+      break;
+    case 'update':
+      if (!empty($info->old_type) && $info->old_type != $info->type) {
+        nodeproxy_delete_all_for_type($info->old_type);
+      }
+      break;
+      // TODO: what if new node type has proxiers of its own?
+  }
+}
+
+function nodeproxy_delete_all_for_type ($type) {
+  $sql = "DELETE FROM {nodeproxy} WHERE nid IN (SELECT nid FROM {node} WHERE type = '%s')";
+  db_query($sql, $type);
+}
+
+/**
+ * menu callback function: looks at query string for nodeproxy exernal
+ * id params, then tries to determine (1) if there is already an
+ * existing node being proxied under that ID, or (2) if such a node
+ * can be created using the remote information gotten using that ID
+ *
+ * In either case, if successful, the browser will be redirected to
+ * view the resulting node.
+ */
+function nodeproxy_view_or_create ($type) {
+  $infos = nodeproxy_type_infos($type);
+  if (isset($infos)) {
+    $node = (object) array(
+      'type' => $type,
+      'nodeproxy_coverage' => 'none'
+    );
+    // cycle through module-contributed infos, ordered by weight
+    $proxyable = FALSE;
+    foreach ($infos as $info) {
+      $module = $info->module;
+      if (module_invoke($module, 'nodeproxy_lookup', $node, $info)) {
+        $proxyable = TRUE;
+        // short-circuit if already found a node id
+        if (isset($node->nid)) {
+          // found nid for pre-existing node
+          // FIXME: do a redirect instead
+          drupal_goto('node/' . $node->nid);
+        }
+      }
+    }
+    if ($proxyable) {
+      nodeproxy_load_or_create($node);
+      // if returns from here, that means couldn't create
+      drupal_set_message("Could not create node.", 'error');
+      return _nodeproxy_view_or_create_error_page($node);
+    } else {
+      drupal_set_message("Node not found: there is not enough information in the URL to locate or create it.", 'error');
+      drupal_goto('');
+    }
+  } else {
+    drupal_set_message("Node not found and there are no relevant proxying modules to create it.", 'error');
+    drupal_goto('');
+  }
+}
+
+function _nodeproxy_get_errors ($node) {
+  $errors = array();
+  if (isset($node->nodeproxies) && is_array($node->nodeproxies)) {
+    foreach ($node->nodeproxies as $module => $idtypes) {
+      foreach ($idtypes as $idtype => $np) {
+        if (!isset($np->status) || !$np->status) {
+          // TODO: use info name instead of module name... (needs some rewriting to make this feasible)
+          $errors[] = array($module, $idtype, (isset($np->message) ? $np->message : "Unknown error"));
+        }
+      }
+    }
+  }
+  return $errors;
+}
+
+function _nodeproxy_view_or_create_error_page ($node) {
+  drupal_set_title(t('Node proxy error'));
+  $out = array();
+  $out[] = "<p>There was a problem importing the requested data from one or more remote source(s):</p>\n<br/>";
+  $errors = _nodeproxy_get_errors($node);
+  foreach ($errors as $error) {
+    $out[] = "<p><strong>" . $error[0] . " (" . $error[1] . "):</strong> " . t($error[2]) . "</p>";
+  }
+  // NOTE: can't use the l() function below because request_uri()
+  // returns the raw request path, not drupal's $_GET['q'] + query string
+  $out[] = '<p><a href="' . request_uri() . '">' . t('Try again') . '</a></p>';
+  return implode("\n", $out);
+}
+
+function nodeproxy_satisfy_db_constraints (&$node) {
+  if (isset($node->title) && !empty($node->title)) {
+    $exclude_self = "";
+    $params = array();
+    if (isset($node->nid)) {
+      $exclude_self = "nid != %d AND ";
+      $params[] = $node->nid;
+    }
+    $sql = "SELECT nid, title FROM {node} WHERE " . $exclude_self
+      . "(title = '%s' OR title LIKE '%s \#%%') ORDER BY created";
+    $params[] = $node->title;
+    // and add it again (no, this isn't a bug)
+    $params[] = $node->title;
+    $results = db_query($sql, $params);
+    $conflict = FALSE;
+    while ($obj = db_fetch_object($results)) {
+      if ($node->title == $obj->title) {
+        $conflict = TRUE;
+      }
+      $last_title = $obj->title;
+    }
+    if ($conflict) {
+      $matches = array();
+      $n = 2;
+      if (preg_match('/\#(\d+) *\Z/', $last_title, $matches)) {
+        $n = ((int) $matches[1]) + 1;
+      }
+      $node->title .= " #$n";
+    }
+  }
+}
+
+function nodeproxy_module_infos ($module = NULL, $reset = FALSE) {
+  list($modules, $types, $forms) = nodeproxy_info_indexes($reset);
+  if (isset($module)) {
+    if (isset($modules[$module]))
+      return $modules[$module];
+    else
+      return array();
+  } else
+    return $modules;
+}
+
+
+function nodeproxy_type_infos ($type = NULL, $reset = FALSE) {
+  list($modules, $types, $forms) = nodeproxy_info_indexes($reset);
+  if (isset($type)) {
+    if (isset($types[$type]))
+      return $types[$type];
+    else
+      return array();
+  } else
+    return $types;
+}
+
+function nodeproxy_form_infos ($form = NULL, $reset = FALSE) {
+  list($modules, $types, $forms) = nodeproxy_info_indexes($reset);
+  if (isset($form)) {
+    if (isset($forms[$form]))
+      return $forms[$form];
+    else
+      return array();
+  } else
+    return $forms;
+}
+
+
+/**
+ * @returns are there any modules which offer proxying services for
+ * this (type of) node?
+ */
+function nodeproxy_is_proxyable_node ($node) {
+  if (is_array($node)) {
+    $type = $node['type'];
+  }
+  elseif (is_object($node)) {
+    $type = $node->type;
+  }
+  elseif (is_string($node)) {
+    $type = $node;
+  }
+  $infos = nodeproxy_type_infos($type);
+  return !empty($infos);
+}
+
+
+/**
+ * various indexes into the set of all nodeapi_infos
+ */
+function nodeproxy_info_indexes ($reset = FALSE) {
+  // module => info
+  static $modules;
+  // type => info
+  static $types;
+  // formname => info
+  static $forms;
+
+  if ($reset || !isset($modules)) {
+    $modules = $types = $forms = array();
+    $hook = 'nodeproxy_info';
+    foreach (module_implements($hook) as $module) {
+      // each module return array of arrays (one for each type the module proxies for)
+      $module_infos = module_invoke($module, $hook);
+      foreach ($module_infos as $info) {
+        if (isset($info['type'])) {
+          $info = (object) _nodeproxy_module_info_set_defaults($info);
+          $type = $info->type;
+          $info->module = $module;
+          $types[$type][] = $info;
+          $modules[$module][] = $info;
+          $forms[$info->form][] = $info;
+        }
+      }
+      asort($modules);
+      asort($types);
+      // sort infos by weight within type, so know what order to 
+      // invoke e.g. view_or_create hook?
+      foreach ($types as &$typeinfos) {
+        uasort($typeinfos, "_nodeproxy_weight_sort");
+      }
+    }
+  }
+  return array($modules, $types, $forms);
+}
+
+/**
+ * Set default values for a nodeproxy module type defined through hook_nodeproxy_info().
+ */
+function _nodeproxy_module_info_set_defaults ($info) {
+  if (!isset($info['coverage'])) {
+    $info['coverage'] = 'supplemental';
+  }
+  if (!isset($info['weight'])) {
+    $info['weight'] = 0;
+  }
+  if (!isset($info['fields'])) {
+    $info['fields'] = array();
+  }
+  if (!isset($info['form'])) {
+    $info['form'] = $info['type'] . "_node_form";
+  }
+  // idparam defaults to idtype
+  if (!isset($info['idparam'])) {
+    $info['idparam'] = $info['idtype'];
+  }
+  return $info;
+}
+
+
+/**
+ * Function used by uasort to sort an array of objects by weight.
+ *
+ * FIXME: this is general and should be in some common place
+ */
+function _nodeproxy_weight_sort($a, $b) {
+  $a_weight = (is_object($a) && isset($a->weight)) ? $a->weight : 0;
+  $b_weight = (is_object($b) && isset($b->weight)) ? $b->weight : 0;
+  if ($a_weight == $b_weight) {
+    return 0;
+  }
+  return ($a_weight < $b_weight) ? -1 : 1;
+}
+

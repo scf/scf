@@ -1,0 +1,105 @@
+<?php
+
+/**
+ * Implementation of hook_install().
+ */
+function contributor_install () {
+  drupal_install_schema('contributor');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function contributor_uninstall () {
+  if (module_exists('iic_util')) {
+    iic_util_delete_all_nodes('contributor');
+  }
+  drupal_uninstall_schema('contributor');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function contributor_schema () {
+  $schema['contributor'] = array(
+    'fields' => array(
+      'nid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'vid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'cuid' => array(
+        'description' => t('The {users}.uid that corresponds to this contributor, or 0 if none.'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0),
+      'capacity' => array(
+        'description' => t("The capacity, role or title of the contributor for the purposes of a single publication."),
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'default' => '',
+        'length' => 128),
+      'affiliation' => array(
+        'description' => t("The affiliation of the contributor for the purposes of a single publication."),
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'default' => '',
+        'length' => 255),
+      'email' => array(
+        'description' => t("The email address of the contributor for the purposes of a single publication."),
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'default' => '',
+        'length' => 255)
+      // fullname, bio are mapped to node title, body
+    ),
+    'primary key' => array('vid'),
+    'indexes' => array(
+      'cuid' => array('cuid')
+    )
+  );
+  return $schema;
+}
+
+/**
+ */
+function contributor_update_6001 () {
+  $ret = array();
+  db_add_unique_key($ret, 'contributor', 'cuid_pubvid', array('cuid', 'pubvid'));
+  db_add_index($ret, 'contributor', 'pubvid_weight', array('pubvid', 'weight'));
+  db_add_field($ret, 'contributor', 'fullname',
+    array(
+        'description' => t("The contributor's full name."),
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'default' => '',
+        'length' => 255
+    )
+  );
+  return $ret;
+}
+
+/**
+ */
+function contributor_update_6002 () {
+  $ret = array();
+  db_query("UPDATE {contributor} c SET c.fullname = (SELECT n.title FROM {node_revisions} n WHERE n.vid = c.vid)");
+  return $ret;
+}
+
+/**
+ * remove pubvid, fullname and weight fields.  They would have been OK
+ * in principle but unfortunately (for things like interviews),
+ * contributor nodes need to be created even on form preview, when
+ * pubvid is not known, etc.  Also in cases like interview where a
+ * module keeps its own links to contributors, they would also have to
+ * be trusted to delete any contributors they no longer linked to
+ * (even ones created during form preview), which is too much.
+ */
+function contributor_update_6003 () {
+  $ret = array();
+  db_drop_unique_key($ret, 'contributor', 'cuid_pubvid');
+  db_drop_index($ret, 'contributor', 'pubvid_weight');
+  db_drop_field($ret, 'contributor', 'pubvid');
+  db_drop_field($ret, 'contributor', 'weight');
+  db_drop_field($ret, 'contributor', 'fullname');
+  return $ret;
+}
+

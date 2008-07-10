@@ -1,0 +1,8 @@
+; $Id$
+name = Species
+description = Provides prepopulated species taxonomies
+dependencies[] = taxonomy
+dependencies[] = taxonomy_bulk
+package = SCF Biology
+version = VERSION
+core = 6.x

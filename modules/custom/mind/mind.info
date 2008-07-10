@@ -1,0 +1,7 @@
+; $Id$
+name = MIND
+description = Misc code for MIND site
+core = 6.x
+package = Harvard IIC
+dependencies[] = views
+dependencies[] = content

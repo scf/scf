@@ -1,0 +1,282 @@
+<?php
+
+/**
+ * Implementation of hook_install().
+ */
+function pubnode_install () {
+  drupal_install_schema('pubnode');
+  module_load_include("php", "pubnode", "PubNodeModule");
+  pubnode()->installForumContainer();
+  $vocabs = array(
+    'scf_keyword_vocabulary',
+    'bio_ontologies_biological_process_vocabulary',
+    'bio_ontologies_cellular_component_vocabulary',
+    'bio_ontologies_molecular_function_vocabulary'
+  );
+  pubnode()->addNodeTypeToVocabulariesByVarName($vocabs);
+  pubnode()->addAssociatedTypes('antibody', 'modelorganism', 'researchstatement', 'gene');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function pubnode_uninstall () {
+  module_load_include("php", "pubnode", "PubNodeModule");
+  pubnode()->deleteAll();
+  drupal_uninstall_schema('pubnode');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function pubnode_schema () {
+  $schema['pubnode'] = array(
+    'fields' => array(
+      'nid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'vid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'pgid' => array(
+        'description' => t("Node ID of containing pubgroup, or 0 if not in a pubgroup."),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0),
+      'idx' => array(
+        'description' => t("Index (order) within the containing pubgroup."),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0),
+      'display_title' => array(
+        'description' => t("Displayable title, may contain markup"),
+        'type' => 'text',
+        'not null' => FALSE,
+        'size' => 'small'),
+      'global_id' => array(
+        'description' => t("Global identifier, such as ISBN, DOI, etc."),
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'default' => '',
+        'length' => 255),
+      'doctype' => array(
+        'description' => t("Document type indicator (e.g. 'docbook4'), must be the name of a corresponding document processor."),
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'length' => 32),
+      'pubpath' => array(
+        'description' => t("Path to the directory containing all files for this pubnode."),
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'length' => 255),
+      'docpath' => array(
+        'description' => t("Path (relative to pubpath) to the main doc source file for this pubnode."),
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'length' => 255),
+      'pdfpath' => array(
+        'description' => t("Path (relative to pubpath) to the PDF version of the pubnode, if available."),
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'length' => 255),
+      'toc' => array(
+        'description' => t("Table of Contents"),
+        'type' => 'text',
+        'not null' => FALSE,
+        'size' => 'big'),
+      'pubdate' => array(
+        'description' => t('The Unix timestamp when the node was published (status set to 1).'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0),
+    ),
+    'primary key' => array('vid'),
+    'unique keys' => array(
+      'nid_vid' => array('nid', 'vid'),
+      'vid_idx' => array('vid', 'idx')
+    ),
+    'indexes' => array(
+      'pgid_idx' => array('pgid', 'idx'),
+      'pubdate' => array('pubdate')
+    )
+  );
+  $schema['pubnode_contributors'] = array(
+    'fields' => array(
+      'vid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'cid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'idx' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0)
+    ),
+    'unique keys' => array(
+      'vid_cid' => array('vid', 'cid'),
+      'vid_idx' => array('vid', 'idx')
+    )
+  );
+  return $schema;
+}
+
+/**
+ * Add toc field
+ */
+function pubnode_update_6001 () {
+  $ret = array();
+  db_add_field($ret, 'pubnode', 'toc',
+    array(
+      'description' => t("Table of Contents"),
+      'type' => 'text',
+      'not null' => FALSE,
+      'size' => 'big'
+    )
+  );
+  return $ret;  
+}
+
+/**
+ * Refactoring: hierarchy stuff is now handled by pubgroup module.
+ */
+function pubnode_update_6002 () {
+  $ret = array();
+  db_drop_table($ret, 'pubnode_hierarchy');
+  db_drop_field($ret, 'pubnode', 'pnlev');
+  db_change_field($ret, 'pubnode', 'parent_nid', 'pgid',
+    array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0));
+  db_add_index($ret, 'pubnode', 'pgid_idx', array('pgid', 'idx'));
+  return $ret;  
+}
+
+/**
+ * add docpath field
+ */
+function pubnode_update_6003 () {
+  $ret = array();
+  db_add_field($ret, 'pubnode', 'docpath',
+    array(
+      'description' => t("Path (relative to pubpath) to the main doc source file for this pubnode."),
+      'type' => 'varchar',
+      'not null' => FALSE,
+      'length' => 255
+    )
+  );
+  return $ret;  
+}
+
+/**
+ * HACK: prior to this, some pubnodes got null or empty doctype, now default
+ * them to 'docbook4', and change 'nlm23' to 'plos'
+ */
+function pubnode_update_6004 () {
+  $ret = array();
+  db_query("UPDATE {pubnode} SET doctype = 'docbook4' WHERE doctype IS NULL OR doctype = ''");
+  db_query("UPDATE {pubnode} SET doctype = 'plos' WHERE doctype = 'nlm23'");
+  return $ret;  
+}
+
+function pubnode_update_6005 () {
+  module_load_include("php", "pubnode", "PubNodeModule");
+  pubnode()->installForumContainer();
+  return array();
+}
+
+function pubnode_update_6006 () {
+  module_load_include("php", "pubnode", "PubNodeModule");
+  $new_vocabs = array(
+    'bio_ontologies_biological_process_vocabulary',
+    'bio_ontologies_cellular_component_vocabulary',
+    'bio_ontologies_molecular_function_vocabulary'
+  );
+  pubnode()->addNodeTypeToVocabulariesByVarName($new_vocabs);
+  return array();
+}
+
+/**
+ * add display_title
+ */
+function pubnode_update_6007 () {
+  $ret = array();
+  db_add_field($ret, 'pubnode', 'display_title',
+    array(
+      'description' => t("Displayable title, may contain markup"),
+      'type' => 'text',
+      'not null' => FALSE,
+      'size' => 'small')
+  );
+  return $ret;
+}
+
+/**
+ * add reasonable default display_titles
+ */
+function pubnode_update_6008 () {
+  db_query("UPDATE {pubnode} p SET p.display_title = (SELECT n.title from {node} n WHERE n.nid = p.nid)");
+  return array();
+}
+
+/**
+ * add assocs to bio entities
+ */
+function pubnode_update_6009 () {
+  module_load_include("php", "pubnode", "PubNodeModule");
+  pubnode()->addAssociatedTypes('antibody', 'modelorganism', 'researchstatement');
+  return array();
+}
+
+/**
+ * add assocs to genes
+ */
+function pubnode_update_6010 () {
+  module_load_include("php", "pubnode", "PubNodeModule");
+  pubnode()->addAssociatedTypes('gene');
+  return array();
+}
+
+/**
+ * add global_id
+ */
+function pubnode_update_6011 () {
+  $ret = array();
+  db_add_field($ret, 'pubnode', 'global_id',
+    array(
+      'description' => t("Global identifier, such as ISBN, DOI, etc."),
+      'type' => 'varchar',
+      'not null' => TRUE,
+      'default' => '',
+      'length' => 255
+    )
+  );
+  return $ret;
+}
+
+/**
+ * drip pubnode_author, add pubnode_contributors
+ */
+function pubnode_update_6012 () {
+  $ret = array();
+  db_drop_table($ret, 'pubnode_author'); 
+  db_create_table($ret, 'pubnode_contributors', 
+    array(
+      'fields' => array(
+        'vid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+        'cid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+        'idx' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0)
+      ),
+      'unique keys' => array(
+        'vid_cid' => array('vid', 'cid'),
+        'vid_idx' => array('vid', 'idx')
+      )
+    )
+  );
+  return $ret;
+}
+
+/**
+ * add pubdate + index
+ */
+function pubnode_update_6013 () {
+  $ret = array();
+  db_add_field($ret, 'pubnode', 'pubdate',
+    array(
+      'description' => t('The Unix timestamp when the node was published (status set to 1).'),
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0)
+    );
+  db_add_index($ret, 'pubnode', 'pubdate', array('pubdate'));
+  return $ret;
+}

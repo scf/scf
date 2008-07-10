@@ -1,0 +1,21 @@
+<?php
+
+// $Id: pubnode_nlm.module $
+
+/**
+ * @file
+ * PubNode NLM module
+ */
+
+function pubnode_nlm_register_pubnode_importers () {
+  return array();
+}
+
+function pubnode_nlm_register_pubnode_processors () {
+  $procs['nlm'] = array(
+    'doctype' => "nlm",
+    'description' => t('NLM'),
+    'class' => "NLMProcessor"
+  );
+  return $procs;
+}

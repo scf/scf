@@ -1,0 +1,10 @@
+; $Id$
+name = ScienceCommons Gene Proxy
+description = Provides gene proxying via the NeuroCommons SPARQL endpoint.
+dependencies[] = rdfnodeproxy
+dependencies[] = gene
+dependencies[] = species
+dependencies[] = taxonomy_bulk
+package = SCF Biology
+version = VERSION
+core = 6.x

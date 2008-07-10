@@ -1,0 +1,45 @@
+/* 	-------------------------------------------------------------
+
+	PRINT STYLE SHEET FOR : www.plosone.org
+	
+	CREATED ON 	: 08-26-2006
+	MODIFIED ON : 08-17-2006
+	
+	CREATED BY	: MARGARET SHEAR
+	MODIFIED BY	: SEBASTIAN TOOMEY
+
+   	------------------------------------------------------------- */
+	
+/* Global : Hidden : Elements
+----------------------------------------------------------
+*/
+html { color: #000; !important width: 100%; !important; font-size: 100%;}
+#topBanner,
+#hdr, div.beta, #nav, #ftr ul, div.powered, #rhc, ol.references a.find, div#ftr ul, span#oa, a.bug, a:visited.bug {
+	display: none !important;
+}
+
+a,
+a:link,
+a:visited { text-decoration:none; color:#000;}
+
+body, div#content, div.content 	{ width: auto !important; margin: 0 !important; padding: 0 !important; border: none; !important}
+* html body, * html div#content, * html div.content 	{ width: 6.75in !important; }
+p.intro							{ border: 1px dotted #000 !important; }
+.edboard dl, .edboard dt, .edboard dd	{ background: none; !important; border: none; }
+
+div#contentHeader,
+div#contentHeader p#articleType,
+div#publisher,
+div#publisher p { font-size:.9em !important; text-indent:0 !important; display:inline !important; border-bottom:0 !important; }
+div#contentHeader p#articleType { padding-right:.5em !important; }
+
+#researchArticle h1				{ margin-top: 0; font-size: 18pt;}
+#researchArticle h3, .static h2 { border-bottom: 1px solid #000; background-image: none; }
+#researchArticle span.authors 	{ display: block; }
+#articleMenu { display:none; }
+div.articleinfo { border:2px solid #ccc; padding:10px; }
+body, p 						{ font-size: 10pt !important; }
+body div.articleinfo p,
+body #ftr p 					{ font-size: 8pt !important; color: #000; border-bottom: none;}
+div#ftr 						{ background: #FFF; font-size: .85em; width: 100%; border-top: 1px solid #ccc; }

@@ -1,0 +1,129 @@
+<?php
+
+// $Id: antibody.module $
+
+/**
+ * @file
+ * Antibody module
+ */
+
+module_load_include("php", "antibody", "AntibodyModule");
+
+function antibody_node_info() {
+  return antibody()->nodeInfo();
+}
+
+function antibody_menu () {
+  return antibody()->menu();
+}
+
+function antibody_perm () {
+  return antibody()->perm();
+}
+
+function antibody_access ($op, $node, $account) {
+  return antibody()->access($op, $node, $account);
+}
+
+function antibody_form (&$node, &$form_state) {
+  return antibody()->form($node, $form_state);
+}
+
+function antibody_validate($node) {
+  antibody()->validate($node);
+}
+
+function antibody_node_form_submit(&$form, &$form_state) {
+  antibody()->nodeFormSubmit($form, $form_state);
+}
+
+function antibody_insert ($node) {
+  antibody()->insert($node);
+}
+
+function antibody_update ($node) {
+  antibody()->update($node);
+}
+
+function antibody_load ($node) {
+  return antibody()->load($node);
+}
+
+function antibody_delete ($node) {
+  antibody()->delete($node);
+}
+
+function antibody_view ($node, $teaser = FALSE, $page = FALSE) {
+  return antibody()->view($node, $teaser, $page);
+}
+
+function antibody_theme () {
+  return antibody()->theme();
+}
+
+function antibody_block ($op = 'list', $delta = 0, $edit = array()) {
+  return antibody()->block($op, $delta, $edit);
+}
+
+function antibody_autocomplete($field, $string) {
+  antibody()->autocomplete($field, $string);
+}
+
+function antibody_admin_settings_subform () {
+  return antibody()->adminSettingsSubform();
+}
+
+function antibody_list_view () {
+  return antibody()->listView();
+}
+
+function antibody_load_recent_nodes ($limit = 10, $element = 0) {
+  return antibody()->loadRecentNodes($limit, $element);
+}
+
+
+/**
+ * Process variables for antibody-main.tpl.php.
+ *
+ * The $variables array contains the following arguments:
+ * - $node
+ *
+ * @see antibody-main.tpl.php
+ */
+function template_preprocess_antibody_main(&$variables) {
+  $node = $variables['node']; 
+  $variables['clonality'] = isset($node->clonality) ? $node->clonality : '';
+  $variables['body'] = isset($node->body) ? $node->body : '';
+  $variables['keywords'] = taxonomy_extra_theme_term_list($node, 'scf_keyword');
+  $variables['source'] = taxonomy_extra_theme_term_list($node, 'scf_organization');
+  $variables['host'] = taxonomy_extra_theme_term_list($node, 'species_host');
+  $variables['reactivity'] = taxonomy_extra_theme_term_list($node, 'species_reactivity');
+  $variables['bio_ontologies'] = array();
+  if (module_exists("bio_ontologies")) {
+    $variables['bio_ontologies'] = bio_ontologies_theme_term_lists($node);
+  }
+  // hack: preload all assocs
+  antibody()->loadAssociated($node);
+  $variables['genes'] = theme('gene_table', antibody()->loadAssociated($node, 'gene'));
+  $variables['researchstatements'] = theme('researchstatement_table', antibody()->loadAssociated($node, 'researchstatement'));
+}
+
+/**
+ * Process variables for antibody-table.tpl.php.
+ *
+ * The $variables array contains the following arguments:
+ * - $nodes
+ * - $pager
+ *
+ * @see antibody-table.tpl.php
+ */
+function template_preprocess_antibody_table(&$variables) {
+  $nodes =& $variables['nodes']; 
+  foreach ($nodes as &$node) {
+    $node->build_mode = NODE_BUILD_NORMAL;
+    $node->host = taxonomy_extra_theme_term_list($node, 'species_host');
+    $node->reactivity = taxonomy_extra_theme_term_list($node, 'species_reactivity');
+    $node->source = taxonomy_extra_theme_term_list($node, 'scf_organization');
+  }
+}
+

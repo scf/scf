@@ -1,0 +1,6 @@
+; $Id$
+name = Harvard IIC utility module
+description = Provides some utility functions.
+package = Harvard IIC
+version = VERSION
+core = 6.x

@@ -1,0 +1,896 @@
+<?php
+
+// $Id: $
+
+/**
+ * @file Allows users to maintain a catalog of members with rich
+ * information about each member.
+ * 
+ */
+
+/**
+ * Implementation of hook_node_info().
+ */
+function member_node_info() {
+  return array(
+    'member' => array(
+      'name' => t('Member profile'),
+      'module' => 'member',
+      'description' => t("Member profile."),
+      'title_label' => t('Full name'),
+      'has_body' => TRUE,
+      'body_label' => t('Biography')
+    )
+  );
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function member_perm() {
+  return array(
+    'administer members',
+    'create own member',
+    'create any member',
+    'edit own member',
+    'edit any member',
+    'delete own member',
+    'delete any member',
+    'browse member directory'
+  );
+}
+
+/**
+ * Implementation of hook_access().
+ *
+ * This is complicated:
+ * create: 
+ *    YES for normal user but only if creating OWN member where none exists
+ *    YES for super user but only for users who don't have a member
+ *    NO otherwise
+ *
+ */
+function member_access($op, $node, $account) {
+  if ($op == 'create') {
+    if ($account->uid > 0) {
+      $nid = _member_get_node_id($account);
+      return (empty($nid));
+    }
+    // else
+    return FALSE;
+  }
+  if ($op == 'update' || $op == 'delete') {
+    if (user_access('administer members', $account)
+      || (user_access('edit own member', $account) && ($node->muid == $account->uid))) {
+      return TRUE;
+    }
+  }
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function member_menu() {
+  $items['member/autocomplete/%/%'] = array(
+    'title' => 'Member autocomplete',
+    'page callback' => 'member_autocomplete',
+    'page arguments' => array(2, 3),
+    'access callback' => 'member_autocomplete_access_callback',
+    'access arguments' => array(2),
+    'type' => MENU_CALLBACK
+  );
+  $items['member/dir'] = array(
+    'title' => 'Members Directory',
+    'page callback' => 'member_dir',
+    'access callback' => 'user_access',
+    'access arguments' => array('browse member directory'),
+    'type' => MENU_CALLBACK
+  );
+  $items['member/dir/all'] = array(
+    'title' => 'All',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'page arguments' => array('all'),
+    'access callback' => 'user_access',
+    'access arguments' => array('browse member directory'),
+    'weight' => -10
+  );
+  $items['member/dir/affiliation'] = array(
+    'title' => 'Affiliation',
+    'type' => MENU_LOCAL_TASK,
+    'page arguments' => array('affiliation'),
+    'access callback' => 'user_access',
+    'access arguments' => array('browse member directory'),
+    'weight' => -5
+  );
+  $items['member/dir/create'] = array(
+    'title' => 'Create Member Profile',
+    'page callback' => 'member_add',
+    'access callback' => 'user_access',
+    'access arguments' => array('create any member'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 0
+  );
+  $items['member/dir/affiliation/%'] = array(
+    'title' => 'Members by affiliation',
+    'type' => MENU_CALLBACK,
+    'page callback' => 'member_dir',
+    'page arguments' => array('affiliation', 3),
+    'access callback' => 'user_access',
+    'access arguments' => array('browse member directory'),
+    'weight' => -5
+  );
+  $items['node/add/member/%member_needed_for_user'] = array(
+    'title' => t('Create Member Profile'),
+    'page callback' => 'member_add',
+    'page arguments' => array(3),
+    'access callback' => 'member_access_create',
+    'access arguments' => array(3),
+    'type' => MENU_CALLBACK,
+    'weight' => 0
+  );
+  return $items;
+}
+
+/**
+ * Can the current user create a member for the given account?
+ */
+function member_access_create ($account = NULL) {
+  global $user;
+  if (!isset($account))
+    $account = $user;
+  // can't create if already exists
+  if (isset($account->member) && $account->member)
+    return FALSE;
+  if (user_access('create any member'))
+    return TRUE;
+  if (($user->uid == $account->uid) && user_access('create own member'))
+    return TRUE;
+  return FALSE;
+}
+
+/**
+ * a menu wildcard loader function (for %member_nid)
+ */
+function member_nid_load ($nid) {
+  if (!is_numeric($nid)) {
+    return FALSE;
+  }
+  $node = node_load($nid);
+  if (is_object($node) && $node->type == 'member')
+    return $node;
+  // else
+  return FALSE;
+}
+
+/**
+ * a menu wildcard loader function (for %member_needed_for_user),
+ * returns a valid USER object IFF the user exists and does NOT
+ * already have an associated member profile.
+ * 
+ */
+function member_needed_for_user_load ($uid) {
+  if (!is_numeric($uid))
+    return FALSE;
+  $user = user_load($uid);
+  if (!$user)
+    return FALSE;
+  $mem = _member_get_node_id($user->uid);
+  if ($mem)
+    return FALSE;
+  // else
+  return $user;
+}
+
+function member_add ($muser = NULL) {
+  // if they didn't specify a valid uid, or if they're trying
+  // to create a member for user 0 or 1, set muid to 0 and make the
+  // form elicit it.
+  if (isset($muser) && is_numeric($muser)) {
+    $muser = user_load($muser);
+  } 
+
+  if (!isset($muser)) {
+    $muid = 0;
+  } else if ($muser->uid == 1) {
+    $muid = 0;
+  } else {
+    $muid = $muser->uid;
+  }
+
+  // the stuff below basically copies node_add(), but with the added muid setting
+  global $user;
+  
+  if (node_access('create', 'member')) {
+    // Initialize settings:
+    $node = array('uid' => $user->uid, 'name' => (isset($user->name) ? $user->name : ''), 'type' => 'member', 'language' => '');
+    // add member uid
+    $node['muid'] = $muid;
+    
+    drupal_set_title(t('Create Member Profile'));
+    module_load_include("inc", "node", "node.pages");
+    $output = drupal_get_form('member_node_form', $node);
+  }
+
+  return $output;
+}
+
+/**
+ * Implementation of hook_form().
+ */
+function member_form(&$node, $form_state) {
+  $form = _member_form_fields($node);
+  
+  if (!isset($node->muid)) {
+    global $user;
+    if ($user->uid > 1)
+      $node->muid = $user->uid;
+    else 
+      // anonymous or admin can't have a member profile
+      $node->muid = 0;
+  } 
+  
+  // muid == 0 means form needs to select it
+  if ($node->muid == 0) {
+    // 0 means must put in a selector for muid
+    $form['muid'] = array(
+      '#type' => 'select',
+      '#options' => _member_add_muid_options(),
+      '#default_value' => 0,
+      '#description' => t('Select an existing user.  You may need to !create first.', array('!create' => l('create a new user', 'admin/user/user/create', array('attributes' => array('target' => 'new_user'))))),
+      '#weight' => -20
+    );
+  } else {
+    $muser = user_load($node->muid);
+    $form['muid_show'] = array(
+      '#value' => t('<p>Creating member for user \'!name\'.</p>', array('!name' => $muser->name)),
+      '#weight' => -20
+    );
+    $form['muid'] = array(
+      '#type' => 'value',
+      '#value' => $node->muid
+    );
+  }
+  return $form;
+}
+
+/**
+ * Implementation of hook_submit():
+ */
+function member_validate($node, &$form) {
+  if (!isset($node->muid) || $node->muid < 2) {
+    form_set_error('muid', t('Must select a valid user.'));
+  }
+}
+
+
+/**
+ * Implementation of hook_submit():
+ * 
+ * FIXME!!!!  This is never called...
+ */
+function member_submit(&$node) {
+  if (isset($node->muid)) {
+    $muser = user_load($node->muid);
+    // unpublish the member if the user is blocked
+    $node_options = variable_get('node_options_member', array('status', 'promote'));
+    if (in_array('status', $node_options)) {
+      $node->status = $muser->status;
+    }
+  }
+}
+
+
+/**
+ * Implementation of hook_insert():
+ */
+function member_insert($node) {
+  _member_trim_fields($node);
+  drupal_write_record("member", $node);
+}
+
+/**
+ * Implementation of hook_update():
+ */
+function member_update($node) {
+  _member_trim_fields($node);
+  if (isset($node->revision) && $node->revision) {
+    drupal_write_record("member", $node);
+  } else {
+    drupal_write_record("member", $node, 'vid');
+  }
+}
+
+/**
+ * Implementation of hook_load():
+ */
+function member_load($node) {
+  $sql = "SELECT * FROM {member} WHERE vid = %d";
+  return db_fetch_object(db_query($sql, $node->vid));
+}
+
+
+/**
+ * Implementation of hook_delete().
+ * Insane code mostly stolen from usernode.
+ */
+function member_delete(&$node) {
+  db_query("DELETE FROM {member} WHERE nid = %d", $node->nid);
+}
+
+
+/**
+ * Implementation of hook_enable().
+ */
+function member_enable() {
+  //when the module is activated, we check the members
+  _member_check_all();
+}
+
+/**
+ * Implementation of hook_cron().
+ */
+function member_cron() {
+  _member_check_all();
+}
+
+
+/**
+ * Implementation of hook_user().
+ */
+function member_user($op, &$edit, &$account, $category = NULL) {
+  switch ($op) {
+    case 'delete':
+      if (isset($account)) {
+        $nid = _member_get_node_id($account);
+        if ($nid || $nid === 0) {
+          return node_delete($nid);
+        }
+      }
+      break;
+    case 'load':
+      _member_get_node($account);
+      break;
+    case 'view':
+      //$memnode = member_view(_member_get_node($account), FALSE, FALSE, TRUE);
+      //$account->content['member'] = $memnode->content;
+      $memlinks = _member_get_user_links($account);
+      $account->content['member'] = array(
+        '#value' => !empty($memlinks) ? theme('links', $memlinks, array('class' => 'links inline')) : ''
+      );
+  }
+}
+
+/**
+ * create "create/edit member" link on user account view page
+ */
+function _member_get_user_links($account) {
+  $links = array();
+  if ($account->uid < 2)
+    return $links;
+  global $user;
+  if (isset($account->member_id) && $account->member_id) {
+    $href = "node/" . $account->member_id;
+    if ($account->uid == $user->uid) {
+      if ($user->uid > 1) {
+        $links['user_view_own_member'] = array(
+          'title' => t('View my member profile'),
+          'href' => $href
+        );
+      }
+    } else if (user_access('browse member directory')) {
+      $links['user_view_member'] = array(
+        'title' => t('View member profile'),
+        'href' => $href
+      );
+    }
+  } else {
+    $href = "node/add/member/" . $account->uid;
+    // no member for this user yet
+    if ($account->uid == $user->uid) {
+      if ($user->uid > 1 && user_access('create own member')) {
+        $links['user_create_own_member'] = array(
+          'title' => t('Create my member profile'),
+          'href' => $href
+        );
+      }
+    } else if (user_access('create any member')) {
+      $links['user_create_member'] = array(
+        'title' => t('Create a member profile for this user'),
+        'href' => $href
+      );
+    }
+  }
+  return $links;
+}
+
+
+/**
+ * Implementation of hook_view().
+ */
+function member_view($node, $teaser = FALSE, $page = FALSE, $embed = FALSE) {
+  drupal_add_css(drupal_get_path('module', 'member') .'/member.css');
+  $node = node_prepare($node, $teaser, $page);
+  $wt = -10;
+  $muser = _member_get_user($node);
+  // add picture (in teaser list too)
+  if (!empty($muser->picture)) {
+    $node->content['picture'] = array(
+      '#value' => theme('member_picture', $node),
+      '#weight' => $wt++
+    );
+  }
+
+  if (!empty($node->jobtitle)) {
+    $comma = '';
+    if (!empty($node->affiliation)) {
+      $comma = ', ';
+    }
+    $node->content['jobtitle'] = array(
+      '#value' => $node->jobtitle . $comma,
+      '#weight' => $wt++
+    );
+  }
+  if (!empty($node->affiliation)) {
+    $node->content['affiliation'] = array(
+      '#value' => l(
+        $node->affiliation,
+        'member/dir/affiliation/' . drupal_urlencode($node->affiliation),
+        array('attributes' => array('class' => "member-affiliation"))),
+      '#weight' => $wt++
+    );
+  }
+  if (!$embed) {
+    $node->content['contact'] = array(
+      '#value' => theme('member_contact', $muser->mail, $node->phone, $node->fax),
+      '#weight' => $wt++
+    );
+  }
+  if ($teaser || $embed) {
+    global $user;
+    $uid = $user->uid;
+    $can_edit = ($uid == 1 || $uid == $node->muid);
+    // TODO add "edit" link if $can_edit
+  }
+
+  $node->content['body']['#weight'] = $wt++;
+
+  if ($page) {
+    $acctlinks = _member_get_account_links($node);
+    $node->content['account'] = array(
+      '#value' => !empty($acctlinks) ? theme('links', $acctlinks, array('class' => 'links inline')) : '',
+      '#weight' => $wt++
+    );
+  }
+
+  return $node;
+}
+
+
+function _member_get_account_links ($node) {
+  $links = array();
+  global $user;
+  $muid = isset($node->muid) ? $node->muid : 0;
+  // sanity check: muid should always be defined and > 1
+  if ($muid < 2) 
+    return $links;
+  if ($user->uid == $muid || user_access("administer users")) {
+    $links['user_account'] = array(
+      'title' => t('View user account'),
+      'href' => "user/" . $muid
+    );
+  }
+  return $links;
+}
+
+// ----------------------------------- menu callbacks
+
+/**
+ * Member directory
+ */
+function member_dir($mode = 'all', $arg = NULL) {
+  // make this configurable...
+  $limit = 10;
+  $select = "SELECT n.nid";
+  $from = " FROM {node} n";
+  $from .= " INNER JOIN {member} m ON n.vid = m.vid";
+  $where = " WHERE n.status = 1";
+  if ($mode == 'affiliation' && isset($arg)) {
+    $where .= " AND m.affiliation LIKE '%s%%'";
+  }
+  $order = " ORDER BY m.sortname ASC";
+  switch ($mode) {
+    case 'all':
+      // do nothing special
+      break;
+    case 'affiliation':
+      // TODO: what is the actual desired functionality here?
+      // do the search by affiliation? or just order by affiliation?
+      $order = " ORDER BY m.affiliation ASC, m.sortname ASC";
+      break;
+  }
+  $out = array();
+  $result = pager_query(db_rewrite_sql($select . $from . $where . $order), $limit, 0, NULL, $arg);
+  while ($nid = db_result($result)) {
+    $node = node_load($nid);
+    $out[] = node_view($node, TRUE);
+  }
+  $out[] = theme('pager', NULL, $limit);
+  return implode('', $out);
+}
+
+/**
+ * Callback for autocompletion of certain member text fields
+ */
+function member_autocomplete($field, $string) {
+  $matches = array();
+  switch ($field) {
+    case 'affiliation':
+    case 'jobtitle':
+      $sql = "SELECT DISTINCT m.$field AS value FROM {member} m INNER JOIN {node} n ON m.vid = n.vid WHERE n.status = 1 AND LOWER(m.$field) LIKE LOWER('%s%%') ORDER BY m.$field ASC";
+      $result = db_query_range($sql, $string, 0, 20);
+      while ($data = db_fetch_object($result)) {
+        $matches[$data->value] = check_plain($data->value);
+      }
+      break;
+    case 'name':
+      $sql1 = "SELECT n.nid, n.title AS name, m.affiliation AS qualifier"
+        . " FROM {node} n INNER JOIN {member} m ON n.vid = m.vid"
+        . " WHERE n.status = 1 AND LOWER(n.title) LIKE LOWER('%s%%')"
+        . " ORDER BY n.title, m.affiliation, n.nid ASC";
+      $sql2 = "SELECT n.nid, m.sortname AS name, m.affiliation AS qualifier"
+        . " FROM {node} n INNER JOIN {member} m ON n.vid = m.vid"
+        . " WHERE n.status = 1 AND LOWER(m.sortname) LIKE LOWER('%s%%')"
+        . " ORDER BY m.sortname, m.affiliation, n.nid ASC";
+      $matches = _member_select_autocomplete(array($sql1, $sql2), $string);
+      break;
+    default:
+      // nothing
+  }
+  drupal_json($matches);
+}
+
+/**
+ * take an array of queries, each of which must return rows of [nid,
+ * name, qualifier], and merge all results into an array for return as
+ * json
+ */
+function _member_select_autocomplete($queries, $string) {
+  $matches = array();
+  foreach ($queries as $query) {
+    $result = db_query_range($query, $string, 0, 10);
+    while ($data = db_fetch_object($result)) {
+      $label = $data->name;
+      if (!empty($data->qualifier)) {
+        $label .= " (" . $data->qualifier . ")";
+      }
+      $matches[$data->name . "^^" . $data->qualifier . "^^" . $data->nid] = check_plain($label);
+    }
+  }
+  uksort($matches, "strcasecmp");
+  return $matches;
+}
+
+
+/**
+ * Control access to member autocompletion
+ */
+function member_autocomplete_access_callback($field) {
+  global $user;
+  // Not sure if this will get called at all if admin...
+  return ($user->uid == 1 || $field != 'name' || user_access("browse member directory"));
+}
+
+
+// ----------------------------------- theming
+
+/**
+ * Implementation of hook_theme().
+ */
+function member_theme() {
+  return array(
+    'member_link' => array(
+      'arguments' => array('node' => NULL)
+    ),
+    'member_contact' => array(
+      'arguments' => array('email' => NULL, 'phone' => NULL, 'fax' => NULL)
+    ),
+    'member_picture' => array(
+      'template' => 'member-picture',
+      'arguments' => array('node' => NULL)
+    ),
+    'member_embed' => array(
+      'template' => 'member-embed',
+      'arguments' => array('node' => NULL)
+    ),
+    'member_contribs' => array(
+      'template' => 'member-contribs',
+      'arguments' => array('type_singular' => NULL, 'type_plural' => NULL, 'contribs' => array())
+    ),
+  );
+}
+
+function _member_trim_fields (&$node) {
+  if (isset($node->sortname)) 
+    $node->sortname = trim($node->sortname);
+  if (isset($node->title)) 
+    $node->title = trim($node->title);
+}
+
+function theme_member_contact($email, $phone, $fax) {
+  $out = '<div class="member-contact">';
+  $out .= _theme_member_contact_line("email", $email);
+  $out .= _theme_member_contact_line("phone", $phone);
+  $out .= _theme_member_contact_line("fax", $fax);
+  $out .= "</div>";
+  return $out;
+}
+
+function _theme_member_contact_line($label, $val) {
+  $content = '';
+  if (strlen(trim($val)) != 0) { 
+    $content .= '<div class="member-' . $label . '"><strong>' . $label;
+    $content .= ':</strong> ' . check_plain($val) . '</div>';
+  }
+  return $content;
+}
+
+function theme_member_link($node) {
+  if (!empty($node->nid) && user_access('access user profiles')) {
+    $attributes = array('attributes' => array('title' => t('View member page.')), 'html' => TRUE);
+    return l($node->title, "node/$node->nid", $attributes);
+  } else {
+    return check_plain($node->title);
+  }
+}
+
+
+
+/**
+ * Process variables for member-picture.tpl.php.
+ *
+ * The $variables array contains the following arguments:
+ * - $node
+ *
+ * @see member-picture.tpl.php
+ */
+function template_preprocess_member_picture(&$variables) {
+  $variables['picture'] = '';
+  if (variable_get('user_pictures', 0)) {
+    $node = $variables['node'];
+    $muser = _member_get_user($node);
+    if (!empty($muser->picture) && file_exists($muser->picture)) {
+      $picture = file_create_url($muser->picture);
+    }
+    else if (variable_get('user_picture_default', '')) {
+      $picture = variable_get('user_picture_default', '');
+    }
+
+    if (isset($picture)) {
+      $alt = t("@user's picture", array('@user' => $node->title ? $node->title : variable_get('anonymous', t('Anonymous'))));
+      $variables['picture'] = theme('image', $picture, $alt, $alt, '', FALSE);
+      if (!empty($node->nid) && user_access('access user profiles')) {
+        $attributes = array('attributes' => array('title' => t('View member page.')), 'html' => TRUE);
+        $variables['picture'] = l($variables['picture'], "node/$node->nid", $attributes);
+      }
+    }
+  }
+}
+
+
+/**
+ * Process variables for member-embed.tpl.php.
+ *
+ * The $variables array contains the following arguments:
+ * - $node
+ *
+ * @see member-embed.tpl.php
+ */
+function template_preprocess_member_embed(&$variables) {
+  drupal_add_css(drupal_get_path('module', 'member') .'/member.css');
+  $node = $variables['node'];
+  // HACK to get $node->teaser set correctly...  This proboably doesn't belong here
+  // The build mode identifies the target for which the node is built.
+  if (!isset($node->build_mode)) {
+    $node->build_mode = NODE_BUILD_NORMAL;
+  }
+  $variables['node'] = node_prepare($node, TRUE);
+  $variables['teaser'] = TRUE;
+  $variables['page'] = FALSE;
+  template_preprocess_node($variables);
+  $variables['jobtitle_dir_url'] = url('member/dir/jobtitle/' . drupal_urlencode($variables['jobtitle']));
+  $variables['affiliation_dir_url'] = url('member/dir/affiliation/' . drupal_urlencode($variables['affiliation']));
+  $variables['picture'] = theme('member_picture', $variables['node']);
+}
+
+
+/**
+ * Process variables for member-contribs.tpl.php.
+ *
+ * The $variables array contains the following arguments:
+ * - $type_singular
+ * - $type_plural
+ * - $contribs
+ *
+ * @see member-contribs.tpl.php
+ */
+function template_preprocess_member_contribs(&$variables) {
+  $variables['title'] = t('Contributions to !type', array('!type' => $variables['type_plural']));
+}
+
+
+// -------------------------------- internal (non-hook) functions
+
+/**
+ * this used to be an internal func but now it's public...
+ */
+function member_get_node_id(&$user) {
+  return _member_get_node_id($user);
+}
+
+/**
+ * @param $user The user object or the user's uid
+ * @returns the nid of the member node of the user or FALSE
+ */
+function _member_get_node_id(&$user) {
+  // cache result so only do this once per req.
+  static $history = array();
+  if (!is_object($user)) {
+    if (!isset($history[$user])) {
+      $nid = db_result(db_query("SELECT nid FROM {member} WHERE muid = %d", $user));
+      if (isset($nid) && $nid > 0)
+        $history[$user] = $nid;
+      else 
+        $history[$user] = FALSE;
+    }
+    return $history[$user];
+  }
+
+  // else ($user is an obj)
+  if (!isset($user->member_id)) {
+    $user->member_id = _member_get_node_id($user->uid);
+  }
+  return $user->member_id;
+}
+
+/**
+ * this used to be an internal func but now it's public...
+ */
+function member_get_node(&$user) {
+  return _member_get_node($user);
+}
+
+function _member_get_node(&$user) {
+  if (!is_object($user)) {
+    $nid = _member_get_node_id($user);
+    return $nid ? node_load($nid) : FALSE;
+  }
+  if (!isset($user->member)) {
+    $nid = _member_get_node_id($user);
+    $user->member = $nid ? node_load($nid) : FALSE;
+  }
+  return $user->member;
+}
+
+/**
+ * Return the user object of the member.
+ */
+function _member_get_user($node) {
+  if (isset($node) && isset($node->muid)) {
+    return user_load($node->muid);
+  }
+  // else (should never happen...)
+  return NULL;
+}
+
+function _member_form_fields($node) {
+  $wt = -15;
+  $form = array();
+  $type = node_get_types('type', $node);
+  
+  // HACK HACK HACK: the 'node_body_field' function is not defined in node.module, but in an include...
+  module_load_include("inc", "node", "node.pages");
+  $form['body_field'] = node_body_field($node, $type->body_label, $type->min_word_count);
+
+  $form['firstname'] = array(
+    '#type' => 'textfield',
+    '#title' => t('First name'),
+    '#required' => TRUE,
+    '#default_value' => isset($node->firstname) ? $node->firstname : '',
+    '#maxlength' => 32,
+    '#weight' => $wt++,
+    // '#autocomplete_path' => 'member/autocomplete/firstname'
+  );
+  $form['middleinitial'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Middle initial'),
+    '#required' => FALSE,
+    '#default_value' => isset($node->middleinitial) ? $node->middleinitial : '',
+    '#maxlength' => 5,
+    '#weight' => $wt++
+  );
+  $form['lastname'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Last name'),
+    '#required' => TRUE,
+    '#maxlength' => 32,
+    '#default_value' => isset($node->lastname) ? $node->lastname : '',
+    '#weight' => $wt++,
+    // '#autocomplete_path' => 'member/autocomplete/lastname',
+    );
+  $form['title'] = array(
+    '#type' => 'textfield',
+    '#title' => check_plain($type->title_label),
+    '#required' => TRUE,
+    '#default_value' => isset($node->title) ? $node->title : '',
+    '#description' => t('A full name such as "Amanda T. Jones"'),
+    '#weight' => $wt++,
+    );
+  $form['sortname'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Sort name'),
+    '#required' => TRUE,
+    '#default_value' => isset($node->sortname) ? $node->sortname : '',
+    '#description' => t('Lastname-first name, such as "Jones, Amanda T."'),
+    '#weight' => $wt++,
+    );
+  $form['affiliation'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Affiliation'),
+    '#required' => FALSE,
+    '#default_value' => isset($node->affiliation) ? $node->affiliation : '',
+    '#weight' => $wt++,
+    '#autocomplete_path' => 'member/autocomplete/affiliation',
+    );
+  $form['jobtitle'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Position'),
+    '#required' => FALSE,
+    '#maxlength' => 80,
+    '#default_value' => isset($node->jobtitle) ? $node->jobtitle : '',
+    '#weight' => $wt++,
+    '#autocomplete_path' => 'member/autocomplete/jobtitle'
+  );
+  $form['phone'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Phone'),
+    '#required' => FALSE,
+    '#default_value' => isset($node->phone) ? $node->phone : '',
+    '#weight' => $wt++
+  );
+  $form['fax'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Fax'),
+    '#required' => FALSE,
+    '#weight' => $wt++
+  );
+  $form['body_field']['#weight'] = $wt++;
+  return $form;
+}
+
+/**
+ * Check all users for an existing member, and create one if necessary.
+ */
+function _member_check_all() {
+  // find members whose user has been deleted
+  $result = db_query("SELECT m.nid, m.vid FROM {member} m ".
+    "LEFT JOIN {users} u ON m.muid = u.uid ".
+    "WHERE u.uid IS NULL");
+  while ($mem = db_fetch_object($result)) {
+    drupal_set_message("Member " . $mem->nid . " (user " . $mem->muid . ") has no user object.");
+    // use node api to delete node...
+    node_delete($mem->nid);
+  }
+}
+
+function _member_add_muid_options() {
+  $sql = "SELECT u.uid, u.name FROM {users} u";
+  $sql .= " LEFT OUTER JOIN {member} m ON u.uid = m.muid";
+  $sql .= " WHERE m.nid IS NULL";
+  $sql .= " AND u.uid > 1 ORDER BY u.name";
+  $result = db_query($sql);
+  $options = array(0 => '<select>');
+  while ($u = db_fetch_object($result)) {
+    $options[$u->uid] = $u->name;
+  }
+  return $options;
+}

@@ -1,0 +1,1528 @@
+<?xml version="1.0"?>
+<!DOCTYPE article SYSTEM "journalpublishing.dtd">
+
+<!--
+This document was created solely for transform testing purposes.
+The Publishing (Blue) Tag Library, version 2.0, was used to ensure
+each element (and its associated attributes) present in that tag
+library was used at least once in this document.  Exceptions - -
+such as the attributes associated with <mml:math> - - are listed
+in BlueTransformExceptions.txt
+
+NOTE:  This document has includes both <sub-article> and <response>
+for testing purposes.  Since the Publishing DTD only permits
+<sub-article> OR <response> to be used in an article, the <response>
+segment is commented out.  To change the document for use in
+checking a <response> - - which is necessary because some other
+elements are found only inside the <response> portion of this
+document - - simply uncomment the <response> element and comment
+out the <sub-article>.
+-->
+
+<article article-type="research-article" dtd-version="2.2" xml:lang="en" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink">
+<front>
+<journal-meta><journal-id journal-id-type="pmc">pnas</journal-id>
+<journal-title>International Journal of Health Geographics</journal-title>
+<abbrev-journal-title abbrev-type="pubmed">Proc Natl
+Acad Sci USA</abbrev-journal-title>
+<abbrev-journal-title abbrev-type="publisher">PNA
+</abbrev-journal-title><issn pub-type="ppub">0959-8138</issn><publisher><publisher-name>British Medical
+Journal</publisher-name><publisher-loc>Fake Location</publisher-loc></publisher></journal-meta>
+<article-meta><article-id pub-id-type="pmid">10092260</article-id>
+<article-categories><subj-group subj-group-type="fakesubject" xml:lang="en"><subject>Papers</subject><subject>271</subject>
+</subj-group><subj-group><subject>Papers</subject><subject>218</subject>
+</subj-group><subj-group><subject>Papers</subject><subject>209</subject>
+</subj-group>
+<series-title>Fake title of an article series</series-title>
+<series-text>Fake description of an article series</series-text>
+</article-categories><title-group><article-title xml:lang="en">Systematic review of day hospital care
+for elderly people</article-title>
+<subtitle>The Final Recount</subtitle>
+<trans-title xml:lang="fr">L&rsquo;ecole et moi</trans-title>
+<alt-title alt-title-type="right-running-head">Alternate title would go here</alt-title>
+</title-group><contrib-group><contrib contrib-type="author" id="mul221" rid="mul222 mul808" equal-contrib="yes" deceased="no" corresp="yes"><name name-style="western"><surname>Forster</surname><given-names>Anne</given-names></name><role>
+research physiotherapist</role><xref ref-type="aff"><sup><italic>a</italic></sup></xref>
+<bio id="mul222" rid="mul221" xlink:actuate="onRequest" xlink:role="link to expanded biography" xlink:title="webpage" xlink:href="http://www.mulberrytech.com/people/gaylord/trgquals.html" xlink:show="new" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
+<p><bold>Anne Forster</bold> is the current editor of
+the <italic>OASIS Microwave Journal</italic>, responsible
+for Technical Committee and Developments. She received
+her BE and PhD in electrical engineering from the
+University of Queensland, Brisbane, Australia.
+Currently, she is professor in the School of
+Electronic Engineering at the University of
+Finlandia, where she holds the chair in Microwave
+Electronics</p>
+</bio>
+</contrib>
+<contrib contrib-type="editor" id="mul888" equal-contrib="yes" deceased="no" corresp="no" xmlns:xlink="http://www.w3.org/1999/xlink"
+xlink:href="http://www.pollard.com" xlink:actuate="onRequest" xlink:show="new" xlink:role="fake contributor description" xlink:title="fake contributor page" xlink:type="simple">
+<name name-style="western"><surname>Pollard</surname>
+<given-names>Thomas D.</given-names><suffix>III</suffix></name>
+<author-comment>
+<title>Fake Comment Title</title>
+<p>This essay constitutes the second article in the
+&#x201C;Genome Annotation Series&#x201D; initiated by
+Thomas D. Pollard, Essay Editor. The first essay, by
+J.S. Berg, B.C. Powell, and R.E. Cheney, appeared in
+the April 2001 issue of <italic>Molecular Biology of the
+Cell</italic> (Vol. 12, Issue 4, pp 780&#x2013;794).</p>
+</author-comment>
+</contrib>
+<contrib contrib-type="author" id="mul77" rid="affDorelco IIDR" equal-contrib="yes" deceased="no" corresp="no">
+<name name-style="western"><surname>Taylor</surname>
+<given-names>James C.</given-names>
+</name>
+<degrees>Ph D</degrees>
+<aff id="affDorelco" rid="mul77">Dorelco Corporation Ltd.</aff>
+<aff id="IIDR" rid="mul77">
+<institution id="mul2020" xlink:href="http://www.fake.org" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:actuate="onRequest" xlink:show="new" xlink:role="info on IIDR" xlink:title="institute homepage">Institute of Infectious Disease Research
+</institution><break/>
+<addr-line>Oberlin, Washington 96204;</addr-line><break/>
+<country>United States</country>
+</aff>
+<address id="mul88">
+<institution id="mul3030" xlink:href="http://www.fake2.org" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:actuate="onRequest" xlink:show="new" xlink:role="info on Kalakukko" xlink:title="corporation homepage">Kalakukko Corporation</institution>
+<addr-line>17 West Jefferson St.</addr-line>
+<addr-line>Suite 207</addr-line>
+<addr-line>New South Finland, MD 20856.</addr-line>
+<country>Finland</country>
+<phone>(301) 754-5766</phone>
+<fax>(301) 754-5765</fax>
+<email xmlns:xlink="http://www.w3.org/1999/xlink"
+xlink:href="http://www.kalakukko.com" xlink:actuate="onRequest" xlink:show="new" xlink:role="fake email description" xlink:title="fake email form page" xlink:type="simple">jct@kalakukko.com.fi</email>
+<uri xlink:href="http://www.kalakukko.com" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:actuate="onRequest" xlink:show="new" xlink:role="fake corporate webpage" xlink:title="JCT website">http://www.kalakukko.com</uri>
+</address>
+</contrib>
+<contrib contrib-type="author" id="mul19" equal-contrib="no" deceased="no" corresp="no"><name name-style="western"><surname>Young</surname><given-names>John</given-names><prefix>The Honorable</prefix></name><role>
+consultant physician</role><xref ref-type="aff"><sup><italic>a</italic></sup></xref></contrib>
+<contrib contrib-type="author" id="mul688" equal-contrib="no" deceased="no" corresp="no"><name name-style="western"><surname>Langhorne</surname><given-names>Peter</given-names></name><role>
+senior lecturer</role><xref ref-type="aff"><sup><italic>b</italic></sup></xref><on-behalf-of>on behalf of the Day
+Hospital
+Group</on-behalf-of></contrib></contrib-group><aff><sup><italic>a</italic></sup>Department
+of Health Care for the Elderly, St Luke&rsquo;s Hospital, Bradford BD5 0NA,
+<sup><italic>b</italic></sup>Academic Section of Geriatric Medicine, Royal Infirmary,
+Glasgow G4 0SF</aff><author-notes id="mul3" rid="mul19">
+<title>Fake Notes Title</title><fn fn-type="con" id="mul252" xml:lang="en"><p>Contributors: AF planned and
+initiated the review, conducted literature searches, assessed the trials,
+drafted and redrafted the final report. JY planned and initiated the review,
+assessed trials, and redrafted the final report. PL planned the review, assessed
+trials, provided methodological support, and redrafted the final report. The day
+hospital group is formed from the authors of this systematic review and the
+authors of the original trials who provided additional information about trial
+procedures and data: S Burch, J Longbottom, M Mckay, C Borland, T Prevost
+(Huntingdon); Kaisu Pitkala (Helsinki); John Gladman (Nottingham); Susan
+Hedrick, M L Rothman, M K Chapko, J L Ehreth, P Diehr, T S Inui, R T Connis, P L
+Grover, J R Kelly (United States); E Hui, C Lum, R L C Kay, J Woo, K H Or (Hong
+Kong); N Vetter (Cardiff). Victor Cummings, Joan Eagle, and S J Ogle also
+supported the review. J Baskett provided additional information and T K Kong
+identified a relevant trial.</p></fn>
+<corresp id="mul808">Correspondence to: Dr Forster
+<email>a.forster@leeds.ac.uk</email></corresp>
+<fn fn-type="financial-disclosure" id="mul363" xml:lang="en"><p>Funding: NHS
+Executive Northern and
+Yorkshire Region, Stroke Association.</p></fn><fn fn-type="conflict" id="mul737" xml:lang="en"><p>Competing interests: None
+declared.</p></fn></author-notes><pub-date pub-type="pub"><day>27</day><month>3</month><year>1999</year></pub-date><volume>
+318</volume><volume-id pub-id-type="doi">fakevolumedoi</volume-id><issue>7187</issue><issue-id pub-id-type="doi">fakeDOI</issue-id><issue-title>World Wide Web Usability</issue-title>
+<supplement supplement-type="periodic">Fake Supplement Title</supplement>
+<fpage>837</fpage><lpage>841</lpage>
+<page-range>837-838, 840-841</page-range>
+<product product-type="website" xlink:href="http://www.fakecompany.com" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:title="Product Name" xlink:role="product information" xmlns:xlink="http://www.w3.org/1999/xlink">
+<collab collab-type="authors" id="mul595959595" xmlns:xlink="http://www.w3.org/1999/xlink"
+xlink:href="http://www.rcpbgs.gov" xlink:actuate="onRequest" xlink:show="new" xlink:role="fake collab description" xlink:title="fake collaboration" xlink:type="simple">Research Unit of the Royal College of Physicians and British
+Geriatric Society</collab>
+<source xml:lang="en">Wildflowers of the Washington Area</source>
+<year>2002</year>
+<publisher-name>Lippman, Ltd.</publisher-name>
+<publisher-loc>Bethesda, MD</publisher-loc>
+<isbn>0-23-8675-309</isbn>, includes a CD-ROM,
+<bold>$19.95</bold> (Used 12.50 when available)
+</product>
+
+<history>
+<date date-type="accepted"><day>29</day><month>1</month><year>1999</year></date>
+</history><copyright-statement>Copyright &#x00A9; 1999, British Medical
+Journal</copyright-statement>
+<copyright-year>1999</copyright-year>
+<license license-type="open-access"
+xlink:href="http://creativecommons.org/licenses/by/2.0/" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:title="CCA license" xlink:role="license description" xmlns:xlink="http://www.w3.org/1999/xlink">
+<p>This is an open-access article distributed under the terms of the
+Creative Commons Attribution License, which permits unrestricted use,
+distribution, and reproduction in any medium, provided the original
+work is properly cited.</p>
+</license>
+
+<self-uri xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:title="Fake Article Title" xlink:role="fake article description"  xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.harmreductionjournal.com/content/1/1/5">This
+article is available from http://www.harmreductionjournal.com/content/1/1/5</self-uri>
+
+<related-article id="mul235609" related-article-type="companion"
+xlink:title="synopsis" xlink:type="simple" xlink:actuate="onRequest" xlink:show="new" xlink:role="compansion article description" xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1371/journal.pbio.0020359"
+vol="2" issue="3" page="e359" journal-id="pnas" journal-id-type="pmc">
+<article-title>How to Make a Mother in Five Easy Steps</article-title>
+</related-article>
+
+<abstract abstract-type="summary" xml:lang="en"><sec><title>Objective</title><p>To examine the effectiveness
+of day hospital attendance in prolonging independent living for elderly
+people.</p>
+</sec>
+<sec><title>Design</title><p>Systematic review of 12 controlled
+clinical trials (available by January 1997) comparing day hospital care with
+comprehensive care (five trials), domiciliary care (four trials), or no
+comprehensive care (three trials).</p></sec><sec><title>Subjects</title><p>2867
+elderly people.</p></sec><sec><title>Main outcome measures</title><p>Death,
+institutionalisation, disability, global &ldquo;poor outcome,&rdquo; and use
+of resources.</p></sec><sec><title>Results</title><p>Overall, there was no
+significant difference between day hospitals and alternative services for death,
+disability, or use of resources. However, compared with subjects receiving no
+comprehensive care, patients attending day hospitals had a lower odds of death
+or &ldquo;poor&rdquo; outcome (0.72, 95&percnt; confidence interval 0.53 to
+0.99; P&lt;0.05) and functional deterioration (0.61, 0.38 to 0.97;
+P&lt;0.05). The day hospital group showed trends towards reductions in
+hospital bed use and placement in institutional care. Eight trials reported
+treatment costs, six of which reported that day hospital attendance was more
+expensive than other care, although only two analyses took into account cost of
+long term care.</p></sec><sec><title>Conclusions</title><p>Day hospital care
+seems to be an effective service for elderly people who need rehabilitation but
+may have no clear advantage over other comprehensive care. Methodological
+problems limit these conclusions, and further randomised trials are
+justifiable.</p><p><boxed-text xml:lang="en" position="anchor" id="mul245" content-type="summary"><sec><title>Key messages</title><p>
+<list id="mul2345" list-type="alpha-upper" prefix-word="Message" list-content="results summary">
+<list-item id="mul23451"><p>The benefits of geriatric day hospital care have been
+controversial for many years</p></list-item>
+<list-item id="mul23452"><p>This systematic review of 12
+randomised trials comparing a variety of day hospitals with a range of
+alternative services found no overall advantage for day hospital
+care</p></list-item>
+<list-item id="mul23453"><p>Day hospitals had a possible advantage over no comprehensive
+care in terms of death or poor outcome, disability, and use of
+resources</p></list-item>
+<list-item id="mul23454"><p>The costs of day hospital care may be partly offset by
+a reduced use of hospital beds and institutional care among
+survivors</p>
+
+<list id="mul34563456" list-type="bullet" list-content="fake list">
+<list-item id="mul23452345"><p>blah, blah, blah</p></list-item>
+<list-item id="mul12341234"><p>more blah, blah, blah</p></list-item>
+<list-item id="mul6789456456"><p>even more blah, blah, blah</p>
+
+<list id="mul5676577645" list-type="simple" list-content="another fake list">
+<list-item id="mul456456456"><p>abc</p></list-item>
+<list-item id="mul7897898797"><p>do-re-mi</p></list-item>
+<list-item id="mul323445747"><p>123</p></list-item>
+</list>
+
+</list-item>
+
+</list>
+
+</list-item>
+</list>
+</p></sec></boxed-text></p></sec></abstract>
+<trans-abstract abstract-type="summary" xml:lang="FR">
+<p>Claude Dufresne, 51 ans, en proie &agrave; son deuxi&egrave;me infarctus du myocarde, est arriv&eacute; trop tard de six minutes &agrave; l&apos;urgence du Centre hospitalier du Centre-de-la-Mauricie, h&ocirc;pital de 142 lits de Shawinigan- Sud. Les portes de l&apos;urgence &eacute;taient en effet ferm&eacute;es pour la nuit, parce qu&apos;aucun des 60 m&eacute;decins de famille ou internistes de l&apos;h&ocirc;pital n&apos;&eacute;tait disponible pour assurer le service. M. Dufresne est d&eacute;c&eacute;d&eacute; en chemin vers la salle d&apos;urgence ouverte la plus pr&egrave;s, &agrave; quelque 30 minutes de l&agrave;.</p>
+</trans-abstract>
+<kwd-group id="mul9768" kwd-group-type="IEEE" xml:lang="en">
+<kwd id="mul6789">DNA analysis</kwd>
+<kwd id="mul9876">gene expression</kwd>
+
+<kwd id="mul7896">parallel cloning</kwd>
+<kwd id="mul8967">fluid microarray</kwd>
+</kwd-group>
+<contract-num id="mul999" rid="mul19" xmlns:xlink="http://www.w3.org/1999/xlink"
+xlink:href="http://www.fake.com" xlink:actuate="onRequest" xlink:show="new" xlink:role="fake contract description" xlink:title="fake contract" xlink:type="simple">NSF DBI-0317510</contract-num>
+<contract-sponsor id="mul444" rid="mul19"
+xmlns:xlink="http://www.w3.org/1999/xlink"
+xlink:href="http://www.fakearda.com" xlink:actuate="onRequest" xlink:show="new" xlink:role="fake sponsor description" xlink:title="fake contract sponsor" xlink:type="simple">ARDA AQUAINT</contract-sponsor>
+<conference>
+<conf-date>1999</conf-date>
+<conf-name>The 27th annual ACM SI/GUCCS
+conference</conf-name>
+<conf-acronym>SIGUCCS '99</conf-acronym>
+<conf-num>27</conf-num>
+<conf-loc>Denver, Colorado, United States</conf-loc>
+<conf-sponsor>ACM, Assoc. for Computing
+Machinery</conf-sponsor>
+<conf-theme>User services conference for
+university and college computing service
+organizations</conf-theme>
+</conference>
+<counts>
+<fig-count count="5"/>
+<table-count count="3"/>
+<equation-count count="10"/>
+<ref-count count="26"/>
+<page-count count="6"/>
+<word-count count="2847"/>
+</counts>
+<custom-meta-wrap>
+<custom-meta>
+<meta-name>journalsubtitle</meta-name>
+<meta-value>for biotechnology professionals</meta-value>
+</custom-meta>
+</custom-meta-wrap>
+</article-meta>
+</front>
+<body>
+<sec sec-type="intro">
+<title>Introduction</title>
+<p>Geriatric day hospitals developed rapidly in the United Kingdom in the
+1960s as an important component of care provision. The model has since
+been widely applied in several Western countries. Day hospitals provide
+multidisciplinary assessment and rehabilitation in an outpatient setting
+and have a pivotal position between hospital and home based services.
+Although there is considerable descriptive literature on day hospital
+care,<xref ref-type="bibr" rid="B1">1</xref> concern has been expressed
+that evidence for effectiveness is equivocal and that <xref ref-type="other" rid="mul222222" id="mul98989898">day hospital</xref> care
+is expensive.<xref ref-type="bibr" rid="B2">2</xref> We therefore
+undertook a systematic review of the randomised trials of day hospital
+care.</p>
+</sec>
+<sec sec-type="methods"><title>Methods</title>
+<p id="mul808909" xml:lang="en" content-type="methodology">The primary question addressed was whether older patients attending
+a day hospital would experience better outcomes than those receiving alternative
+forms of care. We anticipated considerable heterogeneity in both the
+intervention and control services and so specified key subgroup comparisons
+before reviewing the trials.</p>
+<sec><title>Inclusion criteria</title>
+<p>We set out to identify all relevant controlled clinical trials of
+geriatric day hospital care. A <target id="mul222222" target-type="fake">day hospital</target> was defined as an outpatient
+facility where older patients attend for a full or near full day and receive
+multidisciplinary rehabilitation in a health care setting.<xref ref-type="bibr" rid="B3">3</xref> Trials evaluating social day centres, other types of day
+hospitals such as those for patients with dementia or psychiatric conditions,
+and single condition day hospitals were excluded.</p>
+<sec sec-type="discussion"><title>Fake subsection</title>
+<p><italic>Goniocyclus hannibalensis</italic> is founded on specimens that
+cannot be related to a precise stratgraphic position within the excavated
+succession; consequently faunal relationships cannot be expressed with certainty.
+...Preliminary reports of the ancestral
+<monospace>Goniocyclus</monospace> species are described as:
+<array id="mul2" content-type="species hierarchy" xml:lang="en">
+<tbody content-type="fake tbody description" align="left" valign="middle" id="mul4564432">
+<tr align="left" valign="middle" content-type="fake">
+<td>Suborder</td>
+<td><sc>Goniatitina</sc> (Hyatt, 1884)</td>
+</tr>
+<tr align="left" valign="middle" content-type="fake">
+<td>Superfamily</td>
+<td><sc>Pericyclaceae</sc> (Hyatt, 1900)</td>
+</tr>
+<tr align="left" valign="middle" content-type="fake">
+<td>Family</td>
+<td><sc>Pericyckidae</sc> (Hyatt, 1900)</td>
+</tr>
+<tr align="left" valign="middle" content-type="fake">
+<td>Genus</td>
+<td><sc>Goniocyclus</sc> (Gordon, 1986)</td>
+</tr>
+<tr align="left" valign="middle" content-type="fake">
+<td>Type Species</td>
+<td><italic>Goniatites blairi</italic> (Miller and Gurley, 1896)</td>
+</tr>
+</tbody>
+</array></p>
+<sec>
+<title>Buy or Lease?<break/>
+Two Models for Scholarly Information<break/>
+at the End (or the Beginning) of an Era</title>
+<verse-group id="mul787878" xml:lang="en">
+<verse-line>Some say the world will end in fire,</verse-line>
+<verse-line>Some say in ice.</verse-line>
+<verse-line>From what I&rsquo;ve tasted of desire</verse-line>
+<verse-line>I hold with those who favor fire.</verse-line>
+<verse-line>But if it had to perish twice,</verse-line>
+<verse-line>I think I know enough of hate</verse-line>
+<verse-line>To say that for destruction ice</verse-line>
+<verse-line>Is also great</verse-line>
+<verse-line>And would suffice.</verse-line>
+<attrib>&mdash;Robert Frost &ldquo;Fire and Ice&rdquo;</attrib>
+</verse-group>
+<p>Within living memory, our use of print (static) information has been
+governed by copyright law and the practices that have evolved around it.
+Enter electronic information, where publishers deliver it with licenses and
+new rules, a very different framework from copyright....</p>
+<chem-struct-wrapper id="mul777" content-type="fake structures" position="float"><object-id pub-id-type="doi">Fake DOI</object-id>
+<chem-struct id="C1" xlink:actuate="onRequest" xlink:href="http://www.mulberrytech.com/people" xlink:role="fake explanation of role" xlink:show="new" xlink:title="fake chem structure link title" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink" content-type="chemical structure"><alt-text>Fake detailed description of chemical structure</alt-text><long-desc id="mul3003" xml:lang="en">Fake description of chemical structure</long-desc><graphic xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="fors2552.f1" alt-version="yes" mimetype="image" mime-subtype="jpeg"></graphic></chem-struct></chem-struct-wrapper>
+<sec sec-type="subjects" id="mul9000789" xml:lang="en">
+<title>Fake Subsection Title</title>
+<p>yeddah, yeddah, yeddah</p>
+<table-wrap-group id="mul58695945" position="float">
+<table-wrap id="TX0.180" position="float" xml:lang="en" content-type="dollar amounts">
+<label>Table 3</label>
+<caption><p>Patient costs for institutional
+care at the end of scheduled follow up</p></caption>
+<table id="mul4536778" border="1" cellpadding="3" cellspacing="2" content-type="yearly patient cost" frame="box" rules="all" summary="blah blah blah" width="70%">
+<colgroup id="mul566779433" content-type="fake content-type" align="left" valign="middle" width="60" span="2">
+<col span="1" content-type="years" valign="middle" align="center" width="10" id="mul5677884"/>
+<col align="char" char="," charoff="50%" span="1" valign="middle"/>
+</colgroup>
+<thead align="center" valign="middle">
+<tr id="mul67759435">
+<th content-type="column header" id="mul65844365">Year</th>
+<th content-type="column header" id="mul654677745">Cost per patient</th>
+</tr>
+</thead>
+<tbody>
+<tr id="mul67744336">
+<td id="mul67788845" content-type="year">1997</td>
+<td id="mul7865543" content-type="monetary amount">$8,250</td>
+</tr>
+<tr id="mul67784533">
+<td id="mul654356679" content-type="year">2000</td>
+<td content-type="monetary amount">$31,400</td>
+</tr>
+<tr id="mul78894834">
+<td id="mul90349833" content-type="year">2003</td>
+<td content-type="monetary amount">$125,600</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+
+<table-wrap id="TN0.1701">
+<caption>
+<p>Numbers of patients receiving institutional care at the
+end of scheduled follow up and use of hospital beds among
+those allocated to day hospital or alternative services</p>
+</caption>
+<table content-type="fake table description">
+<thead content-type="fake thead description" id="mul6858443">
+<tr>
+<th colspan="3" align="center"
+rowspan="1" valign="middle">Institutional care</th>
+<th></th>
+<th colspan="2" align="center"
+rowspan="1">&#x2003;Bed use (days)</th>
+</tr>
+</thead>
+<tfoot id="mul23456540" align="center" valign="middle" content-type="fake tfoot description">
+<tr>
+<td align="center" valign="middle" rowspan="1">Patients</td>
+<td align="center" valign="middle" rowspan="1">Patients</td>
+<td align="center" valign="middle" rowspan="1">Odds ratio</td>
+<td></td>
+<td align="center" valign="middle" rowspan="1">Patients</td>
+<td align="center" valign="middle" rowspan="1">Patients</td>
+</tr>
+</tfoot>
+<tbody>
+<tr>
+<td colspan="3"><hr/></td>
+<td colspan="2"><hr/></td>
+</tr>
+<tr>
+<th>Control group</th>
+<th align="center">Day hospital</th>
+<th align="center">Control</th>
+<th align="center">Odds ratio (95&#x0025; CI)</th>
+<th></th>
+<th align="center">Day hospital</th>
+<th align="center">Control</th>
+</tr>
+<tr>
+<td colspan="7"><hr/></td>
+</tr>
+<tr>
+<td>Comprehensive care (5 trials)</td>
+<td align="center">151/597<xref ref-type="table-fn"
+rid="TF1-150"></xref></td>
+<td align="center">159/584</td>
+<td align="center">0.91 (0.70 to 1.19)</td>
+<td></td>
+<td align="center">20.5</td>
+<td align="center">21.4</td>
+</tr>
+<tr>
+<td>Domiciliary care (4 trials)</td>
+<td align="center">20/216</td>
+<td align="center">&#x2002;19/227</td>
+<td align="center">1.61 (0.30 to 8.55)</td>
+<td></td>
+<td align="center">&#x2002;7.7</td>
+<td align="center">11.1</td>
+</tr>
+<tr><td>No comprehensive care (3 trials)</td>
+<td align="center">37/411</td>
+<td align="center">&#x2002;66/403</td>
+<td align="center">0.50<xref ref-type="table-fn"
+rid="TF1-151"></xref>
+(0.26 to 0.96)</td>
+<td></td>
+<td align="center">11.2</td>
+<td align="center">11.7</td>
+</tr>
+<tr><td>Total</td>
+<td align="center">208/1224</td>
+<td align="center">244/1214</td>
+<td align="center">0.77 (0.52 to 1.13)</td>
+<td></td>
+<td align="center">15.0</td>
+<td align="center">16.4</td>
+</tr>
+</tbody>
+</table>
+<table-wrap-foot>
+<fn id="TF1-1501" symbol="*">
+<p>Data not available for 1 trial.</p>
+</fn>
+<fn id="TF1-1511" symbol="**"><p>P&#x003C;0.05 (random effects
+model).</p>
+</fn>
+</table-wrap-foot>
+</table-wrap>
+</table-wrap-group>
+
+<p>The study of adaptive behaviors ... </p>
+<p>
+<disp-quote id="mul535" xml:lang="en">
+<p>It may metaphorically be said that natural selection is daily
+and hourly scrutinizing, throughout the world, the slightest variations;
+rejecting those that are bad, preserving and adding up all that are
+good; silently and insensibly working, whenever and wherever opportunity
+offers, at the improvement of each organic being in relation to its
+organic and inorganic conditions of life. We see nothing of these slow
+changes in progress, until the hand of time has marked the lapse of
+ages.</p>
+<attrib>&#x2014;Charles Darwin (<xref ref-type="bibr"
+rid="B1">1</xref>)</attrib>
+</disp-quote>
+</p>
+<sec>
+<title>Fake Subsection Title</title>
+<p>...Selected as described for Acc-29
+<disp-formula id="mul474">
+<tex-math id="M1" notation="TeX" version="1.0"><![CDATA[\documentclass[12pt]{minimal}
+\usepackage{wasysym}
+\usepackage[substack]{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsbsy}
+\usepackage[mathscr]{eucal}
+\usepackage{mathrsfs}
+\DeclareFontFamily{T1}{linotext}{}
+\DeclareFontShape{T1}{linotext}{m}{n} { &#x003C;-&#x003E; linotext }{}
+\DeclareSymbolFont{linotext}{T1}{linotext}{m}{n}
+\DeclareSymbolFontAlphabet{\mathLINOTEXT}{linotext}
+\begin{document}
+$$
+{\mathrm{Acc/Acc:\hspace{.5em}}}\frac{{\mathit{ade2-202}}}{{\mathit{ADE2}}}\
+hspace{.5em}\frac{{\mathit{ura3-59}}}{{\mathit{ura3-59}}}\hspace{.5em}\frac{{\
+mathit{ADE1}}}{{\mathit{adel-201}}}\hspace{.5em}\frac{{\mathit{ter1-Acc}}}{{\
+mathit{ter1-Acc}}}\hspace{.5em}\frac{{\mathit{MATa}}}{{\mathit{MAT{\alpha}}}}
+$$
+\end{document}]]>
+</tex-math>
+</disp-formula> TER1/ter1-Acc: Acc-29 crossed with ...</p>
+<p>...The map symbol indicating these conditions will be a
+<private-char name="NORTHWEST SOUTHEAST ARROW" description="Arrow,
+normal weight, single line, two-headed, Northwest to Southeast">
+<glyph-data id="NWSEArr" format="PBM" resolution="300"
+x-size="34" y-size="34">
+ 0000000000000000000000000000000000 0111111111111100000000000000000000
+ 0111111111111100000000000000000000 0111110000000000000000000000000000
+ 0111110000000000000000000000000000 0111111000000000000000000000000000
+ 0110111100000000000000000000000000 0110011110000000000000000000000000
+ 0110001111000000000000000000000000 0110000111100000000000000000000000
+ 0110000011110000000000000000000000 0110000001111000000000000000000000
+ 0110000000111100000000000000000000 0110000000011110000000000000000000
+ 0110000000001111000000000000000000 0110000000000111100000000000000000
+ 0110000000000011110000000000000000 0000000000000001111000000000000000
+ 0000000000000000111100000000000110 0000000000000000011110000000000110
+ 0000000000000000001111000000000110 0000000000000000000111100000000110
+ 0000000000000000000011110000000110 0000000000000000000001111000000110
+ 0000000000000000000000111100000110 0000000000000000000000011110000110
+ 0000000000000000000000001111000110 0000000000000000000000000111100110
+ 0000000000000000000000000011110110 0000000000000000000000000001111110
+ 0000000000000000000000000001111110 0000000000000000011111111111111110
+ 0000000000000000011111111111111110 0000000000000000000000000000000000
+ </glyph-data></private-char>. The NOAA 1993 standard definition of
+<private-char name="NORTHWEST SOUTHEAST ARROW" description="Arrow,
+normal weight, single line, two-headed, Northwest to Southeast">
+<glyph-ref glyph-data="NWSEArr"/></private-char> will apply.
+</p>
+<p>Blah, blah, blah.  <inline-graphic id="mul7070" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="fors25052.f1"
+xlink:actuate="onRequest" xlink:show="new" xlink:role="fake inline graphic description" xlink:title="fake inline graphic" xlink:type="simple"
+mimetype="image" mime-subtype="jpeg"></inline-graphic>
+</p>
+<p>RNAPs seem to have arisen twice in evolution
+(see the <inline-supplementary-material id="mul6060" mimetype="video" mime-subtype="mpeg" content-type="video"
+xmlns:xlink="http://www.w3.org/1999/xlink"
+xlink:actuate="onRequest" xlink:show="new" xlink:role="fake inline supp material" xlink:title="local_file" xlink:href="timeline" xlink:type="simple">Timeline</inline-supplementary-material>. A large
+family of multisubunit RNAPs includes bacterial
+enzymes, archeal enzymes, eukaryotic nuclear RNAPs,
+plastid-encoded chloroplast RNAPs, and RNAPs from
+some <overline>eukaryotic</overline> viruses....</p>
+
+<graphic id="mul707070" alt-version="no" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="fors2525052.f1" mimetype="image" mime-subtype="jpeg" position="anchor" xlink:actuate="onRequest" xlink:show="new" xlink:role="fake graphic without wrapper" xlink:title="fake graphic" xlink:type="simple"/>
+
+</sec>
+<sec>
+<title>Coimmunoprecipitation.</title>
+<p>EM4 cells, stably transfected with Flag-HA-DAT, Myc-His-DAT,
+or both, were reacted with cross-linker and solubilized in Triton X-100
+as above. There is no reason to have this formula, <inline-formula id="mul8080">
+<mml:math id="mul65790" xmlns:mml="http://www.w3.org/1998/Math/MathML" xlink:href="http://www.mulberrymath.com"><mml:semantics><mml:mrow><mml:msub><mml:mi>Q</mml:mi>
+<mml:mrow><mml:mn>10</mml:mn></mml:mrow></mml:msub><mml:mo>=
+</mml:mo><mml:msup><mml:mrow><mml:mrow><mml:mo>(</mml:mo><mml:mrow>
+<mml:mfrac><mml:mrow><mml:msub><mml:mi>M</mml:mi><mml:mn>2</mml:mn></mml:msub>
+</mml:mrow><mml:mrow><mml:msub><mml:mi>M</mml:mi><mml:mn>1</mml:mn>
+</mml:msub></mml:mrow></mml:mfrac></mml:mrow><mml:mo>)</mml:mo></mml:mrow>
+</mml:mrow><mml:mrow><mml:mn>10</mml:mn><mml:mo>/</mml:mo><mml:msub><mml:mi>T
+</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>-</mml:mo><mml:msub><mml:mi>
+T</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:mrow></mml:msup></mml:mrow>
+<mml:annotation/></mml:semantics></mml:math></inline-formula> here. Five microliters of
+anti-Myc 9E10 (Santa Cruz Biotechnology) was added to 0.2 ml of Triton
+X-100 extracts, and the mixture was incubated for 1 h at 4&#x00B0;C.
+Twenty microliters of rec-protein G Sepharose (Zymed) was added, and the
+mixture was incubated for 1 h at 4&#x00B0;C, washed three times in 0.5
+ml of lysis buffer, and eluted in 45 &#x03BC;l of 2&#x00D7; Laemmli
+sample buffer without reducing agent.</p>
+<p>Blah, blah, blah. <media id="mul23890" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="fors253352.f1" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:role="film clip" xlink:title="Fake Film Title" mimetype="video" mime-subtype="mpeg" position="anchor"></media>
+</p>
+<p>Profiling of
+<named-content content-type="genus-species" id="mul678009" xmlns:xlink="http://www.w3.org/1999/xlink"
+xlink:href="http://www.fakecontent.com" xlink:actuate="onRequest" xlink:show="new" xlink:role="fake named-content description" xlink:title="fake named-content" xlink:type="simple">Escherichia
+coli</named-content> chromosome (PEC) described in the
+Database version 2.27. Last update 17 September
+2003. Available at <ext-link ext-link-type="uri"
+xlink:href="http://shigen.lab.nig.ac.jp/ecoli/
+pec">http://shigen.lab.nig.ac.jp/ecoli/pec</ext-link>
+via the Internet Accessed: 5 November 2003</p>
+<p>Trees, of course, are hardly a random choice for our
+methodology.... Hierarchical trees have been understood as a
+way of viewing document structures since the earliest days of
+SGML development. Our initial tree structure was very simple:
+<preformat id="mul709890" preformat-type="xml" xml:lang="en" xml:space="preserve" position="anchor">
+&lt;!ELEMENT  implications  (tree+) &gt;
+&lt;!ELEMENT  tree          (root, branches) &gt;
+&lt;!ELEMENT  root          (term, synonym?) &gt;
+&lt;!ELEMENT  branches      (term | (term, synonym) | tree)* &gt;
+</preformat>
+Terms are the literal strings for which the Ferret engine searches; they
+are the most specific expressions to be found in real documents of the
+<strike>premises</strike>concepts on which classifications rules act.</p>
+
+<p>The participants understood the purpose of their peer
+response groups to be finding mistakes or problems in each
+other&rsquo;s essays. ...Clara, one of the Chinese-speakers,
+explains why she no longer believes the initial positive comments:
+<speech xml:lang="en" id="mul8767965" content-type="therapy">
+<speaker>S:</speaker>
+<p>I think Aeenoy start this way. I think she always do
+this way, like say some good thing first. And then I know
+the bad thing is coming.</p>
+</speech>
+<speech>
+<speaker>I:</speaker>
+<p>So, why doe she do that?</p>
+</speech>
+<speech>
+<speaker>S:</speaker>
+<p>I think it gives somebody self-esteem ...</p></speech>
+</p>
+<p>Industrial buyers categorise foreign countries
+according to their level of technological achievement
+and subsequently differentiate their perceptions of
+these countries accordingly.
+... The following hypothesis is posited:
+<statement content-type="hypothesis" id="mul456443"><label>Hypothesis 1</label>
+<p>Buyer preferences for companies are influenced by
+factors extrinsic to the firm attributable to, and
+determined by, country-of-origin effects.</p>
+</statement>
+</p>
+<p>The <italic>Escherichia coli argU</italic> gene encodes a minor arginine
+tRNA, tRNA<sup arrange="stack">Arg</sup><sub arrange="stack">UCU</sub>,
+which corresponds to the rare codon AGA and possibly AGG ....</p>
+<supplementary-material id="S1"
+ xmlns:xlink="http://www.w3.org/1999/xlink"
+ xlink:title="local_file" xlink:actuate="onRequest" xlink:show="new" xlink:href="1471-2105-1-1-s1.pdf" xlink:type="simple" xlink:role="description of form" position="float"
+ mimetype="application" mime-subtype="pdf" content-type="form">
+ <label>Additional material</label>
+ <caption>
+ <p>Supplementary PDF file supplied by authors.</p>
+ </caption>
+ </supplementary-material>
+</sec>
+</sec>
+
+</sec>
+
+</sec>
+
+
+</sec>
+<sec><title>Search strategy</title>
+<p>We searched for relevant published and unpublished papers up to
+January 1997. Our search strategy included Medline, SIGLE (System for
+Information on Grey Literature in Europe), BIDS (Bath Information and Data
+Services), CINAHL (Cumulative Index to Nursing and Allied Health), and the
+Cochrane Library. Key search terms included day hospital, day care, ambulatory
+care, and outpatient clinic. We also searched <italic>Index Medicus, </italic>British
+and international dissertation abstracts, conference abstracts (Society for
+Research in Rehabilitation, British Geriatrics Society), bibliographies of known
+trials, and other relevant articles and books. We publicised our work through
+presentations at geriatric symposia and by contacting authors of previous
+articles on day hospital care.
+</p>
+<p><bold>Background:</bold> The disabilities of the arm, shoulder and
+hand (<abbrev id="mul26" xlink:actuate="onRequest" xlink:href="http://www.mulberrytech.com" xlink:role="information on disabiliites" xlink:show="new" xlink:title="diabilities' discussion" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">DASH</abbrev>) questionnaire is a self-administered
+region-specific outcome instrument developed as a measure of self-rated
+upper-extremity disability and symptoms. The <abbrev id="mul27" xlink:actuate="onRequest" xlink:href="http://www.mulberrytech.com" xlink:role="information on disabiliites" xlink:show="new" xlink:title="diabilities' discussion" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">DASH</abbrev>
+consists mainly of a 30-item disability/symptom scale, scored 0 (no
+disability) to 100. The main purpose of this study was to assess
+the <italic>longitudinal construct validity</italic> of the
+<abbrev id="mul28" xlink:actuate="onRequest" xlink:href="http://www.mulberrytech.com" xlink:role="information on disabiliites" xlink:show="new" xlink:title="diabilities' discussion" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">DASH</abbrev> among patients undergoing surgery. The second
+phase purpose was to quantify self-rated <italic>treatment
+effectiveness</italic> after surgery.</p>
+</sec>
+<sec><title>Study appraisal and extraction of data</title><p>We
+selected outcomes to reflect a previous definition of the purpose of day
+hospital care: &ldquo;to facilitate and prolong independent living for the
+elderly in the community.&rdquo;<xref ref-type="bibr" rid="B4">4</xref> Thus
+death, the need for institutional care, disability, hospital use, and resource
+use were selected as quantitative outcomes. In anticipation of incomplete data
+we also defined a global &ldquo;poor outcome&rdquo; comprising death or one of
+the following (in order of preference): resident in institutional care, severe
+disability at end of follow up, or deterioration in physical function during
+follow up. The research reports were independently assessed by three reviewers
+to establish eligibility, agree subcategories for the trials based on the
+treatment comparison, and to extract data.</p></sec>
+<sec><title>Statistical methods</title><p>When possible, studies were analysed
+on an intention to treat basis. Surviving authors were contacted and asked to
+supply additional information when necessary. Patients who were lost to follow
+up or for whom outcome data were not available were excluded from the initial
+analysis. However, they were included in &ldquo;best case&rdquo; (all missing
+data in favour of day hospital care), <underline underline-style="double">neutral</underline> (all missing data
+recorded at the average event rate for the trial), and &ldquo;worst
+case&rdquo; (all missing data in favour of alternative care) sensitivity
+analyses.</p><p>We calculated odds ratios (with 95&percnt; confidence intervals)
+for the dichotomous outcomes using standard methods. A fixed effects
+approach<xref ref-type="bibr" rid="B5">5</xref> was used initially and, if
+substantial heterogeneity was present, we confirmed this with a random effects
+approach.<xref ref-type="bibr" rid="B6">6</xref> Outcomes were recorded at the
+end of scheduled follow up.</p></sec></sec>
+<sec sec-type="results"><title>Results</title><p>We identified 703 abstracts, of which
+687 were not relevant to the review or of descriptive studies. Sixteen evaluated
+a service fulfilling our definition of geriatric day hospital care. This
+analysis includes 12 trials which recruited 2867 subjects.<xref ref-type="bibr" rid="B7">7</xref>-<xref ref-type="bibr" rid="B18">18</xref> Of the
+remaining four trials, one has just completed (J Baskett, personal
+communication); two did not include a random or quasirandom allocation
+procedure,<xref ref-type="bibr" rid="B19">19</xref><xref ref-type="bibr" rid="B20">20</xref> and one was excluded because day hospital attendance was
+only one component of a complex multiple service intervention.<xref ref-type="bibr" rid="B21">21</xref> Details of randomisation procedures,
+treatment schedules, and numbers of patients followed up are given on the
+<italic>BMJ</italic>website.</p><fig id="F1" fig-type="diagram" position="float" xml:lang="en"><caption xml:lang="en" content-type="death rate graphic"><p>Deaths
+among patients receiving day hospital care or alternative services. Odds ratios
+of death by end of follow up were calculated by fixed effects model.
+Heterogeneity between trials is presented as
+?<sup>2</sup></p></caption><alt-text>Two columns identifying patient deaths for those with hospital care versus alternative services</alt-text><graphic xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="fors2662.f1" alt-version="yes" mimetype="image" mime-subtype="jpeg"></graphic></fig><p>Multidisciplinary outpatient rehabilitation
+was available at all the day hospital sites. Comparison groups comprised
+comprehensive elderly care (a range of inpatient, outpatient, and domiciliary
+geriatric medical services)<xref ref-type="bibr" rid="B9">9</xref><xref ref-type="bibr" rid="B10">10</xref><xref ref-type="bibr" rid="B12">12</xref><xref ref-type="bibr" rid="B13">13</xref><xref ref-type="bibr" rid="B15">15</xref>; domiciliary care (therapy provided in the
+patient&rsquo;s home<xref ref-type="bibr" rid="B11">11</xref><xref ref-type="bibr" rid="B14">14</xref><xref ref-type="bibr" rid="B16">16</xref> or
+day centre<xref ref-type="bibr" rid="B18">18</xref>); and no comprehensive
+elderly care (patients who were eligible for, but not referred to, existing
+services).<xref ref-type="bibr" rid="B7">7</xref><xref ref-type="bibr" rid="B8">8</xref><xref ref-type="bibr" rid="B17">17</xref> For the trial by
+Gladman et al,<xref ref-type="bibr" rid="B16">16</xref> only patients in the
+health care of the elderly strata have been included as the random treatment
+allocation of these patients included day hospital care.</p><sec><title>Patient
+characteristics</title><p>One study was run by the Department of Veterans
+Affairs in the United States and was exceptional in that the sample was
+96&percnt; male.<xref ref-type="bibr" rid="B15">15</xref> In all trials the mean
+age of participants was at least 65 years and usually over 70 years. Three
+trials<xref ref-type="bibr" rid="B14">14</xref><xref ref-type="bibr" rid="B16">16</xref><xref ref-type="bibr" rid="B17">17</xref> recruited only
+stroke patients, but the rest had a mixed population. Most patients had
+significant disability on a variety of scales.</p></sec><sec><title>Outcome
+data</title><p>Details on deaths were published, or provided on request, for all
+trials. Information about institutionalisation was published in only four
+studies<xref ref-type="bibr" rid="B7">7</xref><xref ref-type="bibr" rid="B9">9</xref><xref ref-type="bibr" rid="B13">13</xref><xref ref-type="bibr" rid="B16">16</xref>; additional data were provided by the authors for a further
+six studies.<xref ref-type="bibr" rid="B11">11</xref><xref ref-type="bibr" rid="B12">12</xref><xref ref-type="bibr" rid="B14">14</xref><xref ref-type="bibr" rid="B15">15</xref><xref ref-type="bibr" rid="B17">17</xref><xref ref-type="bibr" rid="B18">18</xref> Data were also
+available concerning some aspect of disability (11 trials) and use of hospital
+beds (12 trials).</p><p>No significant differences in numbers of deaths occurred
+between patients attending day hospitals and those receiving any of the
+alternative services (fig <xref ref-type="fig" rid="F1">1</xref>). The pooled
+odds ratio for death was 1.02 (95&percnt; confidence interval 0.82 to1.26).
+There was no significant heterogeneity between the results of individual trials
+or categories of trials.</p><p>Figure <xref ref-type="fig" rid="F2">2</xref>
+shows that overall there was no significant difference between day hospital and
+alternative forms of care in preventing death or a &ldquo;poor&rdquo; outcome
+at final follow up (odds ratio 0.90, 0.71 to 1.14; random effects model).
+However, patients attending day hospitals were less likely to have poor outcome
+than those receiving no comprehensive care (0.72, 0.53 to 0.99; P&lt;0.05).
+</p><fig id="F2" fig-type="diagram" position="float" xml:lang="en"><caption xml:lang="en" content-type="poor death rate graphic"><p>Odds of death or poor
+outcome in patients receiving day hospital care or alternative services (random
+effects model). Heterogeneity between trials is presented as
+?<sup>2</sup></p></caption><alt-text>Comparison of death ratios among poor receiving hospital care versus alternative services</alt-text><graphic xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="fors2662.f2" alt-version="yes" mimetype="image" mime-subtype="jpeg"></graphic></fig></sec><sec><title>Sensitivity
+analyses</title><p>Sensitivity analyses indicated that excluding trials with
+uncertain or insecure randomisation procedures would not substantially affect
+our conclusions.<xref ref-type="bibr" rid="B8">8</xref><xref ref-type="bibr" rid="B10">10</xref><xref ref-type="bibr" rid="B12">12</xref> Data were missing
+on death for 155 (6&percnt;) patients and on death or poor outcome for 174
+(7&percnt;). Best case and worst case sensitivity analyses include significant
+benefit (P&lt;0.001) or harm (P&lt;0.05) from day hospital care. The
+most plausible (neutral) sensitivity analysis suggested no effect on death (odds
+ratio 1.02, P&gt;0.05) or death and poor outcome (0.92,
+P&gt;0.2).</p></sec><sec><title>Disability</title><p>Eleven of the trials
+included a standardised measurement of activities of daily living,<xref ref-type="bibr" rid="B8">8</xref>-<xref ref-type="bibr" rid="B18">18</xref> but seven different measures were used which could not be
+combined in a statistical summary. Seven trials<xref ref-type="bibr" rid="B8">8</xref><xref ref-type="bibr" rid="B11">11</xref><xref ref-type="bibr" rid="B12">12</xref><xref ref-type="bibr" rid="B14">14</xref><xref ref-type="bibr" rid="B16">16</xref>-<xref ref-type="bibr" rid="B18">18</xref> provided data on 905 survivors (data missing for 65,
+7&percnt;) whose disability scores were monitored during follow up (fig <xref ref-type="fig" rid="F3">3</xref>). Overall, day hospital patients had a similar
+chance as controls of suffering deteriorating function (1.11, 0.68 to 1.80;
+random effects model) but tended to have better outcomes than those receiving no
+comprehensive care (0.61, 0.38 to 0.97; P&lt;0.05).</p><fig id="F3" fig-type="diagram" position="float" xml:lang="en"><caption xml:lang="en" content-type="deterioration graphic"><p>Deterioration in activities of daily
+living among survivors allocated to day hospital care or alternative services
+(random effects model). Heterogeneity between trials is presented as
+?<sup>2</sup></p></caption><alt-text>Survivors&rsquo; daily activity and deterioration with hospital care versus alternative services</alt-text><graphic xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="fors2662.f3" alt-version="yes" mimetype="image" mime-subtype="jpeg"></graphic></fig></sec><sec><title>Use of
+resources</title><sec><title>Institutional care</title><p>Eleven trials
+provided information about the number of patients requiring institutional care
+at the end of follow up. Overall, there was a trend towards fewer day hospital
+patients requiring long term (median follow up 12 months) institutional care
+than those receiving alternative services (table) and the difference was
+significant in comparison with no comprehensive care.</p><table-wrap id="TN0.170"><caption xml:lang="en" content-type="bed use table"><p>Numbers of patients receiving
+institutional care at the end of scheduled follow up and use of hospital beds
+among those allocated to day hospital or alternative
+services</p></caption><table><tr><th/><th colspan="3" align="center" rowspan="1">Institutional care</th><th></th><th colspan="2" align="center" rowspan="1"> Bed use (days)</th></tr><tr><td colspan="3"><hr/></td><td colspan="2"><hr/></td></tr><tr><th>Control
+group</th><th align="center">Day hospital</th><th align="center">Control</th><th align="center">Odds ratio (95&percnt; CI)</th><th></th><th align="center">Day hospital</th><th align="center">Control</th></tr><tr><td colspan="7"><hr/></td></tr><tr><td>Comprehensive care (5 trials)</td><td align="center">151/597<xref ref-type="table-fn" rid="TF1-150"></xref></td><td align="center">159/584</td><td align="center">0.91 (0.70 to 1.19)</td><td align="left"/><td align="center">20.5</td><td align="center">21.4</td></tr><tr><td>Domiciliary care (4 trials)</td><td align="center">20/216</td><td align="center"> 19/227</td><td align="center">1.61 (0.30 to 8.55)</td><td></td><td align="center"> 7.7</td><td align="center">11.1</td></tr><tr><td>No
+comprehensive care (3 trials)</td><td align="center">37/411</td><td align="center"> 66/403</td><td align="center">0.50<xref ref-type="table-fn" rid="TF1-151"></xref> (0.26 to 0.96)</td><td></td><td align="center">11.2</td><td align="center">11.7</td></tr><tr><td>Total</td><td align="center">208/1224</td><td align="center">244/1214</td><td align="center">0.77 (0.52 to 1.13)</td><td></td><td align="center">15.0</td><td align="center">16.4</td></tr></table><table-wrap-foot><fn id="TF1-150" fn-type="other" xml:lang="en"><p>Data not available for 1 trial.</p></fn><fn id="TF1-151" fn-type="other" xml:lang="en"><p>P&lt;0.05 (random effects
+model).</p></fn></table-wrap-foot></table-wrap></sec><sec><title>Use of hospital
+beds</title><p>Average hospital bed use per patient recruited could be
+calculated for all the trials, but a measure of variance could not be obtained
+and therefore we cannot report confidence intervals. The table shows a small
+reduction in bed use by day hospital patients across all trials (15.0 <italic>v
+</italic>16.4 days).</p></sec><sec><title>Costs</title><p>Eight trials
+compared treatment costs, only two of which included costs of nursing home
+care.<xref ref-type="bibr" rid="B10">10</xref><xref ref-type="bibr" rid="B15">15</xref> Six reported that day hospital care was more expensive than
+the comparison treatment,<xref ref-type="bibr" rid="B8">8</xref><xref ref-type="bibr" rid="B9">9</xref><xref ref-type="bibr" rid="B15">15</xref><xref ref-type="bibr" rid="B18">18</xref><xref ref-type="bibr" rid="B22">22</xref><xref ref-type="bibr" rid="B23">23</xref> and two trials
+reported that the costs were similar.<xref ref-type="bibr" rid="B10">10</xref><xref ref-type="bibr" rid="B17">17</xref></p></sec></sec></sec><sec sec-type="discussion"><title>Discussion</title><p>Geriatric day hospitals have several
+functions, but rehabilitation has been regarded as most important<xref ref-type="bibr" rid="B1">1</xref> and was the focus for this systematic review.
+We selected outcomes to reflect a definition of the core purpose of a geriatric
+day hospital.<xref ref-type="bibr" rid="B4">4</xref> We used a predetermined
+definition of day hospital care<xref ref-type="bibr" rid="B3">3</xref> and
+identified and categorised comparison services before collecting and analysing
+data. We excluded day hospitals for patients with specific conditions such as
+mental illness, dementia, or rheumatoid arthritis.</p><sec><title>Limitations of
+the review</title><p>The main limitations of our review lie in the 30 years over
+which the trials were done, during which health and social care policies will
+inevitably have changed, and in the multinational location of the studies.
+Nevertheless, our data provide the best evidence available on which to judge the
+effectiveness of day hospitals.</p><p>A further problem is the limitations of
+the trials themselves, in particular the lack of statistical power resulting
+from small, heterogeneous trials. This raises the possibility of false positive
+and false negative results. Furthermore, the amount of missing outcome data adds
+uncertainty to most of our conclusions.</p><p>Publication bias remains a
+possibility, but our search strategy was extensive and included contacting
+authors of papers on day hospital care around the world. Many of the authors
+were able to provide unpublished additional information. A funnel plot
+analysis<xref ref-type="bibr" rid="B24">24</xref> did not show any major
+evidence of missing data.</p></sec><sec><title>Findings</title><p>A big problem
+was that most trials compared day hospital care with an alternative
+&ldquo;active&rdquo; control. Only three trials<xref ref-type="bibr" rid="B7">7</xref><xref ref-type="bibr" rid="B8">8</xref><xref ref-type="bibr" rid="B17">17</xref> used a comparison group of patients who received neither
+comprehensive care nor domiciliary rehabilitation. Compared with patients
+receiving no comprehensive care, patients attending day hospitals had less
+functional deterioration and institutional care and a small reduction in average
+hospital bed use. However, there was considerable loss to follow up in these
+three trials.</p><p>When day hospital services were compared with comprehensive
+elderly care (integrated inpatient, outpatient, and domiciliary services), the
+outcomes were largely similar. One interpretation is that day hospitals are
+comparable with an alternative service for which there is considerable evidence
+of effectiveness.<xref ref-type="bibr" rid="B25">25</xref> However, the question
+arises whether day hospitals provide additional benefits when other
+comprehensive elderly care services are already in place. Our systematic review
+does not directly address this question.</p><p>We focused on a few specified
+outcomes, but many other important outcome domains, including patient preference
+and instrumental daily living activities, could not be examined as these
+outcomes were not widely available. It was also difficult to determine a summary
+statistic for disability because different measurement instruments were used and
+analysed in different ways. Moreover, commonly used measures of disability may
+be insensitive to change in the outpatient setting of a day hospital.<xref ref-type="bibr" rid="B26">26</xref> This may explain why six trials reported no
+significant difference in disability outcome between day hospital and comparison
+services. Future trials should incorporate measures of intrumental activities of
+daily living as a more relevant and sensitive outcome.</p><p>Our analysis
+suggests that attending day hospital may reduce patients&rsquo; use of hospital
+and institutional care resources. However, costing studies need to balance any
+possible savings with the direct costs of day hospital care. Several studies
+have drawn attention to the expense of day hospital services.<xref ref-type="bibr" rid="B22">22</xref><xref ref-type="bibr" rid="B23">23</xref> For
+six of the eight trials reporting cost information, day hospital care was more
+expensive than the alternative treatment.</p><p>On the whole, the trials we
+included took a pragmatic design approach and attempted to address a broad
+question of overall efficacy of day hospitals. Given the diversity of patients
+attending day hospitals and the corresponding diversity of interventions used,
+future trials need to be large multicentre trials or should examine more focused
+questions.</p></sec></sec>
+</body>
+<back><ack content-type="thank you note"><p>The authors gratefully acknowledge the contributions of the following individuals ...</p>
+<p>An expanded version of this review has been submitted for
+publication in the Cochrane Library.</p></ack>
+
+<app-group>
+<app id="mul16"><title>Appendix</title>
+<fig-group content-type="fake figure group description" id="mul209209" position="float">
+<fig id="F0101" fig-type="diagram" position="float" xml:lang="en"><caption xml:lang="en" content-type="fake graphic description"><p>Sudden deaths
+among patients receiving day hospital care rather than in-home care</p></caption><alt-text>Two columns identifying patient deaths for those with hospital care versus in-home care</alt-text><graphic xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="fors373737.f1" alt-version="yes" mimetype="image" mime-subtype="jpeg"></graphic></fig>
+<fig id="F0102" fig-type="diagram" position="float" xml:lang="en"><caption xml:lang="en" content-type="poor death rate graphic" id="mul565775332"><p>Odds of death or poor
+outcome in patients among patients receiving day hospital care rather than in-home care</p></caption><alt-text>Comparison of death ratios among poor receiving hospital care versus in-home treatment</alt-text><graphic xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="fors393939.f2" alt-version="yes" mimetype="image" mime-subtype="jpeg"></graphic></fig>
+</fig-group>
+<sec><title>The Bipolar Seesaw.</title>
+<p>The evidence for the antiphasing of the millennial-duration climate
+changes occurring on the Antarctic continent ...</p>
+</sec>
+</app>
+</app-group>
+<glossary id="mul2222">
+
+<gloss-group>
+<title>Abbreviations</title>
+<def-list id="mul7476" list-type="simple" list-content="compound-info" prefix-word="Compound">
+<term-head>Abbreviation</term-head>
+<def-head>Expansion</def-head>
+<def-item>
+<term id="G15" rid="G15A">F</term>
+<def rid="G15" id="G15A"><p>female</p></def>
+</def-item>
+<def-item>
+<term id="G29">gnty</term>
+<def><p>genotype</p></def>
+</def-item>
+<def-item>
+<term id="G43">M</term>
+<def><p>male
+
+<def-list id="mul564563953" list-type="bullet" list-content="fake nested def-list">
+<def-item>
+<term id="mul675867" rid="mul3456437">the</term><def rid="mul675867" id="mul3456437"><p>specific article</p></def>
+</def-item>
+<def-item>
+<term>a</term><def><p>non-specific article used with words beginning in consonants</p></def>
+</def-item>
+<def-item>
+<term>an</term><def><p>non-specific article used with words beginning in vowels</p></def>
+</def-item>
+</def-list>
+
+
+
+
+
+</p></def>
+</def-item>
+</def-list>
+</gloss-group>
+
+<gloss-group>
+<title>Acronyms</title>
+<def-list id="mul7477" list-type="simple" list-content="subjects">
+<term-head>Abbreviation</term-head>
+<def-head>Expansion</def-head>
+<def-item id="mul494949">
+<term id="G62">NIH</term>
+<def><p>National Institutes of
+Health</p></def>
+</def-item>
+<def-item>
+<term id="G12">XML</term>
+<def><p>Extensible Markup Language</p></def>
+</def-item>
+</def-list>
+</gloss-group>
+
+</glossary>
+
+<ref-list>
+<ref id="B1">
+<nlm-citation citation-type="book"><collab collab-type="authors" xmlns:xlink="http://www.w3.org/1999/xlink"
+xlink:href="http://www.rcpbgs.gov" xlink:actuate="onRequest" xlink:show="new" xlink:role="fake collab description" xlink:title="fake collaboration" xlink:type="simple">Research Unit of the Royal College of Physicians and British
+Geriatric Society</collab><source>Geriatric day hospitals: their role and guidelines for good
+practice</source><year>1994</year><publisher-loc>London</publisher-loc><publisher-name>RCP</publisher-name></nlm-citation></ref>
+<ref id="B2">
+<nlm-citation citation-type="gov"><collab collab-type="authors">National Audit
+Office</collab><source>National health service day hospitals for elderly people
+in England</source>
+<year>1994</year><publisher-loc>London</publisher-loc><publisher-name>HMSO</publisher-name></nlm-citation></ref>
+<ref id="B3"><citation citation-type="journal" id="mul907907"
+xmlns:xlink="http://www.w3.org/1999/xlink"
+xlink:href="http://www.jamgersoc.com" xlink:actuate="onRequest" xlink:show="new" xlink:role="fake citation description" xlink:title="fake citation link" xlink:type="simple"><name name-style="western"><surname>Siu</surname><given-names>AL</given-names></name>
+<name name-style="western"><surname>Morishita</surname><given-names>L</given-names></name><name name-style="western"><surname>Blaustein</surname><given-names>J
+</given-names></name><article-title xml:lang="en">Comprehensive geriatric assessment in a day
+hospital</article-title><source>J Am Ger
+Soc</source><year>1994</year><volume>42</volume>
+<volume-id pub-id-type="doi">fakevolumedoi</volume-id>
+<fpage seq="2">1094</fpage><lpage>1099
+</lpage>
+<page-range>1094-1096, 1098-1099</page-range>
+<uri xlink:href="http://www.mulberrytech.com" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:actuate="onRequest" xlink:show="new" xlink:role="fake website description" xlink:title="Mulberry website">http://www.mulberrytech.com</uri>
+<object-id pub-id-type="doi">Fake DOI</object-id>
+</citation></ref>
+<ref id="B4"><citation citation-type="journal"><name name-style="western"><surname>Donaldson</surname><given-names>C</given-names></name><name name-style="western"><surname>Wright</surname><given-names>KG</given-names></name><name name-style="western"><surname>Maynard</surname><given-names>AK
+</given-names></name><name name-style="western"><surname>Hamill</surname><given-names>JD</given-names></name><name name-style="western"><surname>Sutcliffe
+</surname><given-names>E</given-names></name><article-title xml:lang="en">Day hospitals for the elderly: utilisation and
+performance</article-title><source>Community
+Med</source><year>1987</year><volume>9</volume><elocation-id seq="a">B27</elocation-id>
+</citation></ref>
+<ref id="B5"><citation citation-type="journal"><name name-style="western"><surname>Peto</surname><given-names>R</given-names></name>
+<role>Fake Role</role>
+<article-title xml:lang="en">Why do we need systematic overviews of randomized
+trials?</article-title><source>Stat
+Med</source><year>1987</year><volume>6</volume><fpage>233</fpage><lpage>240
+</lpage></citation></ref>
+<ref id="B6"><citation citation-type="journal"><name name-style="western"><surname>DerSimonian</surname><given-names>R</given-names>
+</name><name name-style="western"><surname>Laird</surname><given-names>N</given-names></name><article-title xml:lang="en">Meta-analysis in
+clinical trials</article-title><source>Controlled Clin
+Trials</source><year>1986</year><volume>7</volume><fpage>177</fpage><lpage>188
+</lpage></citation></ref>
+<ref id="B7"><citation citation-type="journal"><name name-style="western"><surname>Woodford-Williams</surname><given-names>E
+</given-names></name><name name-style="western"><surname>McKeon</surname><given-names>JA</given-names></name><name name-style="western"><surname>Trotter</surname><given-names>IS</given-names></name><name name-style="western"><surname>Watson</surname><given-names>D</given-names></name><name name-style="western"><surname>
+Bushby</surname><given-names>C</given-names></name><article-title xml:lang="en">The day hospital in the community care
+of the elderly</article-title><source>Gerontology
+Clinic</source><year>1962</year><volume>4</volume><fpage>241</fpage><lpage>256
+</lpage></citation></ref>
+<ref id="B8"><citation citation-type="journal"><name name-style="western"><surname>Weissert</surname><given-names>W</given-names></name>
+<name name-style="western"><surname>Wan</surname><given-names>T</given-names></name><name name-style="western"><surname>Livieratos</surname><given-names>B
+</given-names></name><name name-style="western"><surname>Katz</surname><given-names>S</given-names></name><article-title xml:lang="en">Effects and costs
+of day-care services for the chronically ill: a randomized
+experiment</article-title><source>Medical
+Care</source><year>1980</year><volume>18</volume><fpage>567</fpage><lpage>584
+</lpage><pub-id pub-id-type="pmid">6772889</pub-id>
+</citation></ref>
+<ref id="B9"><citation citation-type="journal"><name name-style="western"><surname>Tucker</surname><given-names>MA</given-names></name>
+<name name-style="western"><surname>Davison</surname><given-names>JG</given-names></name><name name-style="western"><surname>Ogle</surname><given-names>SJ</given-names></name><article-title xml:lang="en">Day hospital rehabilitation-effectiveness and cost in the
+elderly: a randomised controlled
+trial</article-title><source>BMJ</source><year>1984</year><volume>289</volume><fpage>
+1209</fpage><lpage>1212</lpage>
+</citation></ref>
+<ref id="B10"><citation citation-type="journal"><name name-style="western"><surname>Cummings</surname><given-names>V</given-names>
+</name><name name-style="western"><surname>Kerner</surname><given-names>JF</given-names></name><name name-style="western"><surname>Arones</surname><given-names>S
+</given-names></name><name name-style="western"><surname>Steinbock</surname><given-names>C</given-names></name><article-title xml:lang="en">Day
+hospital service in rehabilitation medicine: an evaluation</article-title><source>Arch Phys Med Rehabil</source><year>1985</year><volume>66</volume><fpage>86</fpage><lpage>91</lpage></citation></ref>
+<ref id="B11"><citation citation-type="other"><name name-style="western"><surname>Vetter</surname><given-names>NJ</given-names></name><name name-style="western"><surname>Smith</surname><given-names>A</given-names></name><name name-style="western"><surname>Sastry</surname><given-names>D</given-names></name><name name-style="western"><surname>Tinker</surname><given-names>G</given-names></name><source>Day hospital pilot
+study report</source><year>1989</year><publisher-loc>Cardiff </publisher-loc><publisher-name>Department of Geriatrics, St
+David&rsquo;s Hospital</publisher-name></citation></ref>
+<ref id="B12"><citation citation-type="journal"><name name-style="western"><surname>Pitkala</surname><given-names>K</given-names></name><name name-style="western"><surname>Winell</surname><given-names>K</given-names></name><name name-style="western"><surname>Tilvis</surname><given-names>RS
+</given-names></name><article-title xml:lang="en">Effects of geriatric day hospital care for home care
+patients</article-title><source>Arch Gerontol Geriatric</source><year>1991</year><volume>suppl
+2</volume><fpage>51</fpage><lpage>54</lpage>
+</citation></ref>
+<ref id="B13"><citation citation-type="journal"><name name-style="western"><surname>Eagle</surname><given-names>DJ</given-names></name>
+<name name-style="western"><surname>Guyatt</surname><given-names>GH</given-names></name><name name-style="western"><surname>Patterson</surname><given-names>C
+</given-names></name><name name-style="western"><surname>Turpie</surname><given-names>I</given-names></name><name name-style="western"><surname>Sackett</surname>
+<given-names>B</given-names></name><name name-style="western"><surname>Singer</surname><given-names>J</given-names></name><article-title xml:lang="en">
+Effectiveness of a geriatric day hospital</article-title><source>Can Med Assoc
+J</source><year>1991</year><volume>144</volume><fpage>699</fpage><lpage>704
+</lpage>
+</citation></ref>
+<ref id="B14"><citation citation-type="journal"><name name-style="western"><surname>Young</surname><given-names>JB</given-names></name>
+<name name-style="western"><surname>Forster</surname><given-names>A</given-names></name><article-title xml:lang="en">The Bradford community
+stroke trial: results at six
+months</article-title><source>BMJ</source><year>1992</year><volume>304</volume><fpage>
+1085</fpage><lpage>1089</lpage>
+</citation></ref>
+<ref id="B15"><citation citation-type="journal"><name name-style="western"><surname>Branch</surname><given-names>LG</given-names></name><article-title xml:lang="en">Adult day
+health care evaluation study</article-title><source>Medical
+Care</source><year>1993</year><volume>31(suppl)
+</volume><fpage>SS1</fpage><lpage>124</lpage>
+</citation></ref>
+<ref id="B16"><citation citation-type="journal"><name name-style="western"><surname>Gladman</surname><given-names>JRF</given-names>
+</name><name name-style="western"><surname>Lincoln</surname><given-names>NB</given-names></name><name name-style="western"><surname>Barer</surname><given-names>
+DH</given-names></name><article-title xml:lang="en">A randomised controlled trial of domiciliary and
+hospital-based rehabilitation for stroke patients after discharge from
+hospital.</article-title><source>J Neurol Neurosurg
+Psychiatry</source><year>1993</year><volume>56</volume><fpage>960</fpage><lpage>
+966</lpage></citation></ref>
+<ref id="B17"><citation citation-type="journal"><name name-style="western"><surname>Hui</surname><given-names>E</given-names></name>
+<name name-style="western"><surname>Lum</surname><given-names>CM</given-names></name><name name-style="western"><surname>Woo</surname><given-names>J</given-names>
+</name><name name-style="western"><surname>Or</surname><given-names>KH</given-names></name><name name-style="western"><surname>Kay</surname><given-names>RLC
+</given-names></name><article-title xml:lang="en">Outcomes of elderly stroke patients day hospital versus
+conventional medical
+management</article-title><source>Stroke</source><year>1995</year><volume>26</volume>
+<fpage>1616</fpage><lpage>1619</lpage>
+</citation></ref>
+<ref id="B18"><citation citation-type="journal">Burch S, Longbottom J, McKay M, Borland C, Prevost T <article-title xml:lang="en">A randomised controlled trial of day hospital and
+day centre therapy</article-title><source>Clin Rehab</source> (in press)</citation></ref>
+<ref id="B19"><citation citation-type="journal"><name name-style="western"><surname>Weiler</surname><given-names>PG</given-names></name><name name-style="western"><surname>Kim</surname><given-names>P</given-names></name><name name-style="western"><surname>Pickard</surname><given-names>LS</given-names></name><article-title xml:lang="en">Health care for elderly Americans: evaluation of an adult day
+health care model</article-title><source>Medical
+Care</source><year>1976</year><volume>14</volume><fpage>700</fpage><lpage>708
+</lpage></citation></ref>
+<ref id="B20"><citation citation-type="journal"><name name-style="western"><surname>Sherwood</surname><given-names>S</given-names>
+</name><name name-style="western"><surname>Morris</surname><given-names>JN</given-names></name><name name-style="western"><surname>Ruchlin</surname><given-names>
+HS</given-names></name><article-title xml:lang="en">Alternative paths to long-term care: nursing home,
+geriatric day hospital, senior center, and domiciliary care
+options</article-title><source>Am J Public
+Health</source><year>1986</year><volume>76</volume><fpage>38</fpage><lpage>44
+</lpage></citation></ref>
+<ref id="B21"><citation citation-type="journal"><name name-style="western"><surname>Skellie</surname><given-names>FA</given-names>
+</name><name name-style="western"><surname>Mobley</surname><given-names>GM</given-names></name><name name-style="western"><surname>Coan</surname><given-names>RE
+</given-names></name><article-title xml:lang="en">Cost-effectiveness of community-based long-term care:
+current findings of Georgia&rsquo;s alternative health services
+project</article-title><source>Am J Public
+Health</source><year>1982</year><volume>72</volume><fpage>353</fpage><lpage>358
+</lpage></citation></ref>
+<ref id="B22"><citation citation-type="journal"><name name-style="western"><surname>Young</surname><given-names>J</given-names></name>
+<name name-style="western"><surname>Forster</surname><given-names>A</given-names></name><article-title xml:lang="en">Day hospital and home
+physiotherapy for stroke patients: a comparative cost-effectiveness
+study</article-title><source>J R Coll Phys
+Lond</source><year>1993</year><volume>27</volume><fpage>252</fpage><lpage>257
+</lpage></citation></ref>
+<ref id="B23"><citation citation-type="journal"><name name-style="western"><surname>Gladman</surname><given-names>J</given-names></name><name name-style="western"><surname>Whynes</surname><given-names>D</given-names></name><name name-style="western"><surname>Lincoln</surname><given-names>N
+</given-names></name><article-title xml:lang="en">Cost comparison of domiciliary and hospital-based stroke
+rehabilitation</article-title><source>Age
+Ageing</source><year>1994</year><volume>23</volume><fpage>241</fpage><lpage>245
+</lpage></citation></ref>
+<ref id="B24"><citation citation-type="journal"><name name-style="western"><surname>Egger</surname><given-names>M</given-names></name>
+<name name-style="western"><surname>Smith</surname><given-names>GD</given-names></name><name name-style="western"><surname>Schneider</surname><given-names>M
+</given-names></name><name name-style="western"><surname>Minder</surname><given-names>C</given-names></name><article-title xml:lang="en">Bias in
+meta-analysis detected by a simple, graphical
+test</article-title><source>BMJ</source><year>1997</year><volume>315</volume><fpage>
+629</fpage><lpage>634</lpage></citation></ref>
+<ref id="B25"><citation citation-type="journal"><name name-style="western"><surname>Stuck</surname><given-names>AE</given-names></name>
+<name name-style="western"><surname>Siu</surname><given-names>AL</given-names></name><name name-style="western"><surname>Wieland</surname><given-names>GD</given-names></name><name name-style="western"><surname>Adams</surname><given-names>J</given-names></name><name name-style="western"><surname>Rubenstein</surname>
+<given-names>LZ</given-names></name><article-title xml:lang="en">Comprehensive geriatric assessment: a meta-analysis
+of controlled
+trials</article-title><source>Lancet</source><year>1993</year><volume>342</volume>
+<fpage>1032</fpage><lpage>1036</lpage>
+</citation></ref>
+<ref id="B26"><citation citation-type="journal"><name name-style="western"><surname>Parker</surname><given-names>SG</given-names></name><name name-style="western"><surname>Du</surname><given-names>X</given-names></name><name name-style="western"><surname>Bardsley</surname><given-names>MJ</given-names></name><name name-style="western"><surname>Goodfellow</surname><given-names>J</given-names></name><name name-style="western"><surname>Cooper</surname>
+<given-names>RG</given-names></name><name name-style="western"><surname>Cleary</surname><given-names>R</given-names></name><etal/><article-title xml:lang="en">
+Measuring outcomes in care of the elderly</article-title><source>J R Coll Phys
+Lond</source><year>1994</year><volume>28</volume><fpage>428</fpage><lpage>433
+</lpage>
+</citation></ref>
+<ref id="B27">
+<label>27</label>
+<citation citation-type="journal">
+<name name-style="western"><surname>Hughes</surname>
+<given-names>TR</given-names></name>
+<name name-style="western"><surname>Marton</surname>
+<given-names>MJ</given-names></name>
+<name name-style="western"><surname>Jones</surname>
+<given-names>AC</given-names></name>
+<etal/>
+<article-title xml:lang="en">Functional discovery via a compendium
+of expression profiles.</article-title>
+<source>Cell</source>
+<volume>102</volume>
+<year>2000</year>
+<fpage>109</fpage>
+<lpage>126</lpage>.
+<annotation>
+<p>This report is the most extensive DNA expression
+profile of yeast genes. It examines the expression
+pattern of the whole yeast genome in 300 mutant
+strains. It infers the function of many unknown
+genes comparing profiles among the different
+mutants.</p>
+</annotation>
+</citation>
+</ref>
+<ref id="mul404506">
+<citation citation-type="gov">
+<person-group person-group-type="author">
+<name name-style="western"><surname>Norman</surname>
+<given-names>John C</given-names></name>
+<aff>Texas Heart Institute, Houston, TX</aff>
+</person-group>
+<gov>Report No.: NIH-N01-HV-5-3006-4-VI. Contract No.
+N01-HV-5-3006</gov>
+<source>ALVAD: 1980. A comprehensive final report to NHLI</source>
+<year>1980</year>
+<month>Jan</month>
+<volume>Vol. 1</volume>
+<publisher-loc>Bethesda (MD)</publisher-loc>
+<publisher-name>National Institutes of Health, National Heart and
+Lung Institute, Devices and Services Branch</publisher-name>
+<lpage>340</lpage> Available from: NTIS, Springfield, VA;
+PB80-148810</citation>
+<note><label>1</label><p>This is a fake note attached to a citation.</p>
+</note>
+</ref>
+<ref id="mul505697">
+<nlm-citation citation-type="patent" id="mul806806"
+xmlns:xlink="http://www.w3.org/1999/xlink"
+xlink:href="http://www.opthventure.com" xlink:actuate="onRequest" xlink:show="new" xlink:role="fake nlm-citation description" xlink:title="fake nlm-citation" xlink:type="simple">
+<person-group person-group-type="inventor">
+<name name-style="western">
+<surname>Blanco</surname>
+<given-names>Ernesto E</given-names>
+</name>
+<name name-style="western">
+<surname>Meade</surname>
+<given-names>John C</given-names>
+</name>
+<name name-style="western">
+<surname>Richards</surname>
+<given-names>William D</given-names>
+</name>
+</person-group>
+<collab collab-type="assignee">Ophthalmic Ventures</collab>
+<article-title>Surgical Stapling system</article-title>
+<source>US patent</source>
+<patent>4,969,591</patent>
+<year>1990</year>
+<month>11</month>
+<day>13</day>
+</nlm-citation>
+</ref>
+<ref id="mul567700">
+<citation citation-type="journal">
+<person-group person-group-type="author">
+<name name-style="western">
+<surname>Fabdetti</surname>
+<given-names>DV</given-names>
+</name>
+<name name-style="western">
+<surname>Golsmeier</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Social workers as culture mediators in health care settings</article-title>
+<source>Health Soc Work</source>
+<year>1988</year>
+<season>Summer</season>
+<volume>13</volume>
+<issue>3</issue>
+<issue-id pub-id-type="doi">fakeDOI in citation</issue-id>
+<issue-title>Social Work and Culture</issue-title>
+<fpage>171</fpage>
+<lpage>179</lpage>
+</citation>
+</ref>
+<ref id="mul4445433">
+<nlm-citation citation-type="book">
+<person-group person-group-type="author">
+<name name-style="western">
+<surname>Loewy</surname>
+<given-names>Erich H.</given-names>
+</name>
+</person-group>
+<source>Ethical dilemmas in modern medicine</source>
+<year>1986</year>
+<publisher-loc>Lewiston (NY)</publisher-loc>
+<publisher-name>E. Mellen Press</publisher-name>
+<lpage>343</lpage>
+<page-count count="343"/>
+<series>Studies in health and human services; 8</series>
+</nlm-citation>
+</ref>
+<ref id="mul333456">
+<citation citation-type="gov">
+<std>International standard ISO 10993-10:2002(E): Biological
+evaluation of medical devices-Part 10: Tests for irritation and
+delayed-type hypersensitivity</std>. <edition>Second</edition>.
+<year>2002</year>-<month>09</month>-<day>01</day>
+</citation>
+</ref>
+<ref id="mul889003">
+<nlm-citation citation-type="journal">
+<person-group person-group-type="author">
+<name name-style="western">
+<surname>Black</surname>
+<given-names>HR</given-names>
+</name>
+</person-group>
+<article-title>Evaluation of the elderly hypertensive</article-title>
+<source>Geriatrics</source>
+<year>1989</year>
+<month>10</month>
+<volume>44</volume>
+<supplement supplement-type="periodic">Suppl B</supplement>
+<fpage>15</fpage>
+<lpage>19</lpage>
+</nlm-citation>
+</ref>
+
+
+<ref id="mul90889003">
+<nlm-citation citation-type="journal">
+<person-group person-group-type="author">
+<name name-style="western">
+<surname>Black</surname>
+<given-names>HR</given-names>
+</name>
+</person-group>
+<article-title>Evaluation of the elderly hypertensive</article-title>
+<source>Geriatrics</source>
+<year>1989</year>
+<month>10</month>
+<volume>44</volume>
+<supplement supplement-type="periodic">Suppl B</supplement>
+<fpage>15</fpage>
+<lpage>19</lpage>
+</nlm-citation>
+</ref>
+
+
+<ref id="mul6757657567">
+<nlm-citation citation-type="confproc">
+<person-group person-group-type="author">
+<name name-style="western">
+<surname>Miller</surname>
+<given-names>Dorothy</given-names>
+</name>
+</person-group>
+<article-title xml:lang="en">Mining XML</article-title>
+<year>2002</year>
+<conf-name>Extreme Markup Languages Conference 2002</conf-name>
+<conf-date>August 4, 2002 - August 9, 2002</conf-date>
+<conf-loc>Montreal, Canada</conf-loc>
+<publisher-loc>Alexandria, VA</publisher-loc>
+<publisher-name>IDEAlliance</publisher-name>
+
+</nlm-citation>
+</ref>
+
+<ref id="mul5555555">
+<nlm-citation citation-type="journal">
+<person-group person-group-type="author">
+<name name-style="western">
+<surname>Massone</surname>
+<given-names>L</given-names>
+</name>
+<name name-style="western">
+<surname>Borghi</surname>
+<given-names>S</given-names>
+</name>
+<name name-style="western">
+<surname>Pestarino</surname>
+<given-names>A</given-names>
+</name>
+<name name-style="western">
+<surname>Piccini</surname>
+<given-names>R</given-names>
+</name>
+<name name-style="western">
+<surname>Gambini</surname>
+<given-names>C</given-names>
+</name>
+</person-group>
+<article-title xml:lang="fr">Localisations palmaires purpurioques de la dermatitie herpetiforme</article-title>
+<trans-title xml:lang="en">Purpuric palmar sites of dermatitis herpetiformis</trans-title>
+<source>Ann Dermatol Vernerol</source>
+<year>1987</year>
+<volume>114</volume>
+<issue>12</issue>
+<fpage>1545</fpage>
+<lpage>1547</lpage>
+</nlm-citation>
+</ref>
+<ref id="mul556567575">
+<citation citation-type="book">
+<person-group person-group-type="author">
+<name name-style="western">
+<surname>Hartmeier</surname>
+<given-names>Winifried</given-names>
+</name>
+</person-group>
+<source xml:lang="de">Immobilisierte Biokatalysstoren</source>
+<trans-source xml:lang="en">Immobilized biocatalysts</trans-source>
+<year>1988</year>
+<publisher-loc>Berlin</publisher-loc>
+<publisher-name>Springer-Verlag</publisher-name>
+<lpage>212</lpage>
+<isbn>0-23-8675-309</isbn>
+</citation>
+</ref>
+</ref-list>
+<notes id="mul909456" notes-type="note-in-proof"><title>Notes In Proof</title>
+<p>This is a fake back matter structure which if real would hold late breaking news related to the article but occurring after the article was typeset.</p>
+</notes>
+</back>
+
+
+<sub-article article-type="translation" xml:lang="en">
+<front>
+<journal-meta>
+<journal-id journal-id-type="publisher">BR MED J</journal-id>
+<journal-title>International Journal of Health Geographics</journal-title>
+<issn pub-type="ppub">0959-8138</issn>
+<publisher>
+<publisher-name>British Medical Journal</publisher-name>
+<publisher-loc>Fake Location</publisher-loc></publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="pmid">10092260a</article-id>
+<title-group>
+<article-title xml:lang="en">Treatment can be onerous for patient and
+doctor</article-title></title-group>
+<contrib-group>
+<contrib contrib-type="author" id="mul598" rid="mul404" equal-contrib="yes" deceased="no" corresp="yes"><name name-style="western">
+<surname>Seamark</surname>
+<given-names>Clare J</given-names></name>
+<role>general practitioner</role>
+<xref ref-type="aff"><sup><italic>a</italic></sup></xref>
+</contrib>
+<contrib contrib-type="author" id="mul36" equal-contrib="yes" deceased="no" corresp="no">
+<name name-style="western"><surname>Hutchinson</surname>
+<given-names>Margaret</given-names></name>
+<role>retired headmistress</role>
+</contrib>
+</contrib-group>
+<aff><sup><italic>a</italic></sup>Honiton
+Group Practice, Honiton, Devon EX14 2NY</aff>
+<author-notes id="mul44" rid="mul36">
+<title>Fake Notes Title</title>
+<corresp id="mul404">Correspondence to: C Seamark
+<email>daseamark@msn.com</email></corresp>
+<fn fn-type="conflict" id="mul878" xml:lang="en"><p>Competing interests: None declared.</p></fn>
+</author-notes>
+<pub-date pub-type="pub"><season>Summer</season><year>2000</year></pub-date>
+<elocation-id seq="a">E27</elocation-id>
+<ext-link id="mul2323453" ext-link-type="url" xlink:actuate="onRequest" xlink:role="link to NCEMCH report" xlink:show="new" xlink:title="NCEMCH" xlink:type="simple" xlink:href="www.ncemch.org/pubs/PDFs/
+breastfeedingTIB.pdf" xmlns:xlink="http://www.w3.org/1999/xlink">http://www.ncemch.org/pubs/PDFs/
+breastfeedingTIB.pdf</ext-link>
+<supplementary-material id="S111"
+ xmlns:xlink="http://www.w3.org/1999/xlink"
+ xlink:title="local_file" xlink:actuate="onRequest" xlink:show="new" xlink:href="1471-2105-1-1-s1.pdf" xlink:type="simple" xlink:role="description of form" position="float"
+ mimetype="application" mime-subtype="pdf" content-type="form">
+ <label>Additional material</label>
+ <caption>
+ <p>Supplementary PDF file supplied by authors.</p>
+ </caption>
+ </supplementary-material>
+<history>
+<date date-type="accepted">
+<day>07</day><month>2</month>
+<year>2000</year></date>
+</history>
+<copyright-statement>Copyright &#x00A9; 2000,
+British Medical Journal</copyright-statement>
+<copyright-year>2000</copyright-year>
+</article-meta>
+</front>
+<body>
+<p>The development of genetic testing for disease has
+raised the problem of whether to test asymptomatic
+individuals....</p>
+</body>
+<back>
+<ack>
+<p>We thank MH&apos;s family for their willingness to be involved in
+genetic testing ...</p>
+</ack>
+<ref-list>
+
+<ref id="B66">
+<citation citation-type="gov">
+<collab collab-type="authors">National Committee for Clinical Laboratory
+Standards</collab>
+<source>Performance standards for antimicrobial disk
+susceptibility tests. Approved standard</source>
+<year>2000</year>
+<edition>7th ed.</edition>
+<publisher-loc>Wayne, Pa</publisher-loc><publisher-name>National Committee for Clinical
+Laboratory Standards</publisher-name><fpage>M2</fpage>
+<lpage>A7</lpage>
+<issn pub-type="ppub">0959-8138</issn>
+<email>info@nccls.gov</email>
+</citation>
+</ref>
+<ref id="mul899205">
+<nlm-citation citation-type="book">
+<person-group person-group-type="author">
+<name name-style="western">
+<surname>Lawrence</surname>
+<given-names>Ruth A</given-names>
+</name>
+</person-group>
+<source>A review of the medical benefits and contraindications
+to breastfeeding in the United States [Internet]</source>
+<year>1997</year>
+<month>10</month>
+<day>27</day>
+<time-stamp>1:18 pm</time-stamp>
+<access-date>cited 2000 Apr 24</access-date>
+<publisher-loc>Arlington (VA)</publisher-loc>
+<publisher-name>National Center for Education in Maternal
+and Child Health</publisher-name>
+<fpage>40</fpage>
+<comment>Available from:
+<ext-link ext-link-type="url" xlink:actuate="onRequest" xlink:role="link to NCEMCH report" xlink:show="new" xlink:title="NCEMCH" xlink:type="simple" xlink:href="www.ncemch.org/pubs/PDFs/
+breastfeedingTIB.pdf" xmlns:xlink="http://www.w3.org/1999/xlink">http://www.ncemch.org/pubs/PDFs/
+breastfeedingTIB.pdf</ext-link>
+</comment>
+</nlm-citation>
+</ref>
+
+</ref-list>
+</back>
+</sub-article>
+
+<!--
+
+<response response-type="rebuttal" xml:lang="en">
+<front>
+<journal-meta>
+<journal-id journal-id-type="publisher">JCM</journal-id>
+<journal-title>International Journal of Health Geographics</journal-title>
+<issn pub-type="ppub">0095-1137</issn>
+<publisher>
+<publisher-name>JCM</publisher-name>
+<publisher-loc>Fake Location</publisher-loc></publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="pmid">mul987</article-id>
+<title-group><article-title xml:lang="en">Authors&apos; Reply</article-title></title-group>
+<contrib-group>
+<contrib contrib-type="author" id="mul989" equal-contrib="yes" deceased="no" corresp="no"><name name-style="western"><surname>Arthur&ast;</surname>
+<given-names>Stella</given-names></name>
+<xref ref-type="aff">
+<sup><italic>a</italic></sup></xref></contrib>
+<contrib contrib-type="author" id="mul898" equal-contrib="yes" deceased="no" corresp="no">
+<name name-style="western"><surname>Steed</surname><given-names>Lisa L.</given-names></name>
+<xref ref-type="aff">
+<sup><italic>a</italic></sup></xref>
+</contrib>
+</contrib-group>
+<aff><sup><italic>a</italic></sup>Center for Research on Ocular Therapeutics
+and Biodevices<break/>Department of Ophthalmology<break/>
+Storm Eye Institute<break/>Department of Pathology and Laboratory Medicine<break/>
+Medical University of South Carolina<break/>Charleston, South Carolina<break/>
+&ast;Phone: (843) 792-2393<break/>Fax: (843) 792-1014<break/>
+</aff>
+<pub-date pub-type="pub"><year>2000</year></pub-date>
+<fpage>...</fpage>
+<copyright-year>...</copyright-year>
+</article-meta>
+</front>
+<body>
+<p>We read with great interest and much chagrin the letters to the editor by
+Drs. Sigler and Sutton and Drs. Guarro and Gene correcting our misidentification
+of <italic>Acrophialophora fusispora</italic> as <italic>Scedosporium
+prolificans</italic> (<xref rid="R7" ref-type="bibr">1</xref>). The original
+identification was indeed made by an inexperienced technologist, although it
+was confirmed by a more experienced person. However, both were unaware of the
+existence of <italic>A. fusispora</italic>, as were the authors.</p>
+<p>In defense of our reviewers, Fig. 2 was added to the manuscript at the
+recommendation of one of the reviewers. We don&apos;t know if the reviewers
+were given the opportunity to examine the added figure prior to publication.</p>
+<p>Should we be so fortunate as to grow either organism again, we will not make
+this same mistake. Our error emphasizes the need for technical staff trained in
+mycology to keep up with recent journal publications. We hope others will learn
+from our error.</p>
+<p>On the bright side, the literature now contains the first report of
+<italic>A. fusispora</italic> keratouveitis in association with a contact lens
+retained intraocularly over a long term.</p>
+</body>
+<back>
+<ref-list>
+<title>References</title>
+<ref id="R7">
+<citation citation-type="journal">
+<name name-style="western"><surname>Andersen</surname>
+<given-names>Jan V.</given-names></name>
+<article-title xml:lang="en">Structure and mapping of antigenic domains</article-title>
+<source>Infect. Immun. of Finland</source>
+<year>1992</year>
+<volume>21</volume>
+<fpage>57</fpage>
+<lpage>79</lpage></citation>
+</ref>
+</ref-list>
+<fn-group>
+<fn fn-type="other" id="mul200222" xml:lang="en">
+<p>This paper was submitted directly (Track II) to the PNAS
+office.</p>
+</fn>
+<fn id="FN153" fn-type="other" xml:lang="en">
+<p>&#x00A7; Barta, A., Dorner, S., Polacek, N., Berg, J. M.,
+Lorsch, J. R., Nissen, P., Hansen, J., Muth, G. W. &#x0026; Ban, N. (2000) <italic>Science</italic> <bold>291</bold>, 203a (abstr.).</p>
+</fn>
+</fn-group>
+</back>
+</response>
+-->
+
+</article>

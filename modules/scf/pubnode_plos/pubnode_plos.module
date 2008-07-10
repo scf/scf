@@ -1,0 +1,25 @@
+<?php
+
+// $Id: pubnode_plos.module $
+
+/**
+ * @file
+ * PubNode PLoS module
+ */
+
+function pubnode_plos_register_pubnode_importers () {
+  $imps['plos'] = array(
+    'weight' => 0,
+    'class' => "PLoSHttpImporter"
+  );
+  return $imps;
+}
+
+function pubnode_plos_register_pubnode_processors () {
+  $procs['plos'] = array(
+    'doctype' => "plos",
+    'description' => t('PLoS'),
+    'class' => "NLMProcessor"
+  );
+  return $procs;
+}

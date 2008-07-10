@@ -1,0 +1,10 @@
+; $Id$
+name = Publication Node
+description = Provides the pubnode node type allowing creation, listing and storing of publications.
+dependencies[] = iic_util
+dependencies[] = scf
+dependencies[] = member
+package = SCF
+version = VERSION
+core = 6.x
+php = 5.2

@@ -1,0 +1,38 @@
+@CHARSET "UTF-8";
+/* -------------------------------------------------------------- 
+
+  @file member.css
+  
+-------------------------------------------------------------- */
+
+.member-embed       { 
+	border-bottom: 0 !important;
+	padding: 0 !important; }
+
+.interview-participants { border-top: 1px solid #dcdcdc; padding-top: .5em;}
+.interview-interviewers { border-bottom: 1px solid #dcdcdc; margin-bottom: .5em;} 
+
+.member-contact     { 
+  background: #fafafa; 
+  border: 1px solid #dcdcdc; 
+	float: right; 
+	margin: 0 0 1em 1em; 
+	padding: 5px; width: 38%; }
+
+.member-picture     { float: left; padding-top: 3px; }
+.member-picture img { height: 100px; width: 75px; }
+
+.member-embed .member-title,
+.member-embed .member-content,
+.member-bio,
+.member-research-interests,
+.member-capacity    { margin-bottom: .2em; padding-left: 95px; }
+
+.page-node .member-bio { border-bottom: solid 1px #dcdcdc; margin-bottom: .5em; }
+
+.member-name        { font-size: 130%; font-weight: bold; }
+.member-jobtitle, 
+.member-affiliation { font-size: 110%; font-style: italic; }
+
+.member-research-interests .terms { font-weight: normal; margin-left: 1em; }
+.member-research-interests .terms { display: inline; float: none; }

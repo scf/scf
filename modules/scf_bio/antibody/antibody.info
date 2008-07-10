@@ -1,0 +1,9 @@
+; $Id$
+name = Antibody
+description = Provides an antibody node type
+dependencies[] = scf
+dependencies[] = species
+dependencies[] = taxonomy_extra
+package = SCF Biology
+version = VERSION
+core = 6.x

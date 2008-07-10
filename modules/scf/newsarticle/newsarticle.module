@@ -1,0 +1,94 @@
+<?php
+
+// $Id: newsarticle.module $
+
+/**
+ * @file
+ * Newsarticle module
+ */
+
+module_load_include("php", "newsarticle", "NewsArticleModule");
+
+function newsarticle_node_info() {
+  return newsarticle()->nodeInfo();
+}
+
+function newsarticle_menu () {
+  return newsarticle()->menu();
+}
+
+function newsarticle_perm () {
+  return newsarticle()->perm();
+}
+
+function newsarticle_access ($op, $node, $account) {
+  return newsarticle()->access($op, $node, $account);
+}
+
+function newsarticle_form (&$node, &$form_state) {
+  return newsarticle()->form($node, $form_state);
+}
+
+function newsarticle_validate($node) {
+  newsarticle()->validate($node);
+}
+
+function newsarticle_node_form_submit(&$form, &$form_state) {
+  newsarticle()->nodeFormSubmit($form, $form_state);
+}
+
+function newsarticle_insert ($node) {
+  newsarticle()->insert($node);
+}
+
+function newsarticle_update ($node) {
+  newsarticle()->update($node);
+}
+
+function newsarticle_load ($node) {
+  return newsarticle()->load($node);
+}
+
+function newsarticle_delete ($node) {
+  newsarticle()->delete($node);
+}
+
+function newsarticle_view ($node, $teaser = FALSE, $page = FALSE) {
+  return newsarticle()->view($node, $teaser, $page);
+}
+
+function newsarticle_theme () {
+  return newsarticle()->theme();
+}
+
+function newsarticle_block ($op = 'list', $delta = 0, $edit = array()) {
+  return newsarticle()->block($op, $delta, $edit);
+}
+
+function newsarticle_autocomplete($field, $string) {
+  newsarticle()->autocomplete($field, $string);
+}
+
+function newsarticle_admin_settings_subform () {
+  return newsarticle()->adminSettingsSubform();
+}
+
+function newsarticle_list_view () {
+  return newsarticle()->listView();
+}
+
+
+/**
+ * Process variables for newsarticle-byline.tpl.php.
+ *
+ * The $variables array contains the following arguments:
+ * - $node
+ *
+ * @see newsarticle-byline.tpl.php
+ */
+function template_preprocess_newsarticle_byline(&$variables) {
+  $node = $variables['node']; 
+  $variables['author_name'] = isset($node->author_name) ? $node->author_name : '';
+  $variables['media_source'] = isset($node->media_source) ? $node->media_source : '';
+  $variables['pubdate'] = isset($node->pubdate) ? scf_date_display($node->pubdate) : '';
+}

@@ -1,0 +1,438 @@
+<?php
+
+// $Id: association.module $
+
+/**
+ * @file
+ * association module
+ */
+
+/**
+ * Implementation of hook_menu().
+ */
+function association_menu() {
+  $items['association/get/%'] = array(
+    'title' => 'View or Create',
+    'page callback' => 'association_view_or_create',
+    'page arguments' => array(2),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK
+  );
+  $items['association/ajax/add/%/%'] = array(
+    'title' => 'Add association AJAX handler',
+    'page callback' => 'association_ajax_handler_add',
+    'page arguments' => array(3,4),
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
+  );
+  $items['association/ajax/delete/%/%'] = array(
+    'title' => 'Remove association AJAX handler',
+    'page callback' => 'association_ajax_handler_delete',
+    'page arguments' => array(3,4),
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
+  );
+  return $items;
+}
+
+function _association_can_have_associations ($node) {
+  // first, only do anything if the node exists
+  if (!isset($node->nid))
+    return FALSE;
+  $targets = _association_targets($node);
+  return !empty($targets);
+}
+
+function _association_targets ($node) {
+  // first, only do anything if the node type is known...
+  if (!isset($node->type))
+    return array();
+  // Now check if it's a node type that participates in any
+  // associations.
+  return variable_get($node->type . '_associates_with', array());
+}
+
+function association_form_alter (&$form, $form_state, $form_id) {
+  if (isset($form['type']) && isset($form['#node']) && $form['type']['#value'] .'_node_form' == $form_id) {
+    $node = $form['#node'];
+    $targets = _association_targets($node);
+    if (!empty($targets)) {
+      $form['association'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Associations'),
+        '#description' => t('Add new associations.'),
+        '#collapsible' => TRUE,
+        '#collapsed' => FALSE,
+        '#tree' => TRUE,
+        '#weight' => 10
+      );
+      $wt = 0;
+      foreach ($targets as $target) {
+        if ($target == '*')
+          $targname = 'Any node type';
+        else {
+          $targname = node_get_types('name', $target);
+        }
+        if ($targname) {
+          $options = _association_get_target_options($node, $target);
+          $form['association'][$target] = array(
+            '#type' => 'select',
+            '#title' => $targname,
+            '#required' => FALSE,
+            '#options' => $options,
+            '#default_value' => '',
+            '#multiple' => TRUE,
+            '#size' => max(4, min(16, count($options) / 10)),
+            '#weight' => $wt++
+          );
+        }
+      }
+    }
+  }
+}
+
+function _association_get_target_options ($node, $target) {
+  $options = array('' => ' -- none -- ');
+  $args = array();
+  if (isset($node->nid)) {
+    $nid = $node->nid;
+    $args[] = $nid;
+    // yes we need it in twice
+    $args[] = $nid;
+    $sql = "SELECT n.nid, n.type, n.title FROM {node} n";
+    $sql .= " WHERE n.nid <> %d AND n.status = 1";
+    $sql .= " AND n.nid NOT IN (SELECT a.tonid FROM {association} a WHERE a.fromnid = %d)";
+  } else {
+    $sql = "SELECT n.nid, n.type, n.title FROM {node} n";
+    $sql .= " WHERE n.status = 1";
+  }
+  if (!empty($target) && $target != '*') {
+    $sql .= " AND n.type = '%s'";
+    $args[] = $target;
+  }
+  $sql .= " ORDER BY n.type, n.title";
+  $result = db_query(db_rewrite_sql($sql), $args);
+  while ($node = db_fetch_object($result)) {
+    $title = $node->title;
+    if ($target == '*')
+      $title = $node->type . ': ' . $title;
+    if (strlen($title) > 90)
+      $title = substr($title, 0, 87) . '...';
+    $options[$node->nid] = $title;
+  }
+  return $options;
+}
+
+
+/**
+ * Implementation of hook_nodeapi().
+ */
+function association_nodeapi (&$node, $op, $a3, $a4) {
+  // drupal_set_message("NODE $node->nid($type) participates in associations.");
+  switch ($op) {
+    case 'load':
+      if (_association_can_have_associations($node)) {
+        $stats = db_fetch_array(db_query("SELECT last_association_timestamp, association_count FROM {association_statistics} WHERE nid = %d", $node->nid));
+      }
+      // Make sure ALL nodes have non-null settings for the following:
+      if (!isset($stats) || !$stats) {
+        $stats = array(
+          'last_association_timestamp' => 0,
+          'association_count' => 0
+        );
+      }
+      return $stats;
+      break;
+    case 'delete':
+      // have to update association table even if this node type can't
+      // have any 'from' associations (it might still have a 'to'
+      // association) and that is hard to check just by searching all
+      // the variables (TODO: use all the variables to check this, to
+      // avoid more SQL calls)
+      association_delete_node($node);
+      break;
+    case 'validate':
+      association_node_validate($node);
+      break;
+    case 'insert':
+    case 'update':
+      association_node_save($node);
+      break;
+    case 'prepare':
+      break;
+    case 'view':
+      break;
+    default:
+      // nothing
+  }
+}
+
+/**
+ * Make sure incoming nids are in allowed types
+ */
+function association_node_validate(&$node) {
+  if (!empty($node->association)) {
+    $types = $node->association;
+    $allowed_types = _association_targets($node);
+    $any = in_array('*', $allowed_types);
+    foreach ($types as $type => $newnids) {
+      if (is_string($newnids))
+        $nids = preg_split('/[\s,]+/', $newnids);
+      else 
+        $nids = $newnids;
+      if (!empty($nids)) {
+        foreach ($nids as $nid) {
+          $targnode = node_load($nid);
+          if ($targnode && !$any && !in_array($targnode->type, $allowed_types)) {
+            form_set_error("association][$type", t('Node !nid is not an allowed association type.', array('!nid' => $nid)));
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Make sure incoming nids are in allowed types
+ */
+function association_node_save(&$node) {
+  $thisnid = $node->nid;
+  if (!empty($node->association)) {
+    $types = $node->association;
+    foreach ($types as $type => $newnids) {
+      if (is_string($newnids))
+        $nids = preg_split('/[\s,]+/', $newnids);
+      else 
+        $nids = $newnids;
+      if (!empty($nids)) {
+        $wt = 0;
+        foreach ($nids as $nid) {
+          if (is_numeric($nid) && node_load($nid)) {
+            association_add($thisnid, $nid, $wt++, TRUE);
+          }
+        }
+      }
+    }
+  }
+}
+
+
+
+/**
+ * delete associated
+ */
+function association_delete ($fromnid, $tonid) {
+  $sql = "DELETE FROM {association} WHERE fromnid = %d AND tonid = %d";
+  db_query($sql, $fromnid, $tonid);
+  if (db_affected_rows()) {
+    _association_update_statistics($fromnid);
+    // tricky: also delete the converse association just in case it was 
+    // marked as inherently bidirectional
+    $sql = "DELETE FROM {association} WHERE fromnid = %d AND tonid = %d AND bidirectional = 1";
+    db_query($sql, $tonid, $fromnid);
+    if (db_affected_rows()) {
+      _association_update_statistics($tonid);
+    }
+  }
+}
+
+/**
+ * delete associated association records when a node is deleted
+ */
+function association_delete_node ($node) {
+  if (is_numeric($node))
+    $nid = $node;
+  else 
+    $nid = $node->nid;
+  // first remember all affected referring nodes
+  $result = db_query("SELECT fromnid FROM {association} WHERE tonid = %d", $nid);
+  $referrers = array();
+  while ($refnid = db_result($result)) {
+    $referrers[] = $refnid;
+  }
+  db_query("DELETE FROM {association} WHERE fromnid = %d OR tonid = %d", $nid, $nid);
+  db_query("DELETE FROM {association_statistics} WHERE nid = %d", $nid);
+  // Now update the stats of any referrers found previously
+  foreach ($referrers as $refnid) {
+    _association_update_statistics($refnid);
+  }
+}
+
+/**
+ * add a new association between two nodes
+ */
+function association_add ($n1, $n2, $weight = 0, $bidirectional = FALSE, $time = 0, $internal = FALSE) {
+  if (!$time)
+    $time = time();
+  if (is_object($n1))
+    $n1 = $n1->nid;
+  if (is_object($n2))
+    $n2 = $n2->nid;
+  $sql = "INSERT INTO {association} (fromnid, tonid, timestamp, weight, bidirectional) VALUES (%d, %d, %d, %d, %d)";  
+  db_query($sql, $n1, $n2, $time, $weight, $bidirectional);
+  _association_update_statistics($n1);
+  if ($bidirectional && !$internal) {
+    association_add($n2, $n1, $weight, $bidirectional, $time, TRUE);
+  }
+}
+
+function association_populate_node_associations (&$node, $type = NULL, $limit = 0, $orderby = 'weight', $dir = 'ASC') {
+  $field = ((isset($type) && $type != '*') ? $type : 'node') . '_associations';
+  if (is_numeric($node)) {
+    $node = node_load($node);
+  }
+  if (isset($node->$field)) {
+    // already done: just return
+    return;
+  } else {
+    $nodes = association_load_for_node($node, $type, $limit, $orderby, $dir);
+    $node->$field = $nodes;
+    if ($field == 'node_associations') {
+      foreach ($nodes as $assoc_node) {
+        $type_assocs = $assoc_node->type . '_associations';
+        if (!isset($node->$type_assocs))
+          $node->$type_assocs = array();
+        $node->{$type_assocs}[] = $assoc_node;
+      }
+    }
+    return $nodes;
+  }
+}
+
+/**
+ * return list of node objects 
+ */
+function association_load_for_node ($node, $type = NULL, $limit = 0, $orderby = 'weight', $dir = 'ASC') {
+  if (is_numeric($node))
+    $nid = $node;
+  else
+    $nid = $node->nid;
+  $bytype = (isset($type) && $type != '*');
+  $args = array($nid);
+  $sql = "SELECT a.tonid FROM {association} a";
+  if ($bytype)
+    $sql .= " JOIN {node} n ON a.tonid = n.nid";
+  $sql .= " WHERE a.fromnid = %d";
+  if ($bytype) {
+    $sql .= " AND n.type = '%s'";
+    $args[] = $type;
+  }
+  $sql .= " ORDER BY a.$orderby $dir";
+  if ($limit) {
+    $result = db_query_range($sql, $args, 0, $limit);
+  } else {
+    $result = db_query($sql, $args);
+  }
+  $nodes = array();
+  while ($nid = db_result($result)) {
+    $loaded = node_load($nid);
+    // just in case association mentions a non-existent 'to' node,
+    // don't add it here if it fails to load
+    if ($loaded)
+      $nodes[] = $loaded;
+    else {
+      // perform the cleanup that evidently didn't happen when the
+      // offending node was deleted in the first place...
+      association_delete_node($nid);
+    }
+  }
+  return $nodes;
+}
+
+
+/**
+ * Check whether $from_type can participate in associations with nodes
+ * of type $to_type (or with any type if $to_type is NULL)
+ *
+ * @returns
+ *    (a) FALSE if $from_type does not participate in (outgoing) associations
+ *    (b) FALSE if $from_type does not participate in (outgoing) associations with 
+ *        type $to_type ($to_type may be '*' in which case FALSE is returned IFF the 
+ *        node is NOT indescriminate in its associations)
+ *    (c) array of type names if $type is NULL, or $to_type is a type name
+ *        found in the the set of associated types for this node
+ *    (d) array('*') if nodes of type $from_type associate indescriminately
+ */
+function association_check_type ($from_type, $to_type) {
+  // $from_type may optionally be a full node obj
+  if (is_object($from_type))
+    $from_type = $from_type->type;
+  $allowed_types = variable_get($from_type . '_associates_with', array());
+  if (isset($to_type)) {
+    if (in_array($to_type, $allowed_types) || in_array('*', $allowed_types))
+      return $allowed_types;
+    else
+      return FALSE;
+  } else {
+    return (empty($allowed_types) ? FALSE : $allowed_types);
+  }
+}
+
+
+/**
+ * Implementation of hook_node_type().
+ *
+ * Respond to bulk node type changes (i.e. an entire node type is
+ * deleted, renamed, etc...)
+ */
+function association_node_type ($op, $info) {
+  switch ($op) {
+    case 'delete':
+      association_delete_all_for_type($info->type);
+      break;
+  }
+}
+
+/**
+ * modelled after _comment_update_node_statistics
+ */
+function _association_update_statistics ($nid) {
+  $count = db_result(db_query('SELECT COUNT(*) FROM {association} WHERE fromnid = %d', $nid));
+  // associations exist
+  if ($count > 0) {
+    $last_assoc = db_fetch_object(db_query_range('SELECT fromnid, timestamp, uid FROM {association} WHERE fromnid = %d ORDER BY timestamp DESC', $nid, 0, 1));
+    db_query("UPDATE {association_statistics} SET association_count = %d, last_association_timestamp = %d, last_association_uid = %d WHERE nid = %d", $count, $last_assoc->timestamp, $last_assoc->uid, $nid);
+    if (!db_affected_rows()) {
+      db_query("INSERT INTO {association_statistics} (nid, association_count, last_association_timestamp, last_association_uid) VALUES (%d, %d, %d, %d)", $nid, $count, $last_assoc->timestamp, $last_assoc->uid);
+    }
+  } else {
+    // no associations: this is different from
+    // node_comment_statistics: we don't have records here if there
+    // are no assocs.
+    db_query("DELETE FROM {association_statistics} WHERE nid = %d", $nid);
+  }
+}
+
+function association_delete_all_for_type ($type) {
+  // TODO: update stats for all *referring* nodes of any type...
+  $sql = "DELETE FROM {association_statistics} WHERE";
+  $sql .= " nid IN (SELECT nid FROM {node} WHERE type = '%s')";
+  db_query($sql, $type);
+  $sql = "DELETE FROM {association} WHERE";
+  $sql .= " fromnid IN (SELECT nid FROM {node} WHERE type = '%s')";
+  $sql .= " OR tonid IN (SELECT nid FROM {node} WHERE type = '%s')";
+  db_query($sql, $type, $type);
+}
+
+function association_ajax_handler_add($nid, $type) {
+  $value = $_POST['textfield'];
+  $node = node_load(array('title' => $value, 'type' => $type));
+  if (!$node) {
+    print drupal_to_js(array('data' => ''));
+    exit;
+  }
+  
+  association_add($nid, $node->nid, 0, TRUE);
+  // generate the HTML here
+  // TO-DO - integrate this with the main theme somehow?
+  print drupal_to_js(array('data' => '<li><a href="/node/'.$node->nid.'" rel="tag">'.$value.'</a>' .
+  '&nbsp;<input type="image" title="Remove term" src="/sites/all/themes/scf_base/images/icon-x.gif" onclick="$.post(\'/association/ajax/delete/'.$nid.'/'.$node->nid.'\', {}, function() { $(\'a[href$=/node/'.$node->nid.']\').parent().hide(\'slow\'); });" />'
+  .'</li>'));
+  exit;  
+}
+
+function association_ajax_handler_delete($fromnid, $tonid) {
+  association_delete($fromnid, $tonid);
+  print '';
+  exit;
+}

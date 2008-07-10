@@ -1,0 +1,61 @@
+<?php
+
+/**
+ * Implementation of hook_install().
+ */
+function antibody_install() {
+  drupal_install_schema('antibody');
+  module_load_include("php", "antibody", "AntibodyModule");
+  antibody()->installForumContainer();
+  $vocabs = array(
+    'scf_keyword_vocabulary',
+    'scf_organization_vocabulary',
+    'species_host_vocabulary',
+    'species_reactivity_vocabulary',
+    'bio_ontologies_biological_process_vocabulary',
+    'bio_ontologies_cellular_component_vocabulary',
+    'bio_ontologies_molecular_function_vocabulary'
+  );
+  antibody()->addNodeTypeToVocabulariesByVarName($vocabs);
+  antibody()->addAssociatedTypes('gene', 'researchstatement');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function antibody_uninstall() {
+  drupal_uninstall_schema('antibody');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function antibody_schema () {
+  $schema['antibody'] = array(
+    'fields' => array(
+      'nid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'vid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'clonality' => array(
+        'description' => t('Monoclonal or polyclonal'),
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 16
+      ),
+    ),
+    'primary key' => array('vid'),
+    'unique keys' => array(
+      'nid_vid' => array('nid', 'vid'),
+    )
+  );
+  return $schema;
+}
+
+/**
+ * add associated types
+ */
+function antibody_update_6001 () {
+  module_load_include("php", "antibody", "AntibodyModule");
+  antibody()->addAssociatedTypes('gene', 'researchstatement');
+  return array();
+}
+

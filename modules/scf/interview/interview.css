@@ -1,0 +1,14 @@
+@CHARSET "UTF-8";
+/* -------------------------------------------------------------- 
+
+  @file interview.css
+  
+-------------------------------------------------------------- */
+
+.interview-image                  { float: right; }
+.interviewer .interview-statement { font-weight: bold; }
+.interview-byline                 { font-weight: bold; }
+.participant-key                  { font-weight: bold; }
+
+/* @todo Image control of main-interview-image... */
+.interview .content > img    { float: left; margin-right: 5px; }

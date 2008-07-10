@@ -1,0 +1,591 @@
+<?php
+
+// $Id: $
+
+/**
+ * implements hook_menu()
+ */
+function taxonomy_extra_menu() {
+  $items = array();
+  $items['node_taxonomy/%node/%taxonomy_vocabulary'] = array(
+    'title' => 'Add terms',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('taxonomy_extra_edit_node_vocab_terms_form', 1, 2),
+    'access arguments' => array('annotate content'),
+    'type' => MENU_CALLBACK
+  );
+  // new callback added by MAG 5/27/2008
+  $items['node_add_taxonomy_term/%/%'] = array(
+  	'title' => t('Add terms'),
+  	'page callback' => 'taxonomy_extra_add_node_vocab_term',
+  	'type' => MENU_CALLBACK,
+  	'access arguments' => array('annotate content'),
+  	'page arguments' => array(1,2),
+  );
+  $items['node_remove_taxonomy_term/%/%'] = array(
+  	'title' => t('Remove term'),
+  	'page callback' => 'taxonomy_extra_remove_node_vocab_term',
+  	'type' => MENU_CALLBACK,
+  	'access arguments' => array('annotate content'),
+  	'page arguments' => array(1,2),
+  );
+  return $items;
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function taxonomy_extra_perm() {
+  return array('annotate content');
+}
+
+/**
+ * implements hook_form_alter()
+ */
+function taxonomy_extra_form_alter(&$form, $form_state, $form_id) {
+  if ($form_id == 'node_type_form' && isset($form['#node_type'])) {
+    $type = $form['#node_type'];
+    // $type is an object (see node/content_types.inc)
+    
+    $subform = array(
+      '#type' => 'fieldset',
+      '#title' => t('Type-specific taxonomy settings'),
+      '#description' => t('Choose where vocabulary terms will be displayed and under what title.'),
+      '#theme' => 'taxonomy_extra_node_type_form',
+      '#tree' => TRUE
+    );
+
+    $vocabs = taxonomy_get_vocabularies($type->type);
+    $info = _taxonomy_extra_node_type_info($type->type);
+    $rows = array();
+
+    foreach ($vocabs as $voc) {
+      $vid = $voc->vid;
+      $key = 'vocab_' . $vid;
+      $subform[$key]['vid'] = array(
+        '#type' => 'hidden',
+        '#value' => $vid
+      );
+      $subform[$key]['vocabname'] = array(
+        '#type' => 'value',
+        '#value' => $voc->name
+      );
+      $subform[$key]['in_content'] = array(
+        '#type' => 'checkbox',
+        '#default_value' => _taxonomy_extra_info_default($info, $vid, 'in_content', FALSE)
+      );
+      $subform[$key]['in_block'] = array(
+        '#type' => 'checkbox',
+        '#default_value' => _taxonomy_extra_info_default($info, $vid, 'in_block', FALSE)
+      );
+      $subform[$key]['title'] = array(
+        '#type' => 'textfield',
+        '#size' => 30,
+        '#default_value' => _taxonomy_extra_info_default($info, $vid, 'title', $voc->name)
+      );
+      $subform[$key]['weight'] = array(
+        '#type' => 'weight',
+        '#default_value' => _taxonomy_extra_info_default($info, $vid, 'weight', $voc->weight)
+      );
+      $rows[] = $subform[$key];
+    }
+
+    $form['taxonomy_extra'] = $subform;
+    if (isset($form['#submit'])) {
+      $form['#submit'][] = 'taxonomy_extra_node_type_form_submit';
+    } else {
+      $form['#submit'][] = array('taxonomy_extra_node_type_form_submit');
+    }
+  }
+}
+
+function taxonomy_extra_node_type_form_submit($form, &$form_state) {
+  // dvm($form_state);
+  if (isset($form_state['values']['type']) && isset($form_state['values']['taxonomy_extra'])) {
+    $type = $form_state['values']['type'];
+    // clear out all the rows for this type
+    _taxonomy_extra_delete_node_type($type);
+    $info = $form_state['values']['taxonomy_extra'];
+    $sql = "INSERT INTO {taxonomy_extra} (type, vid, title, in_content, in_block, weight) VALUES ('%s', %d, '%s', %d, %d, %d)";
+    foreach ($info as $key => $voc) {
+      $voc = (object) $voc;
+      db_query($sql, $type, $voc->vid, $voc->title, $voc->in_content, $voc->in_block, $voc->weight);
+    }
+  }
+}
+
+
+/**
+ * implements hook_node_type()
+ */
+function taxonomy_extra_node_type($op, $info) {
+  switch ($op){
+    case 'delete':
+      _taxonomy_extra_delete_node_type ($info->type);
+      break;
+    case 'update':
+      //dvm($info);
+      break;
+  }
+}
+
+/**
+ * implements hook_theme()
+ */
+function taxonomy_extra_theme () {
+  return array(
+    'taxonomy_extra_node_type_form' => array(
+      'arguments' => array('form' => NULL)
+    ),
+    'taxonomy_extra_related_terms_block_list' => array(
+      'template' => 'related-terms-block-list',
+      'arguments' => array(
+        'title' => NULL,
+        'terms' => array(),
+        'nid' => NULL,
+        'vid' => NULL,
+      )
+    )
+  );
+}
+
+
+/**
+ * implements hook_block()
+ */
+function taxonomy_extra_block ($op = 'list', $delta = 'listing', $edit = array()) {
+  if ($op == 'list') {
+    $blocks['related_terms'] = array(
+      'info' => t('Related terms'),
+      'weight' => 0,
+      'status' => 0,
+      'cache' => BLOCK_NO_CACHE
+    );
+    return $blocks;
+  } else if ($op == 'view') {
+    if ($delta == 'related_terms') {
+      return taxonomy_extra_related_terms_block();
+    }
+  }
+}
+
+
+function taxonomy_extra_edit_node_vocab_terms_form (&$form_state, $node, $vocab) {
+  $fakeform = array();
+  // fool taxonomy_form_alter....
+  $fakeform['#node'] = $node;
+  $fakeform['type']['#value'] = $node->type;
+  taxonomy_form_alter($fakeform, $form_state, $node->type . '_node_form');
+  $form = array();
+  $vid = $vocab->vid;
+  $form['taxonomy']['#tree'] = TRUE;
+  if (isset($fakeform['taxonomy']['tags'][$vid])) {
+    $form['taxonomy']['tags'][$vid] = $fakeform['taxonomy']['tags'][$vid];
+  } else {
+    $form['taxonomy'][$vid] = $fakeform['taxonomy'][$vid];
+  }
+  $form['nid'] = array(
+    '#type' => 'value',
+    '#value' => $node->nid
+  );
+  $form['vocab_id'] = array(
+    '#type' => 'value',
+    '#value' => $vid,
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+    '#weight' => 10
+  );
+  return $form;
+}
+
+
+function taxonomy_extra_edit_node_vocab_terms_form_validate ($form, &$form_state) {
+}
+
+
+function taxonomy_extra_edit_node_vocab_terms_form_submit($form, &$form_state) {
+  // TODO: must load the node and inject this form's taxonomy info
+  // into the existing $node->taxonomy array or else the other stuff
+  // will be deleted by taxonomy_node_save:
+  if (isset($form_state['values']['nid'])) {
+    $vocab_id = $form_state['values']['vocab_id'];
+    $node = node_load($form_state['values']['nid']);
+    if ($node) {
+      if (isset($form_state['values']['taxonomy'])) {
+        $terms = array();
+        if (isset($node->taxonomy)) {
+          $terms = $node->taxonomy;
+        }
+        $tax = $form_state['values']['taxonomy'];
+        if (isset($tax['tags'])) {
+          foreach ($terms as $key => $term) {
+            if (isset($term->vid) && ($term->vid == $vocab_id)) {
+              unset($terms[$key]);
+            }
+          }
+          $terms['tags'] = $tax['tags'];
+          // remove existing terms from this vocab
+        } else {
+          $oldvids = array();
+          $newterms = array();
+          foreach ($tax as $vid => $tid) {
+            $oldvids[$vid] = TRUE;
+            $newterms[] = taxonomy_get_term($tid);
+          }
+          foreach ($terms as $key => $term) {
+            if (isset($oldvids[$term->vid]) && $oldvids[$term->vid]) {
+              unset($terms[$key]);
+            } 
+          }
+          $terms = array_merge($terms, $newterms);
+        }
+        taxonomy_node_save($node, $terms);
+        $form_state['redirect'] = 'node/' . $node->nid;
+      }
+    }
+  }
+}
+
+
+function taxonomy_extra_related_terms_block () {
+  // abort if we're not doing a node 'view' page
+  if (!iic_util_current_page_is_node_view())
+    return;
+  $node = iic_util_current_page_node();
+  $out = array();
+  $found = FALSE;
+  if ($node) {
+    $info = _taxonomy_extra_node_type_info($node->type);
+    foreach ($info as $vid => $vocab) {
+      if ($vocab->in_block) {
+        $found = TRUE;
+        $terms = taxonomy_extra_theme_vocab_terms($node, $vid);
+        $out[] = theme('taxonomy_extra_related_terms_block_list', $vocab->title, $terms, $node->nid, $vid);
+      }
+    }
+    // TODO: shouldn't we show something even if no terms are found? at least a link to add terms?
+    if ($found) {
+      $start = '<div id="related-resources" class="clear-block">';
+      $end = '</div>';
+      return array(
+        'subject' => t("Related terms"),
+        'content' => $start . implode('', $out) . $end
+      );
+    }
+  }
+}
+  
+function _taxonomy_extra_resolve_vid ($vocab) {
+  if (is_numeric($vocab))
+    return $vocab;
+  if (is_string($vocab))
+    return variable_get($vocab . '_vocabulary', FALSE);
+  if (is_object($vocab))
+    return $vocab->vid;
+  if (is_array($vocab))
+    return $vocab['vid'];
+  return FALSE;
+}
+
+/**
+ * get array of taxonomy links from a specific vocab
+ */
+function taxonomy_extra_theme_vocab_terms ($node, $vocab) {
+  static $links = array();
+  $node->build_mode = NODE_BUILD_NORMAL;
+  if (!isset($links[$node->nid])) {
+    $links[$node->nid] = taxonomy_link('taxonomy terms', $node);
+  }
+  $terms = array();
+  $vid = _taxonomy_extra_resolve_vid($vocab);
+  if ($vid) {
+    if (isset($node->taxonomy)) {
+      foreach ($node->taxonomy as $term) {
+        // don't correctly handle previewing yet...
+        if (is_object($term)) {
+          if ($term->vid == $vid) {
+            if (isset($links[$node->nid]['taxonomy_term_' . $term->tid])) {
+           	  // delete button added by MAG 5/29/2008
+              $term_link = taxonomy_extra_theme_link($links[$node->nid]['taxonomy_term_' . $term->tid]);
+              
+              // determine whether to show the delete button
+              // it should be shown either on the related items block, or on a case-by-case basis for other pages.
+              
+              $delete_button_flag = false;
+              if (iic_util_current_page_is_node($node->nid) && (user_access('annotate content') || node_access('update', $node))) {
+              	// related items block
+              	// NOTE: If the condition for the related items block changes, this code must be changed as well.
+              	if ($node->type == 'pubnode' || $node->type == 'interview')
+              		$delete_button_flag = true;
+              }
+              
+              if ($delete_button_flag) {
+              	$term_link .= related_terms_block_delete_button($node->nid, $term->tid);
+              }
+              $terms[] = $term_link;
+            }
+          }
+        }
+      }
+    }
+  }
+  return $terms;
+}
+
+function _taxonomy_extra_add_terms_link ($nid, $vid) {
+  return l(t('Add'), 'node_taxonomy/' . $nid . '/' . $vid,
+    array(
+      'attributes' => array(
+        'class' => 'add_term',
+        'title' => t('Edit existing terms or add new one...'),
+      )
+    )
+  );
+}
+
+/**
+ * get list of taxonomy links from a specific vocab
+ */
+function taxonomy_extra_theme_term_list ($node, $vocab, $sep = ', ') {
+  $vid = _taxonomy_extra_resolve_vid($vocab);
+  $terms = taxonomy_extra_theme_vocab_terms($node, $vid);
+  $out = implode($sep, $terms);
+  // if this is the node's page view and user is an annotator or can update this node
+  if (iic_util_current_page_is_node($node->nid) && (user_access('annotate content') || node_access('update', $node))) {
+    $out .= ' ' . _taxonomy_extra_add_terms_link($node->nid, $vid);
+  }
+  return $out;
+}
+
+/**
+ * theme a single link of the type coming from taxonomy_link().  This
+ * code was adapted from theme_links()
+ */
+function taxonomy_extra_theme_link ($link) {
+  if (isset($link['href'])) {
+    // Pass in $link as $options, they share the same keys.
+    return l($link['title'], $link['href'], $link);
+  }
+  else if (!empty($link['title'])) {
+    // Some links are actually not links, but we wrap these in <span> for adding title and class attributes
+    if (empty($link['html'])) {
+      $link['title'] = check_plain($link['title']);
+    }
+    $span_attributes = '';
+    if (isset($link['attributes'])) {
+      $span_attributes = drupal_attributes($link['attributes']);
+    }
+    return '<span'. $span_attributes .'>'. $link['title'] .'</span>';
+  }
+}
+
+
+function _taxonomy_extra_delete_node_type ($type) {
+  db_query("DELETE FROM {taxonomy_extra} WHERE type = '%s'", $type);
+}
+
+function _taxonomy_extra_node_type_info ($type) {
+  if (is_object($type))
+    $type = $type->type;
+  else if (is_array($type))
+    $type = $type['type'];
+
+  $q = "SELECT vid, title, in_content, in_block, weight";
+  $q .= " FROM {taxonomy_extra}";
+  $q .= " WHERE type = '%s'";
+  $q .= " ORDER BY weight ASC, title ASC";
+  
+  $result = db_query(db_rewrite_sql($q), $type);
+  $lines = array();
+  while ($voc = db_fetch_object($result)) {
+    $lines[$voc->vid] = $voc;
+  }
+  return $lines;
+}
+
+function theme_taxonomy_extra_node_type_form($form) {
+  $rows = array();
+  $headers = array(
+    t('Vocabulary'),
+    t('In content?'),
+    t('In block?'),
+    t('Title'),
+    t('Weight')
+  );
+
+  foreach (element_children($form) as $i) {
+    // Build the table row.
+    $rows[] = array(
+      'data' => array(
+        array('data' => $form[$i]['vocabname']['#value'] . drupal_render($form[$i]['vid'])),
+        array('data' => drupal_render($form[$i]['in_content'])),
+        array('data' => drupal_render($form[$i]['in_block'])),
+        array('data' => drupal_render($form[$i]['title'])),
+        array('data' => drupal_render($form[$i]['weight']))
+      )
+    );
+  }
+
+  $output = theme('table', $headers, $rows);
+  $output .= drupal_render($form);
+  return $output;
+}
+
+
+/**
+ * Process variables for related-terms-block-list.tpl.php.
+ *
+ * The $variables array contains the following arguments:
+ * - $title
+ * - $terms
+ * - $vid the vocab id
+ * - $nid the node id
+ * @see related-terms-block-list.tpl.php
+ */
+function template_preprocess_taxonomy_extra_related_terms_block_list(&$variables) {
+  $vid = $variables['vid'];
+  $nid = $variables['nid'];
+  // link replaced by MAG 5/29/2008
+  if (user_access('annotate content') || node_access('update', node_load($nid))) {
+    $variables['has_addlink'] = true;
+  	//$variables['addlink'] = _taxonomy_extra_add_terms_link($nid, $vid);
+  } else {
+  	$variables['has_addlink'] = false;
+    //$variables['addlink'] = '';
+  }
+}
+
+function _taxonomy_extra_info_default ($info, $vid, $field, $dflt = NULL) {
+  if (isset($info[$vid]->$field))
+    return $info[$vid]->$field;
+  else
+    return $dflt;
+}
+
+/**
+ * Adds a new taxonomy term to a node (added by MAG 5/27/2008)
+ *
+ * This is intended to be called via AJAX / AHAH.
+ * @param integer $nid The node ID of the article to be tagged
+ * @param integer $vid The vocab ID for the term
+ * @param string $term The name of the term to add
+ */
+function taxonomy_extra_add_node_vocab_term($nid, $vid) {
+	// look up the term ID in the database
+	$term_name = $_POST['textfield'];
+	$terms = taxonomy_get_term_by_name($term_name);
+	$term = $terms[0];
+	
+	// add it to the node ID
+	$node = node_load($nid);
+	$old_term_list = taxonomy_node_get_terms($node);
+	foreach ($old_term_list as $old_term)
+		if ($old_term->tid == $term->tid) {
+			print drupal_to_js(array('data' => ''));
+			exit;
+		}
+
+	
+	$old_term_list[] = $term;
+	taxonomy_node_save($node, $old_term_list);
+	
+	// generate the HTML here
+	// TO-DO - integrate this with the main theme somehow?
+	print drupal_to_js(array('data' => '<li><a title="'
+	 . $term->description .
+	'" href="/taxonomy/term/'.$term->tid.'" rel="tag">'.$term->name.'</a>'.related_terms_block_delete_button($nid,$term->tid).'</li>'));
+	exit;
+}
+
+/**
+ * Removes a taxonomy term from a node (added by MAG 5/29/2008)
+ * 
+ * This function is intended to be called by AJAX.
+ * @param integer $nid The ID of the node to remove the term from
+ * @param integer $vid The ID of the term to remove
+ */
+function taxonomy_extra_remove_node_vocab_term($nid, $tid) {
+	// look up the old taxonomy and remove the term ID
+	$node = node_load($nid);
+	$old_term_list = taxonomy_node_get_terms($node);
+	foreach ($old_term_list as $key => $old_term)
+		if ($old_term->tid == $tid) {
+			unset($old_term_list[$key]);
+		}
+
+	// save and return
+	taxonomy_node_save($node, $old_term_list);
+	
+	print '';
+	exit;
+}
+
+/**
+ * Creates the form to look up and submit taxonomy terms (added by MAG 5/28/2008)
+ * 
+ * Implements hook_form()
+ * @param object $form_state The Form State object, as passed in by Drupal
+ * @param integer $nid The ID of the current node
+ * @param integer $vid The ID of the current vocabulary
+ */
+function taxonomy_extra_form_addterm(&$form_state, $nid, $vid) {
+	$form = array();
+	/*$form['cancel'] = array(
+		'#type' => 'image_button',
+		'#src' => 'sites/all/themes/scf_base/images/icon-x.gif',
+		'#attributes' => array(
+			'onclick' => "$('#taxonomy-extra-addtermdiv-" . $vid . "').slideUp('slow');return false;"
+		),
+		'#executes_submit_callback' => FALSE
+	);*/
+	
+	/*$form['caption'] = array(
+		'#type' => 'markup',
+		'#value' => t('Add new term:')
+	);*/
+	
+	$form['textfield'] = array(
+		'#type' => 'textfield',
+		'#autocomplete_path' => 'taxonomy/autocomplete/'. $vid,
+		'#size' => 20,
+		'#id' => 'taxonomy-extra-text-' . $vid,
+	);
+	$form['add'] = array(
+		'#type' => 'button',
+		'#value' => t('Add'),
+		'#ahah' => array(
+			'path' => 'node_add_taxonomy_term/' . $nid . '/' . $vid,
+			'wrapper' => 'taxonomy-extra-termlist-' . $vid,
+			'event' => 'click',
+			'effect' => 'slide',
+			'method' => 'append',
+			'progress' => 'none',
+		),
+		'#executes_submit_callback' => FALSE
+	);
+
+	$form['nid'] = array(
+		'#type' => 'value',
+		'#value' => $nid
+	);
+	$form['vid'] = array(
+		'#type' => 'value',
+		'#value' => $vid
+	);
+	return $form;
+}
+
+/**
+ * Generates the "delete term" button.  Added by MAG 5/29/2008
+ *
+ * @param integer $node_id The ID of the node to delete from
+ * @param integer $term_id The ID of the term to delete
+ * @return The HTML for the delete button
+ */
+function related_terms_block_delete_button($node_id, $term_id) {
+	return <<<HTML
+&nbsp;<input type="image" src="/sites/all/themes/scf_base/images/icon-x.gif" onclick="$.post('/node_remove_taxonomy_term/$node_id/$term_id', {}, function() { \$('a[href$=/$term_id]').parent().hide('slow'); });" />
+HTML;
+}

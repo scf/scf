@@ -1,0 +1,615 @@
+/* 	-------------------------------------------------------------
+
+	GLOBAL STYLE SHEET FOR : www.plosone.org
+	
+	CREATED ON  : 08-26-2006
+	MODIFIED ON : 08-14-2007
+	
+	CREATED BY	: MARGARET SHEAR
+	MODIFIED BY	: SEBASTIAN TOOMEY
+
+   	------------------------------------------------------------- */
+
+@import url(pone_annotation.css);
+@import url(pone_forms.css);
+
+html 		{ margin: 0 0 1px 0; min-height: 100%; /* set margin and height to eliminate the scroll bar page shift on mozilla and safari */ background: transparent url(../images/pone_html_bg.gif) 0 0 repeat-x; } /*changed background color to transparent to partially fix IE7 repaint bug of homepage body background image -SWT */
+body 		{ font: 82.5% Verdana, Arial, Helvetica, sans-serif; color: #00131D; margin: 0; border-bottom: 6px solid #202020; min-height: 100%; }
+
+a:link		{ color: #069; text-decoration: underline; }
+a:visited 	{ color: #004B70; }
+a:hover		{ color: #008ED5; text-decoration: none;}
+a:active	{ }
+blockquote	{ font-style: italic; font-size: .9em; margin: 0 20px;}
+cite		{ font-style: italic; }
+code		{ font-family: "Courier New", Courier, monospace; }
+.monospace      { font-family: "Courier New", Courier, monospace; } /* added 04-02-2007 */
+em			{ font-style: italic; }
+
+img			{ border: 0; }
+label em 	{ display: block; color: #c00; } /* em wraps all error messages within labels */
+.error 		{ display: block; color: #c00; font-style: normal; } /* em wraps all error messages within labels */
+strong		{ font-weight: bold; }
+h1 sup		{ font-size: .75em; }
+ul, ol, dl	{ margin: 20px; position: relative; }
+dt			{ font-weight: bold; }
+dd			{ margin: 0; }
+table		{ margin: 20px; border: none;}
+th			{ padding: 6px; background-color: #ACF1FF; border: 4px solid #FFF; border-width: 0 3px 3px 0; font-weight: bold;}
+td			{ padding: 6px; background-color: #D2F7FF; border: 4px solid #FFF; border-width: 0 3px 3px 0; }
+/* Default Headings */
+h1, h2, h3	{ font-family: Georgia, "Times New Roman", Times, serif; letter-spacing: -.04em; color: #333; /*position: relative; Note: this was causing links in floated articleMenu to be covered up and unclickable in Firefox2 */ }
+h1			{ font-size: 2.2em; font-weight: normal; color: #004B70;}
+h2			{ font-size: 1.6em; font-weight: normal; border-bottom: 1px solid #ccc; padding: 2px 0;}
+h3			{ font-size: 1.4em; font-weight: normal; margin: .8em 0; }
+h4			{ font-size: 1.2em; }
+h5			{ font-size: 1em; }
+h6			{ font-size: .9em; }
+input,
+textarea	{ font-family: Verdana, Arial, Helvetica, sans-serif; color: #555; font-size: 1em;}
+/* Global : Styles
+----------------------------------------------------------
+*/
+
+/* Global : Icons
+----------------------------------------------------------
+*/
+a.tooltip,
+a.tooltip:visited,
+a.discuss,
+a.discuss:visited,
+a.commentary,
+a.commentary:visited,
+a.trackback,
+a.trackback:visited,
+a.rating,
+a.rating:visited,
+a.annotation,
+a.annotation:visited,	
+a.user,
+a.user:visited,
+a.instructions,
+a.instructions.visited	{ color: #006699; }
+
+a.tooltip,
+a.tooltip:visited	{ font-weight: bold; }
+	
+a.tooltip:hover,
+a.discuss:hover,
+a.commentary:hover,
+a.trackback:hover,
+a.rating:hover,
+a.user:hover	{ color: #008ed5; }
+li.icon,
+a.icon, 	/* use for any accent oriented icon */
+a.tooltip	/* use for any functional icon for on page actions */
+					{ padding: 2px 0 2px 18px; background-repeat: no-repeat; background-position: 0px 0px; }
+/* for user dashboard icons */
+#user a.icon		{ padding: 0 16px 0 0; background-repeat: no-repeat; background-position: 100% -14px; padding-top: 1px; padding-bottom: 1px;}
+
+a.rating      { padding: 0 0 2px 5px; border: none; background: transparent; }
+h6 a.rating { font-size: .9em; }
+
+/* portions of this icon set have been adapted Mark Jame's Silk icon set available under a Creative Commons Attribution 2.5 license at http://www.famfamfam.com/lab/icons/silk/ */
+a.new			{ padding: 6px; }
+
+a.back			{ background-image: url(../images/pone_icon_back.gif);}
+a.logout		{ background-image: url(../images/pone_icon_user_logout.gif); }
+a.nomessage		{ background-image: url(../images/pone_icon_user_nomessage.gif); }
+a.user			{ background-image: url(../images/pone_icon_user.gif); font-weight: bold; /*username always appears bolded for emphasis*/}
+a.preferences 	{ background-image: url(../images/pone_icon_user_preferences.gif); }
+a.rss			{ background-image: url(../images/pone_icon_rss1.gif); }
+a.advanced		{ background-image: url(../images/pone_icon_advanced.gif); }
+a.browse		{ background-image: url(../images/pone_icon_browse.gif); }
+
+/* Article Icons */
+a.yourfeedback	{ background-image: url(../images/pone_icon_feedback.gif);} /* keep at top of all classes to avoid weird ie multiple class bug */
+a.annotation	{ background-image: url(../images/pone_icon_annotation.gif); }
+a.discuss	{ background-image: url(../images/pone_icon_discuss.gif); }
+a.commentary	{ background-image: url(../images/pone_icon_commentary.gif); }
+a.trackback	{ background-image: url(../images/pone_icon_trackback.gif); }
+
+a.xml 		{ background-image: url(../images/pone_sidenav_xml.gif); }
+a.pdf 		{ background-image: url(../images/pone_sidenav_pdf.gif); }
+a.email 	{ background-image: url(../images/pone_sidenav_email.gif); }
+a.print 	{ background-image: url(../images/pone_sidenav_print.gif); }
+a.citation	{ background-image: url(../images/pone_sidenav_citation.gif); }
+a.citing	{ background-image: url(../images/pone_sidenav_citing.gif); }
+a.reprints	{ background-image: url(../images/pone_sidenav_reprint.gif); }
+
+a.read 		{ background-image: url(../images/jour_sidenav_read.gif); }
+a.ncbi 		{ background-image: url(../images/jour_sidenav_ncbi.gif); }
+
+a.article 	{ background-image: url(../images/pone_icon_article.gif); }
+a.plos		{ background-image: url(../images/jour_sidenav_plos.gif); }
+
+a.license 	{ background-image: url(../images/jour_sidenav_license.gif); }
+a.google 	{ background-image: url(../images/jour_sidenav_google.gif); }
+
+
+
+/* Article Tooltips : for any js onpage action */
+a.addannotation	{ background-image: url(../images/pone_tooltip_addannotation.gif); }
+a.expand		{ background-image: url(../images/pone_tooltip_expand.gif); } /* apply this class on closed state */
+a.collapse		{ background-image: url(../images/pone_tooltip_collapse.gif); } /* apply this class on open state */
+a.flag			{ background-image: url(../images/pone_tooltip_flag.gif); }
+a.respond		{ background-image: url(../images/pone_tooltip_respond.gif); }
+
+
+/* styles for buttons for ajax submission forms */
+/* all buttons get class btn */
+div.btn				{ display: inline; margin: 0; text-transform: uppercase; font-size: .9em;}
+div.btn	*			{ vertical-align: middle; padding: 4px; font-weight: bold; cursor: pointer;}
+div.btn	a			{ text-decoration: none; padding-right: 20px;}
+/* for closing and canceling viewing windows */
+div.close a			{ color: #666; float: right; margin: 0; border-left: 2px solid #0bf; border-bottom: 2px solid #0bf; background: #fff url(../images/pone_icon_close_flag.gif) no-repeat 96% 50%; font-size: .9em;}
+div.close a:hover	{ background-color: #D2F7FF; }
+/* for posting and saving */
+div.post			{ font-weight: bold; margin-left: 40%; margin-top: 5px; }
+div.post a			{ display:block; color: #393; border: 2px solid #393; background: #fff url(../images/pone_icon_post.gif) no-repeat 96% 50%;}
+div.post span.loading { padding-left: 40px; }
+div.post span,
+div.post.disable a    { display:none; }
+div.post.disable span			{ display:block; color: #333; border: 2px solid #333; background: #fff url(../images/pone_icon_post.gif) no-repeat 96% 50%;}
+div.post a:hover	{ background-color: #55E912; color: #fff;}
+.important 			{ font-weight: bold; }
+
+div.preview div.close a { border-color: #666; margin-bottom: 5px;}
+div.preview div.close a:hover { background-color: #ddd; }
+
+div.pane div.close a		{ margin-top: -20px; margin-right: -20px; border-color: #ccc; }
+div.pane div.close a:hover	{ background-color: #ddd; color: #000;}
+div.pane div.post a			{ border-color: #ccc; }
+div.pane div.post a:hover	{ background-color: #393; }
+
+/* div.rating div.close a { border-left: 2px solid #069; border-bottom: 2px solid #069;} */
+
+/* Main Container: Main Menu : Elements
+
+----------------------------------------------------------
+
+*/
+#container 			{ position: relative; }
+#container, #hdr	{ margin: 0 auto; min-width: 675px; max-width: 930px; }
+#content 			{ margin: 50px 4px 50px 22px; line-height: 1.8em; font-size: .9em; }
+
+/* Horizontal Advertising Banners : Top & Bottom Slots
+
+----------------------------------------------------------
+
+*/
+div#topBanner		{ min-width: 942px; /* need ie hack for min-width */ height: 70px; position: relative; }
+div#topBanner div 	{ padding-top: 4px; } /* sets top padding on all banner slots */
+#topBanner .left 	{ position: absolute; left: 0; float: none;} /* left banner slot */
+#topBanner .right 	{ position: absolute; right: 0; float: none;} /* right banner slot */
+
+/* Header : Elements
+
+----------------------------------------------------------
+
+*/
+
+
+div#hdr 			{ height: 150px; position: relative; z-index: 997;}
+#hdr #logo			{ background: transparent url(../images/pone_hdr_logo.gif) no-repeat top left; color: #039; }
+#hdr #logo 			{ width: 312px; height: 90px; position: absolute; top: 20px; left: 8px; margin: 0; font-size: 1.6em; }
+#hdr #logo a 		{ width: 312px; height: 90px; display: block; }
+#hdr #logo span,
+#hdr #tagline span 	{ display: block; width: 0; height: 0; overflow: hidden; }
+
+
+
+
+/* 	Navigation : Elements
+----------------------------------------------------------
+	Original dropdown structure and CSS was produced by CSSplay
+	http://www.cssplay.co.uk/menus/final_drop.html
+----------------------------------------------------------
+*/
+
+ul#nav 		{ font-size: .85em; height:1.9em; margin: 0; padding: 0; position: absolute; bottom: 0; left: 14px; top:129px; list-style-type: none; z-index: 800; width: 100%;}
+ul#nav li	{ float: left; position: relative; list-style-type: none; margin: 0; padding: 0; }
+#nav li a, 
+#nav li a:visited { font-weight: bold;display:block; text-decoration:none; width: auto; padding: 5px .6em .1em .6em; float:left; height: 1.6em; line-height:normal; color:#069; }
+#nav li li	{ width: 100%; position: relative; z-index: 802;}
+#nav li ul 	{ visibility:hidden; position:absolute; top:1.5em; left:0; height:0; overflow:hidden; text-align: left; margin: 0; padding: 0; background-color: #fff; z-index: 801;}
+#nav table 	{ margin:-1px; border-collapse:collapse; }
+/* fist line style for IE7 and non-IE browsers and the second line for IE5.5 and IE6 */
+#nav li.over a,
+#nav li:hover a,
+#nav li a:hover					{ background-color: #069; color: #FFF!important; }
+#nav li.over ul,
+#nav li:hover ul,
+#nav li a:hover ul 				{ visibility:visible; display:block; height:auto; width:16.6em; top:2.1em; overflow:visible; border: 1px solid #069;}
+#nav li.over li a,
+#nav li:hover ul li a,
+#nav li a:hover ul li a 		{ display:block; font-weight:normal!important; background:transparent; text-decoration:none; height:auto; line-height: 1.5em;padding:0.2em 0.2em 0.2em 0.6em; width:15.8em; border-top: 0; color: #069!important; }
+
+#nav li.over ul li a:hover,
+#nav li:hover ul li a:hover,
+#nav li a:hover ul li a:hover 	{ border-top: 0; color: #069!important; background-color: #fff;text-decoration: underline;}
+#nav li.journalnav				{ float: right; margin-right: 14px;}
+
+
+/* Search Dashboard */
+
+#db 			{ padding: 0; text-align: center; font-size: .8em; position: absolute; top: 44px; right: -20px; padding: 0; border-width: 0; color: #888; background: url(../images/pone_db_bg.gif) no-repeat top left; padding: 14px 15px 10px 15px;}
+#db fieldset 	{ padding: 0; margin: 0; background-color: transparent; vertical-align: top; width: 246px; border: none; }
+#db fieldset div{ position: relative; }
+#db fieldset legend,
+#db fieldset label
+				{ display: none; }
+#db input.searchField {
+	background-image: url(../images/pone_searchinput_bg.gif);
+	background-repeat: no-repeat;
+	background-color: transparent;
+	color: #666;
+	padding: 7px 7px 7px 27px;
+	width: 190px;
+	margin: 0;
+	position: relative;
+	float: left;
+	font-size: 1em;
+	border-width: 0;
+}
+#db fieldset input.button { float: left; position: relative; top:-1px; }
+
+/* new layout */
+#db fieldset input.button { padding: 0 5px; }
+#db input.searchField { background:#fff; font-size: 1.2em; padding: 4px; border: 1px solid #5FA6D0; color: #6398B7;}
+
+/*  user wraps logged in user controls */
+#user 		{ position: absolute; right: 0; font-size: .8em; text-align: right; top: 18px; color: #fff; list-style-type: none;}
+#user div 	{ } /* contains elements and applies padding */
+#user ul,
+#user p 	{ margin: 0; padding: 0; display: inline;}
+#user ul li { list-style-type: none;display: inline; }
+#user li a:link,
+#user li a:visited 	{ padding: 0; margin-left: 4px;}
+#user a:link,
+#user a:visited {  color: #FFF!important; }
+#user a:hover { text-decoration: none; }
+
+
+/* links wraps browse and RSS buttons */
+#links 		{ position: absolute; right: 0; padding: 0; right: 0;height: 38px; bottom: 8px;text-decoration: none; }
+ul#links 	{ margin: 0; padding: 0; list-style-type: none;}
+ul#links li { background: url(../images/pone_links_li_tr.gif) no-repeat 100% 0; list-style-type: none; display: block; padding: 0; margin: 0 0 0 4px; text-indent: 0; float: left;}
+	ul#links a,
+	ul#links a:visited	{ font-size: .85em; font-weight:bold; background: url(../images/pone_links_li_bg.gif) no-repeat top left;  padding:1px 0; padding-left: 20px; color: #fff; margin: 0 6px 0 0;text-decoration: none; display: block; }
+ul#links li.browse a,
+ul#links li.browse a:visited { background-image: url(../images/pone_links_browse_bg.gif); }
+ul#links li.rss a,
+ul#links li.rss a:visited { background-image: url(../images/pone_links_rss_bg.gif); }
+
+span.new { color: #fff; float: left; display: block; }
+/* Footer : Elements
+----------------------------------------------------------=
+*/
+div#ftr 		{ background: #FFF url(../images/pone_html_bg.gif) repeat-x 0px -128px; font-size: .85em; width: 100%; border-top: 1px solid #003956; margin: 20px 0 0 0; padding: 0; text-align: center; clear: both; }
+div#ftr ul 		{ margin: 0; padding: 0; list-style-type: none; }
+div#ftr ul li 	{ margin: 0 5px; display: inline; }
+div#ftr ul a, div#ftr ul a:visited
+				{ color: #fff;}
+div#ftr img 	{ margin: 0 10px -8px 10px; display: inline; }
+div#ftr p 		{ margin: 0 0 10px 0; padding: 10px; background-color: #FFF; border-bottom: 1px solid #003956; white-space: nowrap; }
+div#ftr p span 	{ display: inline; background: #FFF url(../images/jour_ftr_cc_logo.png) no-repeat left center; padding: 8px 8px 8px 25px; }
+div#ftr div.powered { background-color: #202020; color: #bbb; font-size: .9em; padding: 10px 0 4px 0; letter-spacing: .03em; margin-top: 10px; border-top: 1px solid #fff;}
+div.powered a:link,
+div.powered a:visited,
+div.powered a:hover { color: #ccc; font-weight: bold;}
+/* Research Article : Elements
+----------------------------------------------------------=
+*/
+div#rhc			{ float: right; width: 240px; position: relative; padding-top: 20px;}
+div.content 	{ margin-right: 255px; }
+
+div.static h1,
+div.content h1 	{ /* article title */font-size: 2.2em;	line-height: 1.1em;	margin: 10px 0 0 0;font-weight: normal; color: #004263; }
+
+
+div.static h1		{ padding-top: 10px; border-top: 6px solid #004263; }
+div.pageerror h1	{ background-color: #004263; color:#fff; padding: 8px;}
+div.pageerror p		{ margin-left: 8px; }
+div.content h2	{ /* article sub-title */ margin: 10px 0; font-style: italic; font-size: 1.5em; background: none; padding: 0;}
+
+div.static h2,
+div.content h3	{ /* article main body heading */ font-size: 1.6em; margin: 20px 0 0 0; border-bottom: 1px solid #ccc; padding-bottom: 3px;}
+
+div.static h3,	
+div.content h4	{ /* article second level heading */ font-size: 1.2em; margin: 20px 0 0 0; color: #333; font-family: Georgia, "Times New Roman", Times, serif; font-weight: bold;}
+
+div.static h4,
+div.content h5	{ font-size: 1em; color: #333; }
+
+div.content ul,
+div.content ol	{ margin: 10px 0 10px 60px; padding: 0; }
+div.content li	{ margin: 0; padding: 0; }
+
+div.static ul li,
+div.content	ul li{ list-style-type: none; background: url(../images/pone_sectionnav_li_bg.gif) no-repeat 0 6px; padding-left: 12px;}
+
+div#contentHeader { /* open access image */ position: relative; top:0; height:34px; margin:0; background:#004263 url(../images/pone_content_oa.gif) no-repeat 100% 0; }
+div#contentHeader p { margin: 0; padding:0; text-indent: -9999px; }
+div#contentHeader p#articleType { text-transform:uppercase; text-indent:7px; margin-top:-13px; font-weight:bold; color:#fff; background-color:transparent; }
+
+div#publisher { border-bottom:1px dashed #004263; background-color:#fff; } /* background color allows bottom border to display in IE6 */
+div#publisher p { margin:0 0 2px 0; }
+div#publisher p a { font-weight:bold; font-style:italic; }
+
+ol.references 	{ margin: 10px 0; padding: 0 10px; }
+ol.references li{ font-size: 1em; padding: 5px; margin: 0; list-style-position: outside; }
+ol.references a.find { font-size: .9em; text-transform: uppercase; font-weight: bold; margin-left: 4px;}
+ol.references span.authors
+				{ font-weight: bold; }
+
+p.oa-banner		{ margin: 0; padding: 5px 0;font-size: .85em; border-bottom: 8px solid #069; color: #666; }
+p.authors		{ margin: 10px 0 0 0; font-weight: bold; font-size: 1.1em; }
+p.affiliations	{ font-size: .85em; margin: 0; }
+
+div.abstract	{ margin: 15px 0; }
+div.articleinfo	{ font-size: .9em; padding: 10px;  margin: 10px 0; background: #DBDBDB url(../images/pone_abstract_bg.gif) repeat-x top; }
+div.contributions { font-size: .9em; }
+div.articleinfo p,
+div.abstract p	{ margin: 0 0 1em 0; }
+div.abstract h2 { font-size: 1.6em; font-style: normal; margin: 20px 0 0 0; border-bottom: 1px solid #ccc; padding-bottom: 3px; }
+div.abstract h3	{ font-size: 1em; margin: 0; font-family: Verdana, Arial, Helvetica, sans-serif; font-weight: bold; letter-spacing: normal; border-bottom: none;}
+div.pullQuote	{ font-size: 2em; line-height: 1em; width: 55%; padding: 10px; float: right; letter-spacing: -.05em; font-style: italic; margin: 5px; }
+div.box			{ color: #000; padding: 10px; background-color: #D2F7FF; }
+
+/* Menu next to article title containing download links, print link, etc. */
+div#articleMenu { float:right; width:165px!important; margin:10px 0 20px 10px; padding:0 0 12px 10px; background:#fff; }
+div#articleMenu ul { list-style-type:none; margin:0 15px 0 0; padding:0; background:none; position:static!important; } /* position:static fixes display issues in IE6 */
+div#articleMenu ul li { border-bottom: 1px solid #ccc; margin:0; padding:1px 0; font-size:.85em; background:none; }
+div#articleMenu ul li a:link,
+div#articleMenu ul li a:visited { background-color:transparent; background-position:5% 50%; background-repeat:no-repeat; padding:2px 0 2px 25px; color:#666; text-decoration:none; }
+div#articleMenu ul li a:hover { text-decoration:underline; color:#008ED5; }
+
+/* Related articles at top of right column on article pages */
+dl#relatedArticles { margin:0 0 20px 0; padding:9px 0 .5em 0; border-bottom:1px solid #666; background-color:#fff; }
+dl#relatedArticles dt { font-size:1em; color:#303030; margin-bottom:.5em; }
+dl#relatedArticles dd { line-height:1.2em; margin-bottom:.5em; }
+dl#relatedArticles dd a:link,
+dl#relatedArticles dd a:visited { font-size:.95em; color:#069; text-decoration:none; }
+dl#relatedArticles dd a:hover { color:#008ED5; text-decoration:underline; }
+
+#rhc ul li a,
+#rhc ul li a:visited	{ display: block; font-size: .85em; padding: 0 5px; text-decoration: none; color: #333; }
+#rhc ul li a,
+#rhc ul li a:visited 	{ background-color: transparent; background-position: 5% 50%; background-repeat: no-repeat; padding:1px 0 2px 0; padding-left:30px; border-bottom: 1px solid #ccc; margin: 0 3px; }
+#rhc ul li a:hover		{ background-color: #ddd; color: #000;}
+#rhc ul li a.last		{ border-bottom-width: 0; }
+
+/* correction styles */
+div.correction span#oa { /* open access image */ background: #3D3D3D url(../images/pone_correction_oa.gif) no-repeat 0 0; }
+div.correction h1 { color: #3D3D3D; }
+
+/* rhc rounded containers : top */
+div.links,
+div.tools				{ background-position: bottom; background-repeat: no-repeat; padding: 0 0 8px 0; margin: 0 0 6px 0; }
+div.links				{ background-image: url(../images/pone_sidenav_bg.gif); position: relative;}
+div.tools				{ background-image: url(../images/pone_tools_bg.gif);}
+
+
+/* rhc rounded containers : bottom */
+div.links ul,
+div.tools ul			{ background-repeat: no-repeat; background-position: top; padding: 8px 0 0 0; margin: 0; list-style-type: none; }
+div.links ul			{ background-image: url(../images/pone_sidenav_bg.gif);}
+div.tools ul			{ background-image: url(../images/pone_tools_bg.gif); padding-bottom: 2px;}
+div.links li
+div.tools li			{ list-style-type: none; margin: 0; padding: 0; }				
+
+
+div.commentview			{ padding: 5px; border: 3px solid #999; margin: 10px 0; background: url(../images/pone_toolbar_bg.gif) repeat-x top;}
+div.commentview	fieldset{ border: 1px solid #ccc; border-width: 1px 0; margin: 0 -5px 5px -5px; padding: 10px; background-color: #eee; position: relative;}
+div.commentview	 li 	{ font-size: .9em; }
+div.commentview h6		{ margin: 0; }
+div.commentview ol,
+div.commentview li		{ margin: 0; padding: 0; list-style-type: none; }
+div.commentview fieldset li	{ font-weight: bold; width: 100%; position: relative; }
+div.commentview label	{ font-weight: normal; }
+div.commentview div		{ display: inline; position: absolute; right: 40px;}
+div.commentview li ul 	{ margin: 0; padding: 0; list-style-type: none; }
+div.commentview li ul li	{ background: url(../images/pone_tools_li.gif) no-repeat 0 2px; font-weight: bold; padding-left: 14px; margin-left: 20px; font-size: 1em; color: #666;}
+
+ol.ratingAvgs { padding: 0; margin: 0; }
+ol.ratingAvgs,
+ol.ratingAvgs ul { list-style: none; }
+ol.ratingAvgs li { padding: 0 0 0 10px; margin: 0; height: 2em;}
+ol.ratingAvgs label {  }
+ol.ratingAvgs ul { left: 8em; top: -2em;;}
+ol.ratingAvgs li ul li { display: inline; background: none; margin: 0; padding: 0; width: auto;}
+
+#postcomment, #postcommentfloat { width: 240px; top: 0; position: relative; }
+#postcommentfloat { position: fixed; display: none; }
+.fixed { position: fixed !important; }
+
+#sectionNav ul li a,
+#sectionNavTop ul li a,
+#sectionNav ul li a:visited,
+#sectionNavTop ul li a:visited  { padding-right:5px; background: transparent url(../images/pone_sectionnav_li_bg.gif) no-repeat 5% .7em; border-color: #999;}
+
+#sectionNav 			{ width: 240px; top: 20px; background-color: #FFF; position: fixed; /* hide temporarily until js is implemented */ display: none; }
+
+
+div.buttons				{ margin: 6px 0; padding: 0; background: url(../images/pone_buttons_bg.gif) no-repeat; background-position: 0 -32px; position: relative;}
+div.buttons span		{ height: 30px; width: 120px; display: table-cell; }
+div.buttons	a			{ background-repeat: no-repeat; padding: 5px 0 0 18px; margin: 0; font-size: .85em; text-decoration: none; background-position: left center; display: list-item; background-image: none; color: #333; text-indent: 0;}
+div.buttons a:hover		{ background: url(../images/pone_buttons_bg.gif) no-repeat top left; color: #000;}
+div.buttons a.email		{ list-style-image: url(../images/jour_sidenav_email.gif); list-style-position: inside;}
+div.buttons a.print		{ list-style-image: url(../images/jour_sidenav_print.gif); list-style-position: inside;}
+div.buttons a.print:hover{ background-position: -120px 0; }
+
+
+div.figure				{ background-color: #D2F7FF; padding: 10px; font-size: .85em; margin: 10px 0;}
+div.figure:after		{ content: ".";  display: block;  height: 0; clear: both; visibility: hidden; }
+div.figure h5			{ margin: 0; color: #000;}
+div.figure p			{ margin: 5px 0; }
+#content div.figure img.thumbnail	{ margin: 0 10px 10px 0; float: left;} /* only thumbnails will float, not in-line images */
+div.figure a img.thumbnail 		{ border: 2px solid #FFF; } /* only thumbnails will float, not in-line images */
+div.figure a:hover img 	{ border: 2px solid #069; }
+
+span.equation          { width: 100%; margin: 20px 0; font-weight: bold; font-size: .85em; text-align: right; padding: 0 10px; }
+span.equation span     { margin-top: -30px; display: block; margin-right: 10px; text-align: right;}
+span.equation span.note { margin-top: 5px;}
+span.equation span span.note { display:inline; margin: 0;}
+span.equation img       { margin: 0 auto; display: block; padding-bottom: 10px;}
+
+/* ------ Inline Annotation Styles ------- */
+span.active				{ color: #000; } /* apply to all spans during hover state on the bug */
+
+a.bug,
+a:visited.bug			{ padding: 2px 7px 10px 7px; color: #fff; text-decoration: none; font-size: .85em; font-weight: bold; background-image: url(../images/pone_annotation_bug.gif); background-repeat: no-repeat; background-position: top left; position: relative; top: -8px;}
+
+a.bug.self-private,
+a:visited.bug.self-private,
+span.self-private a.bug,
+span.self-private a:visited.bug { background-color: #3C9544;}
+span.self-private-active			{ background-color:#cfc; border-bottom: 1px solid #55E912;}
+span.self-private-active a.bug,
+span.self-private-active a:visited.bug,
+a.bug.self-private-active,
+a:hover.bug.self-private-active		{ background-color: #55E912;}
+
+a.bug.public,
+a:visited.bug.public,
+span.public a.bug,
+span.public a:visited.bug,
+span.public-active a.bug,
+span.public-active a:visited.bug { background-color: #069;}
+span.public-active			{ background-color:#D2F7FF; border:1px solid #fff; border-bottom: 1px solid #0bf; }
+span.public-active a.bug.public-active,
+span.public-active a:hover.bug.public-active		{ background-color: #0BF;}
+span.public { border:1px solid #fff; }
+
+
+a.bug.author,
+a:visited.bug.author,
+span-active a.bug,
+span-active a:visited.bug { background-color: #B6491F;}
+span.author-active			{ background-color:#FFD3C5; border-bottom: 1px solid #f63;}
+span.author-active a.bug,
+span.author-active a:visited.bug,
+a.bug.author-active,
+a:hover.bug.author-active		{ background-color: #f63;}
+
+
+div.beta				{ text-align: center; font-size: .9em; color: #666; margin: 0;}
+
+
+/* ------ DOM Styles ------- */
+.commentPrivate { display: block; }
+.commentPublic { display: none; }
+
+/* ------ User Profile Page Styles ------*/
+
+div#content.profile 	{ border: 2px solid #55E912; border-width: 2px 0; background: #D2F7FF url(../images/pone_forms_bg.gif) repeat-x top; padding: 20px 0; width: 70%; margin-left: auto; margin-right: auto; position: relative;}
+div.profile img { float: left; margin: 20px 0 0 20px;}
+div.profile h1	{ position: absolute; left: 120px; margin: 0; padding-bottom: 10px; padding-top: 10px;top: 60px;}
+div.profile h2	{ background-image: none; clear: left; }
+
+
+div.profile ol { list-style-type: none; margin: 25px 0px 0px; padding: 0px; clear: left; padding-top: 20px; }
+div.profile ol li { list-style: none; display: block; padding: 0 20px 10px 20px; padding-left: 20px; border-bottom-color: #ACF1FF; border-bottom-style: solid;border-bottom-width: 2px; background-color: transparent; background-image: none; padding-top: 5px; clear: both; }
+div.profile li em{ color: #555; font-size: .9em;}
+div.profile ol li span.heading{ font-weight: bold; display: block; }
+div.profile ol li input { width: 200px; border: 1px solid #ACF1FF; padding: 2px; }
+div.profile ol li .long-input { width: 324px; } 
+div.profile ol li select { width: 206px; border: 1px solid #ACF1FF; padding: 2px; }
+div.profile ol li .radio { width: 14px;}
+div.profile ol li .checkbox { width: 14px;}
+div.profile textarea {width: 324px; border: 1px solid #ACF1FF; }
+div.profile #submit, .pone-form #cancel {margin-top: 15px; margin-left: 10px; }
+
+div.horizontalTabs		{ position: relative; border-width: 0;}
+.horizontalTabs ul,
+.horizontalTabs ul li	{ list-style-type: none; margin: 0; padding: 0; font-weight: bold; color: #069;}
+.horizontalTabs ul		{ display: block; margin-bottom: 5px; z-index: 10; border-bottom: 2px solid #ACF1FF; }
+.horizontalTabs ul li	{ cursor: pointer; padding: 6px; background-color: transparent; margin: 5px 2px 3px 2px; display: inline; }
+.horizontalTabs ul li.active	{ font-weight: bold;background: url(../images/pone_forms_bg.gif) repeat-x bottom; border-bottom-color: #fff; text-decoration: none; color: #000;}
+.horizontalTabs .contentwrap {margin: 0; border: 2px solid #fff; padding: 0;position: relative; }
+
+/* ------ EdBoard Styles ----*/
+
+.edboard dl { text-align: right; margin: 0 240px 0 0; }
+.edboard dt { font-weight: bold; display: block; float: left; padding-left: 5px; margin-top: 5px; position: relative;}
+.edboard dd { margin: 0 0 5px 0; padding: 0 5px 5px 5px; background-color: #D2F7FF; border-top: 6px solid #D2F7FF; font-size: .85em; text-indent: 10px; }
+
+.static p.intro					{ border: 2px solid #ccc; padding: 10px; background: url(../images/pone_toolbar_bg.gif) repeat-x bottom; color: #000;}
+
+/* ------ Search Styles ----*/
+
+#search-results ul 		{ margin: 0 30px 0 0; padding: 0; list-style-type: none; line-height: 1.6em;}
+#search-results li		{ margin: 12px 8px; background: url(../images/pone_sectionnav_li_bg.gif) no-repeat 0 4px; padding-left: 12px; }
+#search-results li span	{ display: block; }
+#search-results span.article { font-weight: bold; font-size: 1.2em;}
+#search-results span.date { color: #666; font-weight: normal; font-size: .9em; }
+#search-results span.cite { font-style: italic;  color: #666; }
+#search-results span.highlight { font-weight: bold; display: inline;}
+#search-results span.authors { font-size: .9em; }
+
+/* wrap with div source when referencing original article */
+div.correction div.source { margin-right: 268px; }
+div.source			{ padding: 0; font-size: .9em; margin: 10px 0; }
+div.source a.article{ background-image: url(../images/pone_icon_source.gif); background-position: 10px 4px;padding-left: 30px;display: block; text-decoration: none; color: #333;  border: 2px solid #ccc; }
+div.source a:link,
+div.source a:visited{ color: #333; background-color: #eee;}
+div.source a:hover	{ color: #000; background-color: #ddd; border-color: #999;}
+/* span wraps original article label */
+div.source span		{ color: #999; padding: 4px 0 4px 14px; }
+
+/* ------ Trackback Styles ----*/
+#trackbackURL { margin:0; }
+div.trackback 	{ margin:25px 20px; }
+div.trackback p.header  { margin:0 0 .3em 0; padding:0; line-height:1.5em; }
+div.trackback p.header span.blog,
+div.trackback p.header a.post { font-weight:bold; }
+div.trackback p.header span.timestamp { white-space:nowrap; }
+div.trackback p.excerpt	{margin:0; line-height: 1.5em;}
+
+/* ------ Browse Styles ----*/
+div.browse h1 		{ margin-bottom: 20px; margin-right: 140px;}
+div.browse #search-results { margin-left: 0; margin-right: 140px; padding-left: 20px; border-left: 240px solid #eee;}
+div#browseNav 		{ float: left; position: relative; z-index: 70; width: 240px;  padding: 0; background: #eee; margin-bottom: 20px; padding-bottom: 20px; min-height: 480px;}
+#browseNav li 		{ font-size: .9em; font-weight: bold; padding: 0;margin: 0; }
+#browseNav li input { position: relative; }
+#browseNav ul		{ padding: 0; }
+#browseNav ul li	{ background: url(../images/pone_browsenav_li.gif) no-repeat 0 8px; list-style-type: none; padding-left: 10px; }
+#browseNav ul.subjects li { float:none; } /* fix for wrapping problem in IE7 -SWT */
+div.browse div#search-results	{ z-index: 69; position: relative;}
+
+/*--- Browse By Publication Date ----*/
+#browseNav ol 		{ list-style-type: none; padding: 0 6px 0 15px; margin: 0; float: left;clear: left; width: auto;margin-top: 5px;}
+#browseNav li li 	{ float: left;text-align:center; margin: 0; }
+#browseNav li ol	{ display: block; clear: left; padding: 0; }
+#browseNav li		{ clear: left; float: left;}
+#browseNav li li	{ clear: none; }
+
+#browseNav ol a:link,
+#browseNav ol a:visited 	{ display: block; border-right: 1px solid #999; width: 32px; margin: 4px 0; text-align: center;}
+
+/*--- Browse Form ---- */
+
+div#browseNav form.browseForm { margin: 0; background: #fff url(../images/pone_tools_bg.gif) no-repeat top left; padding: 10px 0 0 0; color: #666; position: relative; }
+div#browseNav form.browseForm fieldset { margin: 0; padding: 0 0 10px 0; border: none; background: #fff url(../images/pone_tools_bg.gif) no-repeat bottom left; width: 100%; position: relative; }
+
+div#browseNav div { padding-bottom: 18px; background-color: #fff; }
+div#browseNav .browseForm legend { display: none;}
+div#browseNav .browseForm li,
+div#browseNav .browseForm ol { clear: none;float: none;list-style-type: none; margin: 10px; background: #fff;padding: 0; height: 100%;}
+
+div.resultsTab { border: 2px solid #ccc; padding: 5px; background: #eee; margin: 20px 0;}
+div.resultsTab a { margin: 0 4px; padding: 0 2px;}
+
+
+li.current { list-style-type: none!important; background: url(../images/pone_li_current.gif) no-repeat 0 8px!important; font-size: 1em!important;}
+ol li.current { background: none!important; font-size: inherit;}
+ol li.current * { color: #000; text-decoration: none; background: none; cursor: default;}
+
+#bannerRight { float: right; margin-bottom: 20px;}
+
+/*-------------- Style for Full Banner (468 x60) Ad Asset --------------------*/
+/*This should be added to journals_global.css for the other journal sites*/
+div.fullBanner { width: 468px; height: 60px; margin: 0!important; padding: 0!important; }
+div.fullBanner img { float: left; }
+div.fullBanner span.body { display: block; }

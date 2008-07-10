@@ -1,0 +1,100 @@
+<?php
+
+// $Id: pubgroup.module $
+
+/**
+ * @file
+ * Pubgroup module
+ */
+
+module_load_include("php", "pubgroup", "PubGroupModule");
+
+function pubgroup_node_info() {
+  return pubgroup()->nodeInfo();
+}
+
+function pubgroup_menu () {
+  return pubgroup()->menu();
+}
+
+function pubgroup_perm () {
+  return pubgroup()->perm();
+}
+
+function pubgroup_access ($op, $node, $account) {
+  return pubgroup()->access($op, $node, $account);
+}
+
+function pubgroup_form (&$node, &$form_state) {
+  return pubgroup()->form($node, $form_state);
+}
+
+function pubgroup_validate($node) {
+  pubgroup()->validate($node);
+}
+
+function pubgroup_node_form_submit(&$form, &$form_state) {
+  pubgroup()->nodeFormSubmit($form, $form_state);
+}
+
+function pubgroup_insert ($node) {
+  pubgroup()->insert($node);
+}
+
+function pubgroup_update ($node) {
+  pubgroup()->update($node);
+}
+
+function pubgroup_load ($node) {
+  return pubgroup()->load($node);
+}
+
+function pubgroup_delete ($node) {
+  pubgroup()->delete($node);
+}
+
+function pubgroup_view ($node, $teaser = FALSE, $page = FALSE) {
+  return pubgroup()->view($node, $teaser, $page);
+}
+
+function pubgroup_theme () {
+  return pubgroup()->theme();
+}
+
+function pubgroup_block ($op = 'list', $delta = 0, $edit = array()) {
+  return pubgroup()->block($op, $delta, $edit);
+}
+
+function pubgroup_autocomplete($field, $string) {
+  pubgroup()->autocomplete($field, $string);
+}
+
+function pubgroup_admin_settings_subform () {
+  return pubgroup()->adminSettingsSubform();
+}
+
+function pubgroup_list_view () {
+  return pubgroup()->listView();
+}
+
+function pubgroup_list_options ($parentId = 0) {
+  return pubgroup()->listOptions($parentId);
+}
+
+function theme_pubgroup_toc ($node) {
+  /*
+  $items = array(
+    array('data' => 'Book 1'),
+    array(
+      'data' => 'Book 2',
+      'children' => array(
+        'Chapter 1',
+        'Chapter 2'
+      )
+    ),
+    array('data' => 'Book 3')
+  );
+  */
+  $items = pubgroup()->generateTOC($node);
+  return '<div class="pubgroup-toc">' . theme('item_list', $items, 'Table of Contents', 'ol') . '</div>';
+}

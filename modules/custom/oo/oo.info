@@ -1,0 +1,6 @@
+; $Id$
+name = Object Oriented Module support
+description = Provides abstract classes for using Object-Oriented module programming.
+package = Harvard IIC
+version = VERSION
+core = 6.x

@@ -1,0 +1,9 @@
+; $Id$
+name = Gene
+description = Provides the gene node type allowing creation, listing and storing of genes.
+dependencies[] = scf
+dependencies[] = species
+dependencies[] = taxonomy_extra
+package = SCF Biology
+version = VERSION
+core = 6.x

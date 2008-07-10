@@ -1,0 +1,103 @@
+<?php
+
+/**
+ * Implementation of hook_install().
+ */
+function nodeproxy_install () {
+  drupal_install_schema('nodeproxy');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function nodeproxy_uninstall () {
+  drupal_uninstall_schema('nodeproxy');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function nodeproxy_schema () {
+  $schema['nodeproxy'] = array(
+    'fields' => array(
+      'nid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'module' => array(
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'description' => t('The name of the module responsible for this nodeproxy record (i.e. a nodeproxy submodule).')
+      ),
+      'idtype' => array(
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'description' => t('Type or role of the extid (e.g. "uri", "egid", etc.).  ID type names have scope local to the local node type, not to the proxying module.  Thus all modules proxying for nodes of type X must be careful not to step on each others idtypes.')
+      ),
+      'extid' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => t('Unique ID for lookup in the external data store.')
+      ),
+      'updated' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t('The Unix timestamp when the local field values were last synchronized with the external source.')
+      ),
+      'expires' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t('The Unix timestamp when the local field values will expire.')
+      ),
+      'status' => array(
+        'description' => t('Boolean indicating whether the node was successfully updated.'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1),
+      'data' => array(
+        'type' => 'text',
+        'not null' => FALSE,
+        'size' => 'big',
+        'description' => t('A serialized array of name value pairs, for internal use by proxying modules.')
+      )   
+    ),
+    'unique keys' => array(
+      'nid_module_type_id' => array('nid', array('module', 32), array('idtype', 16), array('extid', 64))
+    )
+  );
+  return $schema;
+}
+
+/**
+ * add status field
+ */
+function nodeproxy_update_6000 () {
+  $ret = array();
+  db_add_field($ret, 'nodeproxy', 'status',
+    array(
+      'description' => t('Boolean indicating whether the node was successfully updated.'),
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 1
+    )
+  );
+  return $ret;  
+}
+
+/**
+ * add expires field
+ */
+function nodeproxy_update_6001 () {
+  $ret = array();
+  db_add_field($ret, 'nodeproxy', 'expires',
+    array(
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+      'description' => t('The Unix timestamp when the local field values will expire.')
+    )
+  );
+  return $ret;  
+}

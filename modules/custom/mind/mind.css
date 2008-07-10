@@ -1,0 +1,16 @@
+#block-block-5_wrapper {
+  background:#111111 url(/sites/all/themes/stemcenter/images/bg_stembook_intro_01.jpg) no-repeat scroll 50% 50%;
+  color:white;
+}
+
+body #stembook_intro {
+  background:#333333 none repeat scroll 0% 0%;
+  color:white;
+  margin:0pt 50% 0pt 5%;
+  opacity:0.9;
+  padding:10px;
+}
+
+.mind-upload-attachments {
+  list-style: none;
+}

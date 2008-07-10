@@ -1,0 +1,9 @@
+; $Id$
+name = Scientific Collaboration Framework
+description = Provides modules implementing the Scientific Collaboration Framework
+package = SCF
+dependencies[] = iic_util
+dependencies[] = oo
+dependencies[] = taxonomy
+version = VERSION
+core = 6.x

@@ -1,0 +1,486 @@
+<?php
+
+/******************************************************************
+ *
+ * OOModule:
+ *
+ * Abstract base class for Object Oriented modules
+ *
+ *****************************************************************/
+abstract class OOModule {
+  
+  // the name of the module itself
+  public $name;
+
+  protected function __construct ($name) {
+    $this->name = $name;
+  }
+
+  // ------------------------------------------------------- drupal hooks
+
+  // ------------------------------------------------------- template methods
+
+  // ------------------------------------------------------- utility
+  
+  /**
+   * add a CSS file (defaults to 'modulename.css') in module's path
+   */
+  protected function addCss ($path = NULL) {
+    if ($path === NULL) {
+      $path = '/' . $this->name . '.css';
+    }
+    drupal_add_css(drupal_get_path('module', $this->name) . $path);
+  }
+
+}
+
+/******************************************************************
+ *
+ * OONodeModule:
+ *
+ * Abstract base class for Object-Oriented Node modules
+ *
+ *****************************************************************/
+abstract class OONodeModule extends OOModule {
+
+  public $displayName;
+  public $displayNamePlural;
+  public $description;
+
+  // used in permissions (e.g. "administer Xs")
+  public $permName;
+  public $permNamePlural;
+  public $info = NULL;
+
+  protected $childTables = array();
+
+  /**
+   * @param $name must be both the name of this module and the machine
+   *   readable name of the node type.  (currently can't have the two
+   *   be different)
+   * @param $displayName human-readable name of the node type (not the
+   *   module), or NULL to construct here
+   * @param $permName human-readable name of the node type to use in
+   *   permissions phrases such as "edit own X"
+   */
+  protected function __construct ($name, $displayName = NULL, $permName = NULL) {
+    parent::__construct($name);
+    // display name of the node type, not the module name
+    $this->displayName = isset($displayName) ? $displayName : ucfirst($type);
+    $this->permName = isset($permName) ? $permName : $name;
+    // defaults; override in subclass constructor
+    $this->displayNamePlural = $this->displayName . "s";
+    $this->permNamePlural = $this->permName . 's';
+    $this->description = $this->displayNamePlural;
+  }
+
+  // ------------------------------------------------------- drupal hooks
+
+  /****************************************************************************
+   * @see hook_node_info()
+   ****************************************************************************/
+  public function nodeInfo () {
+    $baseinfo = array(
+      'name' => t($this->displayName),
+      'module' => $this->name,
+      'description' => t($this->description)
+    );
+    $extra = $this->extraNodeInfo();
+    $info = array(
+      $this->name => array_merge($baseinfo, $extra)
+    );
+    return $info;
+  }
+
+  /****************************************************************************
+   * @see hook_perm()
+   ****************************************************************************/
+  public function perm () {
+    $thing = $this->permName;
+    $things = $this->permNamePlural;
+    return array(
+      "create $things",
+      "edit any $thing",
+      "edit own $things",
+      "delete any $thing",
+      "delete own $things",
+      "administer $things",
+    );
+  }
+
+  /****************************************************************************
+   * @see hook_access()
+   ****************************************************************************/
+  public function access ($op, $node, $account) {
+    $thing = $this->permName;
+    $things = $this->permNamePlural;
+    if (user_access("administer $things", $account)) {
+      return TRUE;
+    }
+    switch ($op) {
+      case 'create':
+        return user_access("create $things", $account);
+      case 'update':
+        if (user_access("edit any $thing", $account)) {
+          return TRUE;
+        }
+        // else
+        return (($node->uid == $account->uid) && user_access("edit own $things", $account));
+      case 'delete':
+        if (user_access("delete any $thing", $account)) {
+          return TRUE;
+        }
+        // else
+        return (($node->uid == $account->uid) && user_access("delete own $things", $account));
+      case 'view':
+        // no type-specific 'view' access by default (use 'access content')
+        return user_access("access content", $account);
+    }
+  }
+
+  /****************************************************************************
+   * @see hook_block()
+   ****************************************************************************/
+  public function block ($op = 'list', $delta = 'listing', $edit = array()) {
+    if ($op == 'list') {
+      $blocks['listing'] = array(
+        'info' => t('!name listing', array('!name' => $this->displayName)),
+        'weight' => 0,
+        'status' => 0,
+        'cache' => BLOCK_NO_CACHE
+      );
+      return $blocks;
+    } else if ($op == 'view') {
+      if ($delta == 'listing') {
+        return $this->listForBlock();
+      }
+      // else
+      return NULL;
+    }
+  }
+
+  // --------------------------------------------------- drupal node CRUD hooks
+
+  /****************************************************************************
+   * @see hook_nodeapi()
+   *
+   * When a node revision is deleted, we need to remove the
+   * corresponding record from our table. The only way to handle
+   * revision deletion is by implementing hook_nodeapi().
+   * 
+   ****************************************************************************/
+  public function nodeapi (&$node, $op, $teaser, $page) {
+    switch ($op) {
+      case 'delete revision':
+        // Notice that we're matching a single revision based on the node's vid.
+        if ($node->type == $this->name) {
+          $this->deleteRevision($node);
+        }
+        break;
+    }
+  }
+  
+  /****************************************************************************
+   * @see hook_insert()
+   ****************************************************************************/
+  public function insert ($node) {
+    $this->insertChildren($node);
+    drupal_write_record($this->name, $node);
+  }
+  
+  /****************************************************************************
+   * @see hook_update()
+   ****************************************************************************/
+  public function update ($node) {
+    if (!empty($node->revision)) {
+      $this->insert($node);
+    } else {
+      $this->deleteChildren($node);
+      $this->insertChildren($node);
+      drupal_write_record($this->name, $node, 'vid');
+    }
+  }
+  
+  /****************************************************************************
+   * @see hook_delete()
+   ****************************************************************************/
+  public function delete ($node) {
+    $this->deleteChildren($node);
+    db_query("DELETE FROM {" . $this->name. "} WHERE nid = %d", $node->nid);  
+  }
+  
+  // --------------------------------------------------------- listing
+
+  protected function listInternal ($limit = 10, $proto = NULL, $addPagerLinks = FALSE) {
+    // if no prototype specified, select all published nodes
+    if (is_null($proto)) {
+      $proto = array(
+        'status' => 1
+      );
+    }
+    // if we're on front page and the prototype specifies published
+    // nodes but is unspecified for the 'promote' field, set promote
+    // to 1
+    if (isset($proto['status']) && $proto['status'] && !isset($proto['promote']) && drupal_is_front_page()) {
+      $proto['promote'] = 1;
+    }
+    $filter = '';
+    foreach ($proto as $field => $value) {
+      $filter .= " AND $field = $value";
+    }
+    $sql = "SELECT nid"
+      . " FROM {node}"
+      . " WHERE type = '%s'"
+      . $filter
+      . " ORDER BY sticky DESC, created DESC";
+    $out = array();
+    $sql = db_rewrite_sql($sql);
+    $result = pager_query($sql, $limit, 0, NULL, $this->name);
+    while ($nid = db_result($result)) {
+      $node = node_load($nid);
+      $out[] = node_view($node, TRUE);
+    }
+    if ($addPagerLinks) {
+      $out[] = theme('pager', NULL, $limit);
+    }
+    return $out;
+  }
+
+  public function listForBlock () {
+    // make this configurable...
+    $limit = 5;
+    $out = $this->listInternal($limit);
+    return array(
+      'subject' => t($this->displayNamePlural),
+      'content' => implode('', $out)
+    );
+  }    
+  
+  public function listView () {
+    // make this configurable...
+    $limit = 10;
+    return implode('', $this->listInternal($limit, NULL, TRUE));
+  }    
+
+  public function listRecentlyUpdated ($limit = 10) {
+    $sql = "SELECT nid, changed FROM {node}"
+      . " WHERE type = '%s' AND status = 1"
+      . " ORDER BY changed DESC";
+    $out = array();
+    $sql = db_rewrite_sql($sql);
+    $result = db_query_range($sql, $this->name, 0, $limit);
+    while ($row = db_fetch_array($result)) {
+      $out[$row['nid']] = $row['changed'];
+    }
+    return $out;
+  }
+
+  public function listRecentlyCommented ($limit = 10) {
+    $sql = "SELECT n.nid, c.last_comment_timestamp FROM {node} n"
+      . " JOIN {node_comment_statistics} c ON n.nid = c.nid"
+      . " WHERE type = '%s' AND status = 1"
+      . " ORDER BY c.last_comment_timestamp DESC";
+    $out = array();
+    $sql = db_rewrite_sql($sql);
+    $result = db_query_range($sql, $this->name, 0, $limit);
+    while ($row = db_fetch_array($result)) {
+      $out[$row['nid']] = $row['last_comment_timestamp'];
+    }
+    return $out;
+  }
+
+  // ------------------------------------------------------- template methods
+
+  protected function extraNodeInfo () {
+    // base impl adds nothing to defaults
+  }
+
+  /**
+   * array of fields that are autocompletable using the default autocomplete impl.
+   */
+  protected function autocompleteFields () {
+    return array();
+  }
+
+  /**
+   * override to load children; may alter $node in process.  Called at
+   * beginning of hook_insert() and hook_update(), before
+   * drupal_write_record()
+   */
+  protected function insertChildren (&$node) {
+    // nothing by default
+  }
+
+  /**
+   * probably no need to override
+   */
+  protected function deleteChildren ($node) {
+    foreach ($this->childTables as $table) {
+      $this->deleteChildRows($node, $table);
+    }
+  }
+
+  /**
+   * probably no need to override
+   */
+  protected function deleteRevisionChildren ($node) {
+    foreach ($this->childTables as $table) {
+      $this->deleteRevisionChildRows($node, $table);
+    }
+  }
+
+  // ------------------------------------------------------- utility
+
+  public function deleteRevision ($node) {
+    $this->deleteRevisionChildren($node);
+    db_query("DELETE FROM {" . $this->name. "} WHERE vid = %d", $node->vid);  
+  }
+
+  protected function getNodeTypeInfo () {
+    return node_get_types('type', $this->name);
+  }
+
+  public function autocomplete ($field, $string, $publishedOnly = FALSE) {
+    $goodfields = $this->autocompleteFields();
+    $matches = array();
+    if (in_array($field, $goodfields)) {
+      // Added check for node table - MAG 6/3/2008
+    	$table_name = ($field == 'title') ? 'node' : $this->name;
+    	$sql = "SELECT DISTINCT sn.$field AS value"
+        . " FROM {" . $table_name . "} sn ";
+      if ($publishedOnly) {
+        $sql .= " INNER JOIN {node} n ON sn.vid = n.vid WHERE n.status = 1 AND";
+      } else {
+        $sql .= " WHERE";
+      }
+      
+      // if we are querying the node table, make sure we only get nodes of the correct type - MAG 6/3/2008
+      if ($table_name == 'node') {
+        $sql .= ' sn.type = "%s" AND ';
+      }
+      
+      $sql .= " LOWER(sn.$field) LIKE LOWER('%s%%') ORDER BY sn.$field ASC";
+      
+      // make sure we call db_query with the right parameters
+      if ($table_name == 'node') {      
+        $result = db_query_range($sql, $this->name, $string, 0, 20);
+      }
+      else {
+        $result = db_query_range($sql, $string, 0, 20);
+      }
+      while ($data = db_fetch_object($result)) {
+        $matches[$data->value] = check_plain($data->value);
+      }
+    }
+    drupal_json($matches);
+  }
+
+  protected function addNodeBodyField (&$form, $node, $weight) {
+    $type = $this->getNodeTypeInfo();
+    // HACK HACK HACK: the 'node_body_field' function is not defined in node.module, but in an include...
+    module_load_include("inc", "node", "node.pages");
+    $form['body_field'] = node_body_field($node, $type->body_label, $type->min_word_count);
+    $form['body_field']['#weight'] = $weight;
+  }
+
+  protected function requireLocalFile ($basename, $extension = "php") {
+    module_load_include($extension, $this->name, $basename);
+  }
+
+  /**
+   * insert all children, assuming an index filed "idx" used for sorting
+   */
+  protected function insertIndexedChildren ($node, $children, $table, $required_field = NULL) {
+    $idx = 0;
+    foreach ($children as $child) {
+      // HACK make sure $child is an object
+      $child = (object) $child;
+      // if $required_field set, weed out rows where this field is empty
+      if (empty($required_field) || !empty($child->$required_field)) {
+        $child->idx = $idx++;
+        $child->vid = $node->vid;
+        drupal_write_record($table, $child);
+      }
+    }
+  }
+
+  /**
+   * get the row objects from a db result set and make sure their $idx
+   * fields are sequential from 0...n
+   */
+  protected function renumberResultRows (&$results) {
+    $idx = 0;
+    $objs = array();
+    while ($obj = db_fetch_object($results)) {
+      // renumber just in case...
+      $obj->idx = $idx;
+      $objs[$idx++] = $obj;
+    }
+    return $objs;
+  }
+
+  protected function deleteChildRows ($node, $table) {
+    db_query("DELETE FROM {" . $table . "} WHERE vid IN (SELECT vid FROM {" . $this->name . "} WHERE nid = %d)", $node->nid);  
+  }
+
+  protected function deleteRevisionChildRows ($node, $table) {
+    db_query("DELETE FROM {" . $table . "} WHERE vid = %d", $node->vid);  
+  }
+
+  // ------------------------------------------------------- install-time utils
+
+  /**
+   * Delete all this module's nodes.  Note this doesn't just do the
+   * DELETE queries directly, it goes through the proper drupal channels
+   * for each node to delete, ensuring that all the appropriate nodeapi
+   * calls are made for each one.
+   */
+  public function deleteAll () {
+    $sql = "SELECT nid FROM {node} WHERE type = '%s'";
+    $nids = db_query($sql, $this->name);
+    while ($nid = db_result($nids)) {
+      node_delete($nid);
+    }
+  }
+  
+  /**
+   * Try to create a forum container for this type of node.
+   */
+  public function installForumContainer () {
+    $vid = variable_get('forum_nav_vocabulary', 0);
+    if ($vid > 0) {
+      if ($vocab = taxonomy_vocabulary_load($vid)) {
+        $term = array(
+          'vid' => $vid,
+          'name' => t(variable_get($this->name . '_forum_name', $this->displayNamePlural)),
+          'parents' => array(0)
+        );
+        taxonomy_save_term($term);
+        $this->addNodeTypeToVocabulary($vid);
+      }
+    }
+  }
+
+  /**
+   * @param $vars an array of variable names, which should resolve to
+   * a vocab vid if one is defined
+   */
+  public function addNodeTypeToVocabulariesByVarName ($vars) {
+    foreach ($vars as $var) {
+      $vid = variable_get($var, 0);
+      $this->addNodeTypeToVocabulary($vid);
+    }
+  }
+
+  public function addNodeTypeToVocabulary ($vid) {
+    if (isset($vid) && $vid > 0) {
+      $already = db_query("SELECT COUNT(*) FROM {vocabulary_node_types} WHERE vid = %d AND type = '%s'", $vid, $this->name);
+      if (db_result($already)) {
+        drupal_set_message("Type " . $this->name . " is already in vocabulary $vid");
+      } else {
+        db_query("INSERT INTO {vocabulary_node_types} (vid, type) VALUES (%d, '%s')", $vid, $this->name);
+      }
+    }
+  }
+
+}

@@ -1,0 +1,8 @@
+; $Id$
+name = Contributor
+description = Provides the contributor node type, which can be used as a member profile snapshot associated with a publication.
+dependencies[] = scf
+dependencies[] = member
+package = SCF
+version = VERSION
+core = 6.x

@@ -1,0 +1,8 @@
+; $Id$
+name = Taxonomy Extra Functionality
+description = Additional taxonomy-related functionality
+dependencies[] = taxonomy
+dependencies[] = iic_util
+package = Harvard IIC
+version = VERSION
+core = 6.x

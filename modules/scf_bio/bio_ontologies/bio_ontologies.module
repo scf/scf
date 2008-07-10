@@ -1,0 +1,18 @@
+<?php
+    
+function bio_ontologies_theme_term_lists ($node) {
+  static $vocab = array();
+  $out = array();
+  if (module_exists('taxonomy_extra')) {
+    foreach (array('biological_process', 'cellular_component', 'molecular_function') as $ns) {
+      $vid = variable_get('bio_ontologies_' . $ns . '_vocabulary', 0);
+      if ($vid > 0 && !isset($vocab[$vid])) {
+        $vocab[$vid] = taxonomy_vocabulary_load($vid);
+      }
+      if (isset($vocab[$vid])) {
+        $out[$vocab[$vid]->name] = taxonomy_extra_theme_term_list($node, (int) $vid);
+      }
+    }
+  }
+  return $out;
+}

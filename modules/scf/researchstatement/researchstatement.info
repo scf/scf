@@ -1,0 +1,7 @@
+; $Id$
+name = Research Statement
+description = Provides a research statement node type
+dependencies[] = scf
+package = SCF
+version = VERSION
+core = 6.x

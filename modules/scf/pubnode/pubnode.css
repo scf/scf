@@ -1,0 +1,14 @@
+@CHARSET "UTF-8";
+/* -------------------------------------------------------------- 
+
+  @file pubnode.css
+  
+-------------------------------------------------------------- */
+
+.pubnode-byline                 { font-weight: bold; }
+
+#block-pubnode-toc .content ul           { list-style: none; }
+#block-pubnode-toc .content ul li		 { clear: both; }
+#block-pubnode-toc .content ul li .label { float: left; font-weight: bold; }
+#block-pubnode-toc .content ul li a      { margin-left: .5em; }
+#block-pubnode-toc .content li ul        { margin-bottom: .4em; margin-left: 1.2em; }

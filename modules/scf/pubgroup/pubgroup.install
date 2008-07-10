@@ -1,0 +1,74 @@
+<?php
+
+/**
+ * Implementation of hook_install().
+ */
+function pubgroup_install () {
+  drupal_install_schema('pubgroup');
+  module_load_include("php", "pubgroup", "PubGroupModule");
+  pubgroup()->installForumContainer();
+  pubgroup()->addNodeTypeToVocabulariesByVarName(array('scf_keyword_vocabulary'));
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function pubgroup_uninstall () {
+  module_load_include("php", "pubgroup", "PubGroupModule");
+  pubgroup()->deleteAll();
+  drupal_uninstall_schema('pubgroup');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function pubgroup_schema () {
+  $schema['pubgroup_hierarchy'] = array(
+    'fields' => array(
+      'level' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'name' => array(
+        'description' => t("Name of the pubgroup level (e.g. 'chapter', 'book')."),
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'default' => '',
+        'length' => 32),
+      'description' => array(
+        'description' => t("Description of the pubgroup level."),
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'default' => '',
+        'length' => 255)
+    ),
+    'primary key' => array('level')
+  );
+  $schema['pubgroup'] = array(
+    'fields' => array(
+      'nid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'vid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'level' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'parentid' => array(
+        'description' => t("NID of containing pubgroup, or 0 if this is a top-level pubgroup."),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0),
+      'idx' => array(
+        'description' => t("Index (order) within the containing pubgroup."),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0),
+      'image' => array('type' => 'varchar', 'not null' => FALSE, 'length' => '255')
+    ),
+    'primary key' => array('vid'),
+    'unique keys' => array(
+      'nid_vid' => array('nid', 'vid'),
+      'vid_idx' => array('vid', 'idx')
+    ),
+    'indexes' => array(
+      'parentid_idx' => array('parentid', 'idx')
+    )
+  );
+  return $schema;
+}
+

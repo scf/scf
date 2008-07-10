@@ -1,0 +1,65 @@
+<?php
+
+/**
+ * Implementation of hook_install().
+ */
+function sciencecommons_geneproxy_install () {
+}
+
+/**
+ * Implementation of hook_enable().
+ */
+function sciencecommons_geneproxy_enable () {
+  variable_set("sciencecommons_geneproxy_sparql_url", "http://sparql.neurocommons.org:8890/sparql/");
+  // default to 24 hrs
+  $expires_sec = 60 * 60 * 24;
+  variable_set("sciencecommons_geneproxy_expires_sec", $expires_sec);
+  $lat2uri = array(
+    "Mus musculus" => "http://purl.org/commons/record/taxon/10090",
+    "Homo sapiens" => "http://purl.org/commons/record/taxon/9606",
+    "Rattus norvegicus" => "http://purl.org/commons/record/taxon/10116"
+  );
+  $common2uri = array(
+    "mouse" => "http://purl.org/commons/record/taxon/10090",
+    "human" => "http://purl.org/commons/record/taxon/9606",
+    "rat" => "http://purl.org/commons/record/taxon/10116"
+  );
+  if ($vid = variable_get('species_core_vocabulary', 0)) {
+    taxonomy_bulk_add_synonyms($vid, $lat2uri);
+  }
+  foreach (array('host', 'reactivity') as $subvocab) {
+    if ($vid = variable_get('species_' . $subvocab . '_vocabulary', 0)) {
+      taxonomy_bulk_add_synonyms($vid, $common2uri);
+    }
+  }
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function sciencecommons_geneproxy_uninstall () {
+  variable_del("sciencecommons_geneproxy_sparql_url");
+  variable_del("sciencecommons_geneproxy_expires_sec");
+}
+
+function sciencecommons_geneproxy_update_6001 () {
+  variable_set("sciencecommons_geneproxy_sparql_url", "http://sparql.neurocommons.org:8890/sparql/");
+  $expires_sec = 60 * 60 * 24;
+  variable_set("sciencecommons_geneproxy_expires_sec", $expires_sec);
+  return array();
+}
+
+/**
+ * species_core vocab added: do syn uri mapping
+ */
+function sciencecommons_geneproxy_update_6002 () {
+  $lat2uri = array(
+    "Mus musculus" => "http://purl.org/commons/record/taxon/10090",
+    "Homo sapiens" => "http://purl.org/commons/record/taxon/9606",
+    "Rattus norvegicus" => "http://purl.org/commons/record/taxon/10116"
+  );
+  if ($vid = variable_get('species_core_vocabulary', 0)) {
+    taxonomy_bulk_add_synonyms($vid, $lat2uri);
+  }
+  return array();
+}

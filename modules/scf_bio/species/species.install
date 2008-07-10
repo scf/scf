@@ -1,0 +1,72 @@
+<?php
+
+/**
+ * Implementation of hook_install().
+ */
+function species_install () {
+  // Set the weight of the species.module to 1 so it is loaded after
+  // the taxonomy and taxonomy_bulk
+  db_query("UPDATE {system} SET weight = 1 WHERE name = 'species'");
+}
+
+function species_enable() {
+  _species_create_vocab('core', 'Species', 'Classification terms for species.');
+  _species_create_vocab('host', 'Host species', 'Classification terms for host species.');
+  _species_create_vocab('reactivity', 'Reactivity species', 'Classification terms for reactivity species.');
+}
+
+function _species_create_vocab ($type, $name, $description) {
+  static $wt = 10;
+  $wt++;
+  $var = 'species_' . $type . '_vocabulary';
+  if (!taxonomy_vocabulary_load(variable_get($var, 0))) {
+    // Create the species vocabulary if it does not exist.
+    $vocabulary = array(
+      'name' => t($name),
+      'multiple' => 0,
+      'required' => 0,
+      'hierarchy' => 1,
+      'relations' => 0,
+      'tags' => 0,
+      'module' => 'species',
+      'description' => t($description),
+      'weight' => $wt,
+      'nodes' => array()
+    );
+    taxonomy_save_vocabulary($vocabulary);
+    $vid = $vocabulary['vid'];
+    variable_set($var, $vid);
+    module_load_include("inc", "species", "species.taxonomy");
+    $terms = species_taxonomy_init($type);
+    taxonomy_bulk_import($vid, $terms);
+  }
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function species_uninstall() {
+  // Load the required Taxonomy module, in case it has been disabled.
+  drupal_load('module', 'taxonomy');
+  // Delete the vocabularies
+  _species_delete_vocab('species_vocabulary');
+  _species_delete_vocab('species_host_vocabulary');
+  _species_delete_vocab('species_reactivity_vocabulary');
+}
+
+function _species_delete_vocab ($var) {
+  $vid = variable_get($var, '');
+  if (!empty($vid)) {
+    @taxonomy_del_vocabulary($vid);
+  }
+  variable_del($var);
+}
+
+/**
+ * add core species vocab (no longer conflated with host vocab)
+ */
+function species_update_6001 () {
+  _species_create_vocab('core', 'Species', 'Classification terms for species.');
+  return array();
+}
+

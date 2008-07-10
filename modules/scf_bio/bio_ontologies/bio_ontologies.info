@@ -1,0 +1,8 @@
+; $Id$
+name = Biological Ontologies
+description = Provides placeholders for various required biological ontology taxonomies
+dependencies[] = taxonomy
+dependencies[] = taxonomy_bulk
+package = SCF Biology
+version = VERSION
+core = 6.x

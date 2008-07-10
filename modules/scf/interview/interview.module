@@ -1,0 +1,234 @@
+<?php
+
+// $Id: interview.module $
+
+/**
+ * @file
+ * Interview module
+ */
+
+module_load_include("php", "interview", "InterviewModule");
+
+function interview_node_info() {
+  return interview()->nodeInfo();
+}
+
+function interview_menu () {
+  return interview()->menu();
+}
+
+function interview_perm () {
+  return interview()->perm();
+}
+
+function interview_access ($op, $node, $account) {
+  return interview()->access($op, $node, $account);
+}
+
+function interview_form (&$node, &$form_state) {
+  return interview()->form($node, $form_state);
+}
+
+function interview_validate($node) {
+  interview()->validate($node);
+}
+
+function interview_insert ($node) {
+  interview()->insert($node);
+}
+
+function interview_update ($node) {
+  interview()->update($node);
+}
+
+function interview_load ($node) {
+  return interview()->load($node);
+}
+
+function interview_delete ($node) {
+  interview()->delete($node);
+}
+
+function interview_view ($node, $teaser = FALSE, $page = FALSE) {
+  return interview()->view($node, $teaser, $page);
+}
+
+function interview_theme () {
+  return interview()->theme();
+}
+
+function interview_block ($op = 'list', $delta = 0, $edit = array()) {
+  return interview()->block($op, $delta, $edit);
+}
+
+function interview_nodeapi (&$node, $op, $a3 = NULL, $a4 = NULL) {
+  return interview()->nodeapi($node, $op, $a3, $a4);
+}
+
+function interview_admin_settings_subform () {
+  return interview()->adminSettingsSubform();
+}
+
+function interview_list_view () {
+  return interview()->listView();
+}
+
+
+/**
+ * Submit handler to add more participants to a interview form. This handler is used when
+ * javascript is not available. It makes changes to the form state and the
+ * entire form is rebuilt during the page reload.
+ *
+ * NOTE: The admin form currently does not work without JS enabled on
+ * the client because the ONLY way to successfully fill in the
+ * participants (with the correct member ID lookup) is by using the
+ * autocompletion...
+ */
+function interview_add_participant_submit($form, &$form_state) {
+  // Set the form to rebuild and run submit handlers.
+  node_form_submit_build_node($form, $form_state);
+
+  // Make the changes we want to the form state.
+  if ($form_state['values']['interview_add_participant']) {
+    $form_state['participant_count'] = count($form_state['values']['participants']) + 1;
+  }
+}
+
+/**
+ * Implementation of hook_submit().
+ */
+function interview_node_form_submit(&$form, &$form_state) {
+  interview()->nodeFormSubmit($form, $form_state);
+}
+
+
+function theme_interview_node_form($form) {
+  // HACK: have to put "theme" here to make sure it's loaded after the
+  // standard autocomplete.js, which it overrides
+  drupal_add_js(drupal_get_path('module', 'member') .'/member_autocomplete_override.js', 'theme');
+  return drupal_render($form);
+}
+
+/**
+ * Theme the admin interview form for participants.
+ */
+function theme_interview_form_participants($form) {
+  // Change the button title to reflect the behavior when using JavaScript.
+  drupal_add_js(drupal_get_path('module', 'interview') .'/interview_form.js');
+
+  $rows = array();
+  $headers = array(
+    t('Selected participants'),
+    t('Interviewer'),
+    t('Key'),
+    ''
+  );
+
+  foreach (element_children($form) as $i) {
+    // No need to print the field title every time.
+    unset($form[$i]['name']['#title'], $form[$i]['interviewer']['#title'], $form[$i]['label']['#title']);
+
+    // Build the table row.
+    $row = array(
+      'data' => array(
+        array('data' => drupal_render($form[$i]['mid']) . drupal_render($form[$i]['cid']) . drupal_render($form[$i]['name']), 'class' => 'interview-name'),
+        array('data' => drupal_render($form[$i]['interviewer']), 'class' => 'interview-interviewer'),
+        array('data' => drupal_render($form[$i]['label']), 'class' => 'interview-label'),
+        array('data' => drupal_render($form[$i]['delete']), 'class' => 'interview-delete'),
+      ),
+      // 'id' => 'interview-participant-' . $i
+    );
+
+    // Add additional attributes to the row, such as a class for this row.
+    if (isset($form[$i]['#attributes'])) {
+      $row = array_merge($row, $form[$i]['#attributes']);
+    }
+    $rows[] = $row;
+  }
+
+  $output = theme('table', $headers, $rows);
+  $output .= drupal_render($form);
+  return $output;
+}
+
+/**
+ * Process variables for interview-statement.tpl.php.
+ *
+ * The $variables array contains the following arguments:
+ * - $node
+ * - $participant_lookup
+ * - $statement_num
+ *
+ * @see interview-statement.tpl.php
+ */
+function template_preprocess_interview_statement(&$variables) {
+  $node = $variables['node']; 
+  $statements = $node->statements;
+  $last = count($statements) - 1;
+  $i = min($variables['statement_num'], $last);
+  $variables['statement_num'] =$i;
+  $st = $statements[$i];
+  $ppts = $variables['participant_lookup'];
+  $variables['image'] = '';
+  $variables['content'] = '';
+  $variables['is_interviewer'] = 0;
+  $variables['is_first'] = ($i == 0);
+  $variables['is_last'] = ($i == $last);
+  $variables['participant_key'] = '';
+  $variables['participant_name'] = '';
+  if (!empty($st)) {
+    $st = (object) $st;
+    if (isset($st->cid)) {
+      if (isset($ppts[$st->cid])) {
+        $ppt = $ppts[$st->cid];
+        $variables['participant_key'] = $ppt->label;
+        $variables['is_interviewer'] = $ppt->interviewer;
+        $contrib = node_load($ppt->cid);
+        if ($contrib) {
+          $variables['participant_name'] = $contrib->title;
+        } else {
+          $variables['participant_name'] = 'unknown';
+        }
+      }
+    }
+
+    if (!empty($st->statement)) {
+      $variables['content'] = check_markup($st->statement, $st->statement_format);
+    }
+    if (!empty($st->image)) {
+      $variables['image'] = theme('image', $st->image, '', '', NULL, TRUE);
+    }
+    // TODO: need alt text, credit, etc for img.
+    
+  }
+}
+
+/**
+ * Process variables for interview-byline.tpl.php.
+ *
+ * The $variables array contains the following arguments:
+ * - $node
+ *
+ * @see interview-byline.tpl.php
+ */
+function template_preprocess_interview_byline(&$variables) {
+  $node = $variables['node']; 
+  $variables['author_link'] = '';
+  $variables['author_capacity'] = '';
+  if (!empty($node->author_cid)) {
+    $contrib = node_load($node->author_cid);
+    if ($contrib) {
+      $cuid = $contrib->cuid;
+      if (module_exists('member') && $mid = member_get_node_id($contrib->cuid)) {
+        $variables['author_link'] = l($contrib->title, "node/$mid");
+      } else {
+        $variables['author_link'] = $contrib->title;
+      }
+      $variables['author_capacity'] = $contrib->capacity;
+      if (node_access("update", $contrib)) {
+        $variables['author_edit_link'] = l(t('Edit contributor snapshot'), 'node/' . $contrib->nid . '/edit');
+      }
+    }
+  }
+}
+

@@ -1,0 +1,238 @@
+<?php
+
+
+/**
+ * Implementation of hook_install().
+ */
+function interview_install () {
+  drupal_install_schema('interview');
+  variable_set('print_display_interview', 1);
+  module_load_include("php", "interview", "InterviewModule");
+  interview()->installForumContainer();
+  interview()->addNodeTypeToVocabulariesByVarName(array('scf_keyword_vocabulary'));
+  interview()->addAssociatedTypes('gene', 'antibody', 'modelorganism', 'researchstatement');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function interview_uninstall () {
+  module_load_include("php", "interview", "InterviewModule");
+  interview()->deleteAll();
+  drupal_uninstall_schema('interview');
+  variable_del('print_display_interview');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function interview_schema () {
+  $schema['interview'] = array(
+    'fields' => array(
+      'nid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'vid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'author_cid' => array(
+        'description' => t('Contributor NID for author of interview.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0
+      ),
+      'pubdate' => array(
+        'description' => t('The Unix timestamp when the node was published (status set to 1).'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0),
+    ),
+    'primary key' => array('vid'),
+    'unique keys' => array(
+      'nid_vid' => array('nid', 'vid')
+    ),
+    'indexes' => array(
+      'interview_pubdate' => array('pubdate')
+    )
+  );
+  $schema['interview_participants'] = array(
+    'fields' => array(
+      'vid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'idx' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+
+      // NOTE: currently participants must be registered users.  If this
+      // changes then would have to add an id column below and change
+      // the FK relationship from the content to participant rather than
+      // directly to user.
+      // member id
+
+      // PROBLEM: member info (or at least name/jobtitle/affiliation)
+      // should be frozen at time of publication, and not track the
+      // member's subsequent career...  Can/should we force all member
+      // changes (or at least changes to name/jobtitle/affiliation) to
+      // create a new revision, so we can then point to a specific
+      // revision here?
+
+      'cid' => array(
+        'description' => t('Contributor NID for this participant.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0
+      ),
+      'label' => array('type' => 'varchar', 'not null' => TRUE, 'default' => '', 'length' => 32),
+      'interviewer' => array('type' => 'int', 'size' => 'tiny', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+    ),
+    'unique keys' => array(
+      'vid_idx' => array('vid', 'idx'),
+      'vid_cid' => array('vid', 'cid')
+    )
+  );
+  $schema['interview_statements'] = array(
+    'fields' => array(
+      'vid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'idx' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'cid' => array(
+        'description' => t('Contributor NID for this statement.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0
+      ),
+      'statement' => array('type' => 'text', 'not null' => TRUE, 'size' => 'big'),
+      'statement_format' => array(
+        'description' => t("The input format used by the statement."),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0
+      ),
+      'image' => array('type' => 'varchar', 'not null' => FALSE, 'length' => '255'),
+    ),
+    'unique keys' => array(
+      'vid_idx' => array('vid', 'idx'),
+    )
+  );
+  return $schema;
+}
+
+/**
+ * Drop 'nid' field from child collections (still need it in interview
+ * table in order to do hook_delete()).
+ */
+function interview_update_6000 () {
+  $ret = array();
+  db_drop_field($ret, 'interview_participants', 'nid');
+  db_drop_field($ret, 'interview_statements', 'nid');
+  return $ret;
+}
+
+function interview_update_6001 () {
+  module_load_include("php", "interview", "InterviewModule");
+  interview()->installForumContainer();
+  return array();
+}
+
+/**
+ * add statement_format
+ */
+function interview_update_6002 () {
+  $ret = array();
+  db_add_field($ret, 'interview_statements', 'statement_format',
+    array(
+      'description' => t("The input format used by the statement."),
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0
+    )
+  );
+  return $ret;
+}
+
+/**
+ * add interview.pubdate + index
+ */
+function interview_update_6003 () {
+  $ret = array();
+  db_add_field($ret, 'interview', 'pubdate',
+    array(
+      'description' => t('The Unix timestamp when the node was published (status set to 1).'),
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0)
+    );
+  db_add_index($ret, 'interview', 'interview_pubdate', array('pubdate'));
+  return $ret;
+}
+
+
+/**
+ * add assocs to bio entities
+ */
+function interview_update_6004 () {
+  module_load_include("php", "interview", "InterviewModule");
+  interview()->addAssociatedTypes('gene', 'antibody', 'modelorganism', 'researchstatement');
+  return array();
+}
+
+/**
+ * add author_cid, to use contributor module for author
+ */
+function interview_update_6005 () {
+  $ret = array();
+  db_add_field($ret, 'interview', 'author_cid',
+    array(
+      'description' => t('Contributor NID for author of interview.'),
+      'type' => 'int',
+      'unsigned' => TRUE,
+      'not null' => TRUE,
+      'default' => 0
+    )
+  );
+  return $ret;
+}
+
+/**
+ * delete excess fields now that contributor module is used for author
+ */
+function interview_update_6006 () {
+  $ret = array();
+  db_drop_field($ret, 'interview', 'author_mid');
+  db_drop_field($ret, 'interview', 'author_name');
+  db_drop_field($ret, 'interview', 'author_capacity');
+  return $ret;
+}
+
+/**
+ */
+function interview_update_6007 () {
+  $ret = array();
+  db_add_field($ret, 'interview_participants', 'cid',
+    array(
+      'description' => t('Contributor NID for this participant.'),
+      'type' => 'int',
+      'unsigned' => TRUE,
+      'not null' => TRUE,
+      'default' => 0
+    )
+  );
+  db_add_field($ret, 'interview_statements', 'cid',
+    array(
+      'description' => t('Contributor NID for this statement.'),
+      'type' => 'int',
+      'unsigned' => TRUE,
+      'not null' => TRUE,
+      'default' => 0
+    )
+  );
+  return $ret;
+}
+
+/**
+ */
+function interview_update_6008 () {
+  $ret = array();
+  db_add_unique_key($ret, 'interview_participants', 'vid_cid', array('vid', 'cid'));
+  db_drop_unique_key($ret, 'interview_participants', 'vid_mid');
+  db_drop_field($ret, 'interview_participants', 'nid');
+  db_drop_field($ret, 'interview_participants', 'mid');
+  db_drop_field($ret, 'interview_statements', 'nid');
+  db_drop_field($ret, 'interview_statements', 'mid');
+  return $ret;
+}

@@ -1,0 +1,12 @@
+<?php
+
+// $Id: rdfnodeproxy.module $
+
+/**
+ * @file
+ * rdfnodeproxy module
+ */
+
+// nothing needed here: this module just provides the abstract
+// RdfNodeProxyModule class (see file RdfNodeProxyModule.php in this
+// directory)

@@ -1,0 +1,8 @@
+; $Id$
+name = RDF Node Proxy
+description = Provides a helper class for node proxying from RDF and semantic web datastores.
+dependencies[] = nodeproxy
+dependencies[] = rdf_import
+package = Node Proxy
+version = VERSION
+core = 6.x

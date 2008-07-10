@@ -1,0 +1,9 @@
+; $Id$
+name = Model Organism
+description = Provides a model organism node type
+dependencies[] = scf
+dependencies[] = species
+dependencies[] = taxonomy_extra
+package = SCF Biology
+version = VERSION
+core = 6.x

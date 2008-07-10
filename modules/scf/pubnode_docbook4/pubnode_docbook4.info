@@ -1,0 +1,8 @@
+; $Id$
+name = Publication Node Docbook4 Importer
+description = Allows importing of Docbook4 documents as Publication Nodes
+dependencies[] = scf
+dependencies[] = pubnode
+package = SCF
+version = VERSION
+core = 6.x

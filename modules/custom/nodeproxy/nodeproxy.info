@@ -1,0 +1,8 @@
+; $Id$
+name = Node Proxy
+description = Provides a means of "backing" Drupal nodes with external data sources.
+; contained in SCF but doesn't depend on it
+; dependencies[] = pressflow_transaction
+package = Node Proxy
+version = VERSION
+core = 6.x

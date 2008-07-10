@@ -1,0 +1,202 @@
+/* 	-------------------------------------------------------------
+
+	Annotation Style Sheet : www.plosone.org
+	
+	CREATED ON 	: 08-26-2006
+	MODIFIED ON 	: 08-02-2007
+	
+	CREATED BY	: MARGARET SHEAR
+	MODIFIED BY	: SEBASTIAN TOOMEY
+ 
+   	------------------------------------------------------------- */	
+
+/* detail wraps annotation post details such as date and posting time and username */
+div.detail{ font-size: .9em; color: #666; position: relative;}
+div.detail strong{ color: #444; /* strong wraps date and time for added emphasis and clarity */}
+.dialog .tip,
+.dialog .tipu { display: none; }
+#AnnotationDialog .dialog .tip 	{ background:transparent url(../images/pone_dialog_pb.gif) no-repeat 0px 0px;  width:39px; height:22px; position:absolute; bottom: -22px; left:22px; }
+#AnnotationDialog .dialog .tipu 	{ background:transparent url(../images/pone_dialog_pt.gif) no-repeat 0px 0px; width:39px; height:22px; position:absolute; top: -22px; left:22px; }
+#CommentDialog .dialog .tip,
+#CommentDialogMultiple .dialog .tip 	{ background:transparent url(../images/pone_dialog_preview_pb.gif) no-repeat 0px 0px; width:39px; height:22px; position:absolute; bottom: -18px; left:22px; }
+#CommentDialog .dialog .tipu,
+#CommentDialogMultiple .dialog .tipu 	{ background:transparent url(../images/pone_dialog_preview_pt.gif) no-repeat 0px 0px; width:39px; height:22px; position:absolute; top: -18px; left:22px; }
+#CommentDialogMultiple .dialog .tip   { bottom: -21px; }
+#CommentDialogMultiple .dialog .tipu 	{ top: -21px; }
+.dialog .tip.on,
+.dialog .tipu.on { display: block; }
+
+/* --- contains all annotation views --- */
+.dialog	{ line-height: 1.4em; font-size: .9em;}
+/* dialog box title */
+.dialog h5{ margin: 0 0 10px 0; font-size: 1em; color: #333; padding: 5px;}
+/* annotation post title */
+.dialog h6{ border: 2px solid #ccc; border-width: 2px 2px 1px 2px; font-size: 1em; padding: 5px; margin: 0; background: #fff; clear: right;}
+
+/* detail styles specific to dialog box representation */
+div.dialog div.detail{ padding: 5px; background-color: #fff; border: 2px solid #ccc; border-width: 1px 2px 2px 2px;}
+/* wraps the text of the annotation only */
+div.contentwrap{ padding: 10px; background-color: #fff; margin: 0; border: 2px solid #ccc; border-width: 0 2px 1px 2px;}
+
+div.dialog .posting.pane{ background: none; }
+/*div.pane a.instructions,
+div.pane a:visited.instructions { color: #eee;} now defined in pone_screen.css -SWT */
+div.comment div.comment{ margin: 10px 0; padding-left: 20px; border-left: 4px solid #999; background-color: #eee;}
+div.comment .comment h6{ background: transparent; color: #333; padding: 4px 0 0 0; }
+
+/* preview is applied to non-interactive dialogs */
+.preview{ width: 32em; border: 3px solid #666; background: url(../images/pone_dialog_preview_bg.gif) repeat-x top;}
+.preview div.detail a { margin: 0 10px; }
+/* annotate is applied to dialog viewers in the annotation process */
+.annotate{ width: 42em; border: 3px solid #0bf; background: #fff url(../images/pone_forms_bg.gif) repeat-x bottom; position:relative;}
+
+.loadingCycler { z-index: 99998 !important; }
+.loadingCycler img { z-index: 99999 !important; }
+
+/* comment wraps the contents of annotation blocks to apply padding */
+.comment{ padding: 10px; }
+
+.response fieldset{ border: none; }
+.response fieldset .reply{ display: block; margin: 10px 0; padding: 2px; border: 1px solid #ccc}
+.posting .title{ width: 34em; }
+.flag textarea,
+.posting textarea{ width: 34em; height: 8em; display: block; overflow: auto; margin-bottom: 10px; margin-left: 0; margin-top: 5px;}
+.response .body{ width: 46em; height: 12em; overflow: auto;}
+
+
+.dojoTooltip {
+	border: solid black 1px;
+	background: beige;
+	color: black;
+	position: absolute;
+	font-size: small;
+	padding: 2px 2px 2px 2px;
+	z-index: 10;
+	display: block;
+}
+
+/* --- userinfo is for user information view --- */
+.userinfo{ width: 16em; text-align: center; font-size: .9em; padding: 5px; border: 2px solid #333;  position: absolute;	z-index: 10; display: block; }
+.userinfo dl,
+.userinfo dd,
+.userinfo dt{ margin: 0; list-style-type: none; font-size: 1em;}
+.userinfo dd{ font-size: .9em; }
+
+/* --- pane contains viewing area --- */
+.pane			{ margin: 20px; padding: 0 5px;  margin: 10px 0; position: relative; }
+.reading.pane 	{ height: 12em; }
+.dialog fieldset{ border: 0; margin: 0; padding: 0;}
+.dialog .text label,
+.dialog legend,
+.post legend	{ display: none; }
+.pane .error	{ background-color: #fff; font-style: normal; }
+
+.dialog input,
+.post input	{ display: block; margin: 10px 0;}
+
+.dialog .response { width: 100%; height: 8em; overflow: auto; }
+.dialog .submit input { display: inline;}
+.dialog .submit label { display: inline;}
+.dialog fieldset div { width: 5em; height: 2em; margin-left: 15px;padding: 0; display: inline;}
+.dialog fieldset div label 	{ width: 5em; vertical-align: middle; height: 1.125em; display: inline;}
+.dialog fieldset input.radio 	{ width: 1em; vertical-align: middle; height: 1.125em; display: inline; margin-right: 4px;}
+div.btnwrap { width: 100%; display:block; margin: 0; height: auto; }
+div.btnwrap input { margin: 5px auto; display: block; width: 18em; padding: 2px;}
+
+/* --- multiple is the containing block for multiple annotations --- */
+
+div.multiple		{ width: 50em; background-color: #666; position: relative;}
+.multiple ol,
+.multiple li	{ list-style-type: none; margin: 0; padding: 0; font-weight: normal;}
+.multiple .detail	{ font-weight: normal; margin: 0 10px 10px 10px;}
+.multiple ol	{ width: 22em; position: absolute; top: 30px; left: 0;margin: 0 10px 0 10px; border: 2px solid #ccc; border-width: 2px 0 0 2px; display: inline;}
+.multiple li	{ padding: 5px; background:#999;border-bottom: 2px solid #ccc; border-right: 2px solid #ccc; cursor: pointer;}
+.multiple .contentwrap div.detail,
+.multiple li div.detail	{ border: 1px solid #ccc; margin: 5px 0 0 0; background-color: #DDD;}
+.multiple li.active	{ background: #FFF; border-right: none; font-weight: bold;}
+.multiple li.active div.detail { background-color: #eee; }
+.multiple .contentwrap { display: none; width: 23em;margin: 0; margin-left: 22.9em; border: 2px solid #ccc; border-left: none; margin-top: 13px;}
+.multiple .contentwrap.active { display: block; }
+.multiple .contentwrap div.detail { position: absolute; bottom: 24px; width: 22.8em;}
+
+/* multiple annotation post detail styles */
+.dialog dt div.detail		{ border: none; background-color: transparent; padding: 0;}
+
+.none 					{ display: none; }
+.annotate ol,
+.annotate li			{ list-style-type: none; margin: 0; padding: 0; width: 100%;}
+
+/* --- page view --- */
+#citation		{ height: 12em; overflow: auto; border: 2px solid #ccc; padding: 10px; }
+#citation cite 	{ display: block; font-style: normal;/*background: url(../images/pone_annotation_cite_bg.gif) no-repeat 5px;*/ }
+#annotation-box blockquote { margin: 0; }
+#annotation-box p { margin: 0; }
+
+div.author blockquote{ background: #FFF; }
+div.author hd	{ background-color: #069; }
+
+div.response h3	{ margin: .15em 0 .25em 5px; padding: 0;letter-spacing: normal; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 1em; font-weight: bold;}
+div.response	{ padding: 0; margin: -2px 0 0 15px!important; border: 2px solid #ccc; border-width: 2px 2px 0 0;  /*  background-color: #ccc; */}
+
+
+div.response div.response { border: none; margin: -2px 0 0 20px; border-top: 2px solid #ccc; }
+div.response blockquote	{ background: #F5F5F6 url(../images/pone_response_blockquote_bg.gif) repeat-x bottom; margin: 0; padding: 5px 10px; font-style: normal; border: 1px solid #ccc; border-width: 1px 0 1px 2px;  }
+div.response .hd { border-left: 2px solid #ccc; padding: 10px; background-color: #fff;  }
+div.response .response .hd	{ background: url(../images/pone_response_hd_bg.gif) repeat-x top; }
+div.response div.detail		{ padding-left: 5px; }
+/* h5 for pane posting titles */
+div.response h5	 { margin: 20px 0 0 0; padding: 0; font-size: 1.1em;}
+
+div.pane		{ position: relative; }
+div.response div.close a	{ position: absolute; float: none; top: 20px; right: 20px; color: #333;}
+
+div.response .pane 					{ border: 2px solid #ccc; border-width: 2px 0 2px 2px; padding: 0 20px 20px 20px; margin: 0; background-repeat: repeat-x; background-position: top; color: #fff;}
+div.response .pane legend 			{ display: none; }
+
+/* apply class original to the original posting of either a discussio or annotation on the directory page */
+div.original	{ margin: 20px 0 5px 0!important;border-top-width: 1px;}
+div.original div { }
+div.original div.toolbar,
+div.original div.hd { background: url(../images/pone_toolbar_bg.gif) repeat-x bottom; }
+div.original div.toolbar a { cursor: pointer; }
+div.original blockquote,
+div.original blockquote * { background: #fff; }
+
+
+div.posting	{ background-color: #666; background-image: url(../images/pone_response_comment_bg.gif); }
+div.flag	{ background-color: #3C9544; background-image: url(../images/pone_response_flag_bg.gif); }
+div#flagForm { display:block; background: #3C9544;}
+div#flagForm form,
+div#flagForm fieldset { background: #3C9544; }
+div#flagForm a.instructions,
+div#DiscussionPanel a.instructions { color: #fff; } /* for white text links on dark backgrounds -SWT */
+div.response div.posting form,
+div.response div.posting fieldset { background: #666; }
+textarea #responseArea .response{ margin-left: 0!important; }
+div#flagConfirm { display: none; }
+
+.toolbar			{ background: url(../images/pone_toolbar_bg.gif) repeat-x 20px; padding: 5px; border: 1px solid #ccc; border-width: 0 0 2px 2px; margin: 0}
+.toolbar ul,
+.toolbar li			{ margin: 0; padding: 0; text-align: right;}
+.toolbar li			{ display: inline; margin: 0 10px; font-size: .9em; }
+
+ol.radio			{ margin: 0; padding: 0; }
+ol.radio li			{ width: 10em; position: relative;height: 2em; list-style-type: none; margin: 0; list-style-type: none;}
+ol.radio input		{ position: absolute; left: 0; }
+ol.radio label		{ font-weight: bold; position: absolute; left: 3em; }
+
+/* annotation and discussion thread view page */
+
+table.directory		{ width: 95%; }
+.directory td		{ background: url(../images/pone_toolbar_bg.gif) repeat-x bottom; border-bottom: 1px solid #ccc; border-right: 1px solid #ccc;}
+.directory td.last	{ background: #ddd; padding-top: 0; padding-bottom: 0; font-size: .9em; border-width: 0; border-bottom: 5px solid #fff; color: #777;}
+.directory strong { color: #555; }
+.directory td.title	{ background: #eee; }
+.directory td.replies { width: 8em; }
+.directory td.replies,
+.directory td.info	{ font-size: .9em; color: #777;}
+img.pointer		{ margin: -5px 0 0 0; }
+
+a.bug,
+a:visited.bug	{ font-style: normal!important; }
+

@@ -1,0 +1,48 @@
+<?php
+/**
+ * Implementation of hook_install().
+ */
+function member_install() {
+  drupal_install_schema('member');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function member_uninstall() {
+  drupal_uninstall_schema('member');
+  // TODO: must also get rid of all nodes of type 'member', etc.
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function member_schema () {
+  $schema['member'] = array(
+    'fields' => array(
+      // muid is the uid of the member's user account, not the uid of the author of this node, which is node->uid
+      // Perhaps this distinction doesn't matter and we can just remove muid and use node->uid
+      'muid' => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+      'nid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'vid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'firstname' => array('type' => 'varchar', 'not null' => TRUE, 'default' => '', 'length' => 64),
+      'lastname' => array('type' => 'varchar', 'not null' => TRUE, 'default' => '', 'length' => 64),
+      'middleinitial' => array('type' => 'varchar', 'not null' => FALSE, 'length' => 4),
+      'sortname' => array('type' => 'varchar', 'not null' => TRUE, 'default' => '', 'length' => 128),
+      'jobtitle' => array('type' => 'varchar', 'not null' => TRUE, 'length' => 128),
+      'affiliation' => array('type' => 'varchar', 'not null' => TRUE, 'length' => 255),
+      'phone' => array('type' => 'varchar', 'not null' => TRUE, 'length' => 32),
+      'fax' => array('type' => 'varchar', 'not null' => TRUE, 'length' => 32)
+      // fullname, bio are mapped to node title, body
+    ),
+    'primary key' => array('vid'),
+    'indexes' => array(
+      'nid' => array('nid'),
+      'muid' => array('muid'),
+      'sortname' => array(array('sortname', 8)),
+      'jobtitle' => array(array('jobtitle', 8)),
+      'affiliation' => array(array('affiliation', 8))
+    )
+  );
+  return $schema;
+}

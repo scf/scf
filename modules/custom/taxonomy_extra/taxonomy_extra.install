@@ -1,0 +1,73 @@
+<?php
+
+/**
+ * Implementation of hook_install().
+ */
+function taxonomy_extra_install () {
+  drupal_install_schema('taxonomy_extra');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function taxonomy_extra_uninstall () {
+  drupal_uninstall_schema('taxonomy_extra');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function taxonomy_extra_schema () {
+  $schema['taxonomy_extra'] = array(
+    'fields' => array(
+      'type' => array(
+        'description' => t('The node type.'),
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => ''
+      ),
+      'vid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => t('Vocabulary ID.'),
+      ),
+      'title' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => t('Title of the vocabulary with respect to the given node type.'),
+      ),
+      'in_content' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+        'description' => t('Whether or not these terms should be shown in the main content area for the given node type.'),
+      ),
+      'in_block' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+        'description' => t('Whether or not these terms should be shown in the "related terms" block for the given node type.'),
+      ),
+      'weight' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+        'description' => t('The weight of the vocabulary in relation to other vocabularies for the given node type.')
+      ),
+    ),
+    'primary key' => array('type', 'vid'),
+    'indexes' => array(
+      'type_weight_title' => array('type', 'weight', 'title')
+    )
+  );
+  return $schema;
+}

@@ -1,0 +1,111 @@
+<?php
+
+/**
+ * Implementation of hook_install().
+ */
+function association_install () {
+  drupal_install_schema('association');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function association_uninstall () {
+  drupal_uninstall_schema('association');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function association_schema () {
+  $schema['association'] = array(
+    'fields' => array(
+      'fromnid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t('The {node}.nid of the FROM node.'),
+        ),
+      'tonid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t('The {node}.nid of the TO node.'),
+        ),
+      'uid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t('The {users}.uid who create the association.'),
+      ),
+      'timestamp' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t('The Unix timestamp when the association was made.')
+      ),
+      'weight' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+        'description' => t('Association weight among TO nodes for a given FROM (need not be unique).')
+      ),
+      'bidirectional' => array(
+        'description' => t('Boolean indicating whether the association has a reverse counterpart in this table.'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0
+      )
+    ),
+    'unique keys' => array(
+      'fromnid_tonid' => array('fromnid', 'tonid')
+    ),
+    'indexes' => array(
+      'tonid' => array('tonid'),
+      'fromnid_weight' => array('fromnid', 'weight'),
+      'fromnid_timestamp' => array('fromnid', 'timestamp')
+    )
+  );
+  // like {node_comment_statistics} but doesn't have records for nodes
+  // with no associations.  Also, nid only refers to outgoing
+  // (fromnid) associations.  No statistics are kept for "tonid".
+  $schema['association_statistics'] = array(
+    'description' => t('Maintains statistics of node and associations posts to show "new" and "updated" flags.'),
+    'fields' => array(
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t('The {node}.nid for which the statistics are compiled.'),
+        ),
+      'last_association_uid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t('The user ID of the latest user to create association from this node, from {associations}.uid.'),
+        ),
+      'last_association_timestamp' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t('The Unix timestamp of the last association that was posted within this node, from {associations}.timestamp.'),
+        ),
+      'association_count' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t('The total number of associations on this node.'),
+      ),
+    ),
+    'primary key' => array('nid'),
+    'indexes' => array(
+      'last_association_timestamp' => array('last_association_timestamp')
+    ),
+  );
+  return $schema;
+}

@@ -1,0 +1,166 @@
+<?php
+
+// $Id: researchstatement.module $
+
+/**
+ * @file
+ * Researchstatement module
+ */
+
+module_load_include("php", "researchstatement", "ResearchStatementModule");
+
+function researchstatement_node_info() {
+  return researchstatement()->nodeInfo();
+}
+
+function researchstatement_menu () {
+  return researchstatement()->menu();
+}
+
+function researchstatement_perm () {
+  return researchstatement()->perm();
+}
+
+function researchstatement_access ($op, $node, $account) {
+  return researchstatement()->access($op, $node, $account);
+}
+
+function researchstatement_form (&$node, &$form_state) {
+  return researchstatement()->form($node, $form_state);
+}
+
+function researchstatement_validate($node) {
+  researchstatement()->validate($node);
+}
+
+function researchstatement_node_form_submit(&$form, &$form_state) {
+  researchstatement()->nodeFormSubmit($form, $form_state);
+}
+
+function researchstatement_insert ($node) {
+  researchstatement()->insert($node);
+}
+
+function researchstatement_update ($node) {
+  researchstatement()->update($node);
+}
+
+function researchstatement_load ($node) {
+  return researchstatement()->load($node);
+}
+
+function researchstatement_delete ($node) {
+  researchstatement()->delete($node);
+}
+
+function researchstatement_view ($node, $teaser = FALSE, $page = FALSE) {
+  return researchstatement()->view($node, $teaser, $page);
+}
+
+function researchstatement_theme () {
+  return researchstatement()->theme();
+}
+
+function researchstatement_block ($op = 'list', $delta = 0, $edit = array()) {
+  return researchstatement()->block($op, $delta, $edit);
+}
+
+function researchstatement_autocomplete($field, $string) {
+  researchstatement()->autocomplete($field, $string);
+}
+
+function researchstatement_admin_settings_subform () {
+  return researchstatement()->adminSettingsSubform();
+}
+
+function researchstatement_list_view () {
+  return researchstatement()->listView();
+}
+
+function researchstatement_load_recent_nodes ($limit = 10, $element = 0) {
+  return researchstatement()->loadRecentNodes($limit, $element);
+}
+
+/**
+ * Process variables for researchstatement-main.tpl.php.
+ *
+ * The $variables array contains the following arguments:
+ * - $node
+ *
+ * @see researchstatement-main.tpl.php
+ */
+function template_preprocess_researchstatement_main(&$variables) {
+  $node = $variables['node']; 
+  $variables['statement'] = isset($node->title) ? $node->title : '';
+  $variables['pubmed_link'] = theme('researchstatement_pubmed_link', $node, FALSE);
+  researchstatement()->loadAssociated($node);
+  $variables['genes'] = theme('gene_table', researchstatement()->loadAssociated($node, 'gene'));
+  $variables['antibodies'] = theme('antibody_table', researchstatement()->loadAssociated($node, 'antibody'));
+  $variables['modelorganisms'] = theme('modelorganism_table', researchstatement()->loadAssociated($node, 'modelorganism'));
+  $variables['bio_ontologies'] = array();
+  if (module_exists('taxonomy_extra')) {
+    $variables['keywords'] = taxonomy_extra_theme_term_list($node, 'scf_keyword');
+    if (module_exists("bio_ontologies")) {
+      $variables['bio_ontologies'] = bio_ontologies_theme_term_lists($node);
+    }
+  }
+}
+
+/**
+ * - $nodes
+ * - $title
+ * - $pager
+ */
+function theme_researchstatement_list($nodes, $pager = '', $title = 'Research Statements') {
+  $output = '<div class="researchstatement-list">';
+  if (isset($title)) {
+    $output .= '<h3>'. t($title) .'</h3>';
+  }
+  if (!empty($nodes)) {
+    $output .= "<dl>\n";
+    $num_nodes = count($nodes);
+    foreach ($nodes as $i => $node) {
+      $atts = array();
+      $dt = theme('researchstatement_pubmed_link', $node);
+      $dd = check_plain($node->title);
+      $dd .= ' [ ' . l(t('view'), 'node/' . $node->nid);
+      if (user_access('edit research statements')) 
+        $dd .= ' | '. l(t('edit'), 'node/' . $node->nid . '/edit');
+      $dd .= ' ]';
+      if ($i == 0) {
+        $atts['class'] = 'first';
+      }
+      if ($i == $num_nodes - 1) {
+        $atts['class'] = 'last';
+      }
+      $output .= '<dt'. drupal_attributes($atts) .'>'. $dt ."</dt>\n";
+      $output .= '<dd'. drupal_attributes($atts) .'>'. $dd ."</dd>\n";
+    }
+    $output .= "</dl>";
+  }
+  $output .= '</div>';
+  if (!empty($pager)) {
+    $output .= '<div class="pager">' . $pager . '</div>';
+  }
+  return $output;
+}
+
+/**
+ * @param $node a research statement
+ */
+function theme_researchstatement_pubmed_link ($node, $verbose = TRUE, $attributes = NULL) {
+  if (isset($node->pubmedid) && !empty($node->pubmedid)) {
+    $pmid = $node->pubmedid;
+    if (!isset($attributes))
+      $attributes = array();
+    $attributes['target'] = 'pubmed';
+    $opts = array(
+      'attributes' => $attributes
+    );
+    $text = $verbose ? 'PubMed ' . $pmid : $pmid;
+    return l($text, 'http://www.ncbi.nlm.nih.gov/pubmed/' . $pmid, $opts);
+  } else {
+    return '[no ref]';
+  }
+}
+

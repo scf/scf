@@ -1,0 +1,185 @@
+<?php
+
+/**
+ * Implementation of hook_install().
+ */
+function scf_install () {
+  // Set the weight of the scf.module to 1 so it is loaded after
+  // the taxonomy and oo modules
+  db_query("UPDATE {system} SET weight = 1 WHERE name = 'scf'");
+  drupal_install_schema('scf');
+  if (!taxonomy_vocabulary_load(variable_get('scf_organization_vocabulary', 0))) {
+    // Create the organisation vocabulary if it does not exist.
+    $vocabulary = array(
+      'name' => t('Organization'),
+      'multiple' => 1,
+      'required' => 0,
+      'hierarchy' => 1,
+      'relations' => 0,
+      'tags' => 1,
+      'module' => 'scf',
+      'description' => t('Organizations'),
+      'weight' => 1,
+      'nodes' => array()
+    );
+    taxonomy_save_vocabulary($vocabulary);
+    $vid = $vocabulary['vid'];
+    variable_set('scf_organization_vocabulary', $vid);
+  }
+  if (!taxonomy_vocabulary_load(variable_get('scf_keyword_vocabulary', 0))) {
+    // Create the organisation vocabulary if it does not exist.
+    $vocabulary = array(
+      'name' => t('Keywords'),
+      'multiple' => 1,
+      'required' => 0,
+      'hierarchy' => 0,
+      'relations' => 0,
+      'tags' => 1,
+      'module' => 'scf',
+      'description' => t('Keywords'),
+      'weight' => 2,
+      'nodes' => array()
+    );
+    taxonomy_save_vocabulary($vocabulary);
+    $vid = $vocabulary['vid'];
+    variable_set('scf_keyword_vocabulary', $vid);
+  }
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function scf_uninstall () {
+  drupal_uninstall_schema('scf');
+  // Load the required Taxonomy module, in case it has been disabled.
+  drupal_load('module', 'taxonomy');
+  // Delete the vocabularies
+  _scf_delete_vocab('scf_keyword_vocabulary');
+  _scf_delete_vocab('scf_organization_vocabulary');
+}
+
+function _scf_delete_vocab ($var) {
+  $vid = variable_get($var, '');
+  if (!empty($vid)) {
+    @taxonomy_del_vocabulary($vid);
+  }
+  variable_del($var);
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function scf_schema () {
+  $schema['scf_contributor'] = array(
+    'fields' => array(
+      'scid' => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
+      'mid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'name' => array(
+        'description' => t("Name of the contributor for the purposes of a single publication."),
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'default' => '',
+        'length' => 128),
+      'capacity' => array(
+        'description' => t("The capacity, role or title of the contributor for the purposes of a single publication."),
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'default' => '',
+        'length' => 128),
+      'affiliation' => array(
+        'description' => t("The affiliation of the contributor for the purposes of a single publication."),
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'default' => '',
+        'length' => 255),
+      'email' => array(
+        'description' => t("The email address of the contributor for the purposes of a single publication."),
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'default' => '',
+        'length' => 64)
+    ),
+    'primary key' => array('scid'),
+    'indexes' => array(
+      'mid' => array('mid')
+      // don't need other indexes because this table is not really
+      // meant for searching, just recording snapshots of member info
+    )
+  );
+  return $schema;
+}
+
+/**
+ * Add 'scf_contributor' table
+ */
+function scf_update_6001 () {
+  $schema['scf_contributor'] = array(
+    'fields' => array(
+      'scid' => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
+      'mid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'name' => array(
+        'description' => t("Name of the contributor for the purposes of a single publication."),
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'default' => '',
+        'length' => 128),
+      'capacity' => array(
+        'description' => t("The capacity, role or title of the contributor for the purposes of a single publication."),
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'default' => '',
+        'length' => 128),
+      'affiliation' => array(
+        'description' => t("The affiliation of the contributor for the purposes of a single publication."),
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'default' => '',
+        'length' => 255),
+      'email' => array(
+        'description' => t("The email address of the contributor for the purposes of a single publication."),
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'default' => '',
+        'length' => 64)
+    ),
+    'primary key' => array('scid'),
+    'indexes' => array(
+      'mid' => array('mid')
+    )
+  );
+  $ret = array();
+  db_create_table($ret, 'scf_contributor', $schema['scf_contributor']);
+  return $ret;
+}
+
+/**
+ * Add Organizations taxonomy
+ */
+function scf_update_6002 () {
+  if (!taxonomy_vocabulary_load(variable_get('scf_organization_vocabulary', 0))) {
+    // Create the organization vocabulary if it does not exist.
+    $vocabulary = array(
+      'name' => t('Organization'),
+      'multiple' => 1,
+      'required' => 0,
+      'hierarchy' => 1,
+      'relations' => 0,
+      'tags' => 1,
+      'module' => 'scf',
+      'description' => t('Organizations'),
+      'nodes' => array()
+    );
+    taxonomy_save_vocabulary($vocabulary);
+    $vid = $vocabulary['vid'];
+    variable_set('scf_organization_vocabulary', $vid);
+  }
+  return array();
+}
+
+/**
+ * Make sure loads after oo and taxonomy
+ */
+function scf_update_6003 () {
+  db_query("UPDATE {system} SET weight = 1 WHERE name = 'scf'");
+  return array();
+}

@@ -1,0 +1,127 @@
+<?php
+
+/**
+ * Implementation of hook_install().
+ */
+function gene_install () {
+  drupal_install_schema('gene');
+  module_load_include("php", "gene", "GeneModule");
+  // Apparently genes are not forum topics...
+  //  gene()->installForumContainer();
+  $vocabs = array(
+    'scf_keyword_vocabulary',
+    'species_core_vocabulary',
+    'bio_ontologies_biological_process_vocabulary',
+    'bio_ontologies_cellular_component_vocabulary',
+    'bio_ontologies_molecular_function_vocabulary'
+  );
+  gene()->addNodeTypeToVocabulariesByVarName($vocabs);
+  gene()->addAssociatedTypes('antibody', 'modelorganism', 'researchstatement');
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function gene_enable () {
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function gene_uninstall () {
+  drupal_uninstall_schema('gene');
+}
+
+
+/**
+ * Implementation of hook_schema().
+ */
+function gene_schema () {
+  $schema['gene'] = array(
+    'fields' => array(
+      'nid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'vid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      // entrez gene ID
+      'egid' => array('type' => 'varchar', 'not null' => TRUE, 'length' => '32'),
+      'symbol' => array('type' => 'varchar', 'not null' => FALSE, 'length' => '255'),
+      // TODO: may need collection table.  For now, use serialized array(?)
+      'names' => array('type' => 'text', 'not null' => FALSE, 'size' => 'medium'),
+      'phenotypes' => array(
+        'description' => t('Phenotype (or OMIM) links'),
+        'type' => 'text',
+        'not null' => FALSE,
+        'size' => 'medium'
+      )
+    ),
+    'primary key' => array('vid'),
+    'unique keys' => array(
+      'nid_vid' => array('nid', 'vid'),
+    ),
+    'indexes' => array(
+      'egid' => array('nid'),
+      'symbol' => array('symbol')
+    )
+  );
+  return $schema;
+}
+
+/**
+ * add phenotypes field
+ */
+function gene_update_6001 () {
+  $ret = array();
+  db_add_field($ret, 'gene', 'phenotypes',
+    array(
+      'description' => t('Phonotype (or OMIM) links'),
+      'type' => 'text',
+      'not null' => FALSE,
+      'size' => 'medium'
+    )
+  );
+  return $ret;  
+}
+
+function gene_update_6002 () {
+  module_load_include("php", "gene", "GeneModule");
+  gene()->installForumContainer();
+  return array();
+}
+
+function gene_update_6003 () {
+  module_load_include("php", "gene", "GeneModule");
+  $onts = array(
+    'bio_ontologies_biological_process_vocabulary',
+    'bio_ontologies_cellular_component_vocabulary',
+    'bio_ontologies_molecular_function_vocabulary'
+  );
+  gene()->addNodeTypeToVocabulariesByVarName($onts);
+  return array();
+}
+
+function gene_update_6004 () {
+  module_load_include("php", "gene", "GeneModule");
+  $vocabs = array(
+    'species_host_vocabulary'
+  );
+  gene()->addNodeTypeToVocabulariesByVarName($vocabs);
+  return array();
+}
+
+/**
+ * drop species field -- use taxonomy
+ */
+function gene_update_6005 () {
+  $ret = array();
+  db_drop_field($ret, 'gene', 'species');
+  return $ret;  
+}
+
+/**
+ * add associated types
+ */
+function gene_update_6006 () {
+  module_load_include("php", "gene", "GeneModule");
+  gene()->addAssociatedTypes('antibody', 'modelorganism', 'researchstatement');
+  return array();
+}
+

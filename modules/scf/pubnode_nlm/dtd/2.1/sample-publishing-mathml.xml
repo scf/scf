@@ -1,0 +1,321 @@
+<?xml version="1.0" ?>
+<!DOCTYPE article SYSTEM "journalpublishing.dtd">
+<article>
+<front>
+<?mtl hellip?>
+<!--   preformatted text, a code sample -->
+<journal-meta>
+      <journal-id journal-id-type="pmc">pnas</journal-id>
+      <abbrev-journal-title abbrev-type="pubmed">Proc Natl Acad Sci U S
+A</abbrev-journal-title>
+      <abbrev-journal-title abbrev-type="publisher">PNAS</abbrev-journal-title>
+      <issn>0027-8424</issn>
+      <publisher>
+        <publisher-name>The National Academy of
+Sciences</publisher-name>
+      </publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">071034098</article-id>
+      <article-id pub-id-type="publisher-id">0340</article-id>
+      <article-id pub-id-type="doi">10.1073/pnas.071034098</article-id>
+<article-id pub-id-type="pmid">11274384</article-id>
+<article-categories>
+<subj-group>
+<subject>Physical Sciences</subject>
+<subj-group>
+<subject>Chemistry</subject>
+</subj-group>
+</subj-group>
+<subj-group>
+<subject>Biological Sciences</subject>
+<subj-group>
+<subject>Biophysics</subject>
+</subj-group>
+</subj-group>
+</article-categories>
+<title-group>
+        <article-title>Free energy reconstruction from nonequilibrium
+single-molecule pulling experiments</article-title>
+</title-group>
+<contrib-group>
+        <contrib contrib-type="author">
+          <name>
+            <surname>Hummer</surname>
+            <given-names>Gerhard</given-names>
+          </name>
+          <xref ref-type="author-notes" rid="FN150">&#x002A;</xref>
+        </contrib>
+        <contrib contrib-type="author">
+          <name>
+            <surname>Szabo</surname>
+            <given-names>Attila</given-names>
+          </name>
+        </contrib>
+      </contrib-group>
+      <aff>Laboratory of Chemical Physics, National Institute of
+Diabetes and Digestive and Kidney Diseases, National Institutes of
+Health, Bethesda, MD 20892-0520</aff>
+      <author-notes>
+        <fn id="FN150">
+          <p>To whom reprint requests should be addressed at:
+LCP&#x002F;NIDDK, Bldg. 5, Rm. 132, National Institutes of Health,
+Bethesda, MD 20892-0520. E-mail:
+<email>hummer@helix.nih.gov</email>.</p>
+        </fn>
+        <fn fn-type="com">
+          <p>Communicated by David Chandler, University of California,
+Berkeley, CA</p>
+        </fn>
+      </author-notes>
+      <pub-date pub-type="pub">
+        <day>27</day>
+        <month>3</month>
+        <year>2001</year>
+      </pub-date>
+      <volume>98</volume>
+      <issue>7</issue>
+      <fpage>3658</fpage>
+      <lpage>3661</lpage>
+      <history>
+        <date date-type="received">
+          <day>28</day>
+          <month>11</month>
+          <year>2000</year>
+        </date>
+        <date date-type="accepted">
+          <day>22</day>
+          <month>1</month>
+          <year>2001</year>
+        </date>
+      </history>
+      <copyright-statement>Copyright &#x00A9; 2001, The National Academy
+of Sciences</copyright-statement>
+<copyright-year>2001</copyright-year>
+      <related-article xmlns:xlink="http://www.w3.org/1999/xlink"
+xlink:href="11274379" related-article-type="commentary" vol="98"
+page="3636">See commentary on page 3636.</related-article>
+      <abstract>
+        <p>Laser tweezers and atomic force microscopes are increasingly
+used to probe the interactions and mechanical properties of individual
+molecules. Unfortunately, using such time-dependent perturbations to
+force rare molecular events also drives the system away from
+equilibrium. Nevertheless, we show how equilibrium free energy profiles
+can be extracted rigorously from repeated nonequilibrium force
+measurements on the basis of an extension of Jarzynski's remarkable
+identity between free energies and the irreversible work.</p>
+      </abstract>
+</article-meta>
+<?mtl /hellip?>
+</front>
+<body>
+<?mtl hellip?><?mtl /hellip?>
+<p><?mtl hellip?><?mtl /hellip?> This can be seen in the following summation:
+<mml:math>
+<mml:semantics>
+<mml:mrow>
+<mml:munder>
+<mml:mo>&sum;</mml:mo>
+<mml:mi>m</mml:mi>
+</mml:munder>
+<mml:mrow>
+<mml:msub>
+<mml:mover accent='true'>
+<mml:mi>p</mml:mi>
+<mml:mo>&dot;</mml:mo>
+</mml:mover>
+<mml:mi>m</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mn>0</mml:mn>
+</mml:mrow>
+</mml:mrow>
+</mml:semantics>
+</mml:math>
+</p>
+<?mtl hellip?><?mtl /hellip?>
+</body>
+<back>
+<?mtl hellip?>
+<ref-list>
+<ref id="B1"><citation><collab>Research
+Unit of the Royal College of Physicians and British Geriatric
+Society</collab><source>Geriatric day hospitals: their role and guidelines for
+good
+practice</source><year>1994</year><publisher-loc>London</publisher-loc><publisher-name>RCP</publisher-name>
+</citation></ref><ref id="B2"><citation><collab>National Audit
+Office</collab><source>National health service day hospitals for elderly people
+in
+England</source><year>1994</year><publisher-loc>London</publisher-loc><publisher-name>HMSO</publisher-name>
+</citation></ref><ref
+id="B3"><citation><name><surname>Siu</surname><given-names>AL</given-names></name>
+<name><surname>Morishita</surname><given-names>L</given-names></name><name><surname>Blaustein</surname><given-names>J
+</given-names></name><article-title>Comprehensive geriatric assessment in a day
+hospital</article-title><source>J Am Ger
+Soc</source><year>1994</year><volume>42</volume><fpage>1094</fpage><lpage>1099
+</lpage></citation></ref><ref
+id="B4"><citation><name><surname>Donaldson</surname><given-names>C</given-names></name
+><name><surname>Wright</surname><given-names>KG</given-names></name><name><surname>Maynard</surname><given-names>AK
+</given-names></name><name><surname>Hamill</surname><given-names>JD</given-names></name><name><surname>Sutcliffe
+</surname><given-names>E</given-names></name><article-title>Day hospitals for the elderly: utilisation and
+performance</article-title><source>Community
+Med</source><year>1987</year><volume>9</volume><fpage>55</fpage><lpage>61</lpage
+></citation></ref><ref
+id="B5"><citation><name><surname>Peto</surname><given-names>R</given-names></name>
+<article-title>Why do we need systematic overviews of randomized
+trials?</article-title><source>Stat
+Med</source><year>1987</year><volume>6</volume><fpage>233</fpage><lpage>240
+</lpage></citation></ref><ref
+id="B6"><citation><name><surname>DerSimonian</surname><given-names>R</given-names>
+</name><name><surname>Laird</surname><given-names>N</given-names></name><article-title>Meta-analysis in
+clinical trials</article-title><source>Controlled Clin
+Trials</source><year>1986</year><volume>7</volume><fpage>177</fpage><lpage>188
+</lpage></citation></ref><ref
+id="B7"><citation><name><surname>Woodford-Williams</surname><given-names>E
+</given-names></name><name><surname>McKeon</surname><given-names>JA</given-names></name><name><surname>Trotter</surname
+><given-names>IS</given-names></name><name><surname>Watson</surname><given-names>D</given-names></name><name><surname>
+Bushby</surname><given-names>C</given-names></name><article-title>The day hospital in the community care
+of the elderly</article-title><source>Gerontology
+Clinic</source><year>1962</year><volume>4</volume><fpage>241</fpage><lpage>256
+</lpage>
+</citation></ref><ref
+id="B8"><citation><name><surname>Weissert</surname><given-names>W</given-names></name>
+<name><surname>Wan</surname><given-names>T</given-names></name><name><surname>Livieratos</surname><given-names>B
+</given-names></name><name><surname>Katz</surname><given-names>S</given-names></name><article-title>Effects and costs
+of day-care services for the chronically ill: a randomized
+experiment</article-title><source>Medical
+Care</source><year>1980</year><volume>18</volume><fpage>567</fpage><lpage>584
+</lpage></citation></ref><ref
+id="B9"><citation><name><surname>Tucker</surname><given-names>MA</given-names></name>
+<name><surname>Davison</surname><given-names>JG</given-names></name><name><surname>Ogle</surname><given-names>SJ</given-names
+></name><article-title>Day hospital rehabilitation&#x2014;effectiveness and cost in the
+elderly: a randomised controlled
+trial</article-title><source>BMJ</source><year>1984</year><volume>289</volume><fpage>
+1209</fpage><lpage>1212</lpage>
+</citation></ref><ref
+id="B10"><citation><name><surname>Cummings</surname><given-names>V</given-names>
+</name><name><surname>Kerner</surname><given-names>JF</given-names></name><name><surname>Arones</surname><given-names>S
+</given-names></name><name><surname>Steinbock</surname><given-names>C</given-names></name><article-title>Day
+hospital service in rehabilitation medicine: an evaluation</article-title><source>Arch
+Phys Med
+Rehabil</source><year>1985</year><volume>66</volume><fpage>86</fpage><lpage>91
+</lpage></citation></ref><ref
+id="B11"><citation><name><surname>Vetter</surname><given-names>NJ</given-names></name
+><name><surname>Smith</surname><given-names>A</given-names></name><name><surname>Sastry</surname><given-names>D</given-names
+></name><name><surname>Tinker</surname><given-names>G</given-names></name><source>Day hospital pilot
+study report</source><year>1989</year><publisher-loc>Cardiff</publisher-loc><publisher-name>Department of Geriatrics, St
+David&#x2019;s Hospital</publisher-name></citation></ref><ref
+id="B12"><citation><name><surname>Pitkala</surname><given-names>K</given-names></name
+><name><surname>Winell</surname><given-names>K</given-names></name><name><surname>Tilvis</surname><given-names>RS
+</given-names></name><article-title>Effects of geriatric day hospital care for home care
+patients</article-title><source>Arch Gerontol Geriatric</source><year>1991</year><volume>suppl
+2</volume><fpage>51</fpage><lpage>54</lpage>
+</citation></ref><ref
+id="B13"><citation><name><surname>Eagle</surname><given-names>DJ</given-names></name>
+<name><surname>Guyatt</surname><given-names>GH</given-names></name><name><surname>Patterson</surname><given-names>C
+</given-names></name><name><surname>Turpie</surname><given-names>I</given-names></name><name><surname>Sackett</surname>
+<given-names>B</given-names></name><name><surname>Singer</surname><given-names>J</given-names></name><article-title>
+Effectiveness of a geriatric day hospital</article-title><source>Can Med Assoc
+J</source><year>1991</year><volume>144</volume><fpage>699</fpage><lpage>704
+</lpage>
+</citation></ref><ref
+id="B14"><citation><name><surname>Young</surname><given-names>JB</given-names></name>
+<name><surname>Forster</surname><given-names>A</given-names></name><article-title>The Bradford community
+stroke trial: results at six
+months</article-title><source>BMJ</source><year>1992</year><volume>304</volume><fpage>
+1085</fpage><lpage>1089</lpage>
+</citation></ref><ref id="B15"><citation><name><surname>Branch</surname><given-names>LG</given-names></name><article-title>Adult day
+health care evaluation study</article-title><source>Medical
+Care</source><year>1993</year><volume>31(suppl)
+</volume><fpage>SS1</fpage><lpage>124</lpage>
+</citation></ref><ref
+id="B16"><citation><name><surname>Gladman</surname><given-names>JRF</given-names>
+</name><name><surname>Lincoln</surname><given-names>NB</given-names></name><name><surname>Barer</surname><given-names>
+DH</given-names></name><article-title>A randomised controlled trial of domiciliary and
+hospital-based rehabilitation for stroke patients after discharge from
+hospital</article-title><source>J Neurol Neurosurg
+Psychiatry</source><year>1993</year><volume>56</volume><fpage>960</fpage><lpage>
+966</lpage></citation></ref><ref
+id="B17"><citation><name><surname>Hui</surname><given-names>E</given-names></name>
+<name><surname>Lum</surname><given-names>CM</given-names></name><name><surname>Woo</surname><given-names>J</given-names>
+</name><name><surname>Or</surname><given-names>KH</given-names></name><name><surname>Kay</surname><given-names>RLC
+</given-names></name><article-title>Outcomes of elderly stroke patients day hospital versus
+conventional medical
+management</article-title><source>Stroke</source><year>1995</year><volume>26</volume>
+<fpage>1616</fpage><lpage>1619</lpage>
+</citation></ref><ref id="B18"><citation><name><surname>Burch</surname><given-names>S</given-names></name><name><surname>Longbottom</surname><given-names>J</given-names></name><name><surname>McKay</surname><given-names>M</given-names></name><name><surname>Borland</surname><given-names>C</given-names></name><name><surname>Prevost</surname><given-names>T</given-names></name><article-title>A randomised controlled trial of day hospital and
+day centre therapy</article-title><source>Clin Rehab</source> (in press)</citation></ref><ref
+id="B19"><citation><name><surname>Weiler</surname><given-names>PG</given-names></name
+><name><surname>Kim</surname><given-names>P</given-names></name><name><surname>Pickard</surname><given-names>LS</given-names
+></name><article-title>Health care for elderly Americans: evaluation of an adult day
+health care model</article-title><source>Medical
+Care</source><year>1976</year><volume>14</volume><fpage>700</fpage><lpage>708
+</lpage></citation></ref><ref
+id="B20"><citation><name><surname>Sherwood</surname><given-names>S</given-names>
+</name><name><surname>Morris</surname><given-names>JN</given-names></name><name><surname>Ruchlin</surname><given-names>
+HS</given-names></name><article-title>Alternative paths to long-term care: nursing home,
+geriatric day hospital, senior center, and domiciliary care
+options</article-title><source>Am J Public
+Health</source><year>1986</year><volume>76</volume><fpage>38</fpage><lpage>44
+</lpage></citation></ref><ref
+id="B21"><citation><name><surname>Skellie</surname><given-names>FA</given-names>
+</name><name><surname>Mobley</surname><given-names>GM</given-names></name><name><surname>Coan</surname><given-names>RE
+</given-names></name><article-title>Cost-effectiveness of community-based long-term care:
+current findings of Georgia&#x2019;s alternative health services
+project</article-title><source>Am J Public
+Health</source><year>1982</year><volume>72</volume><fpage>353</fpage><lpage>358
+</lpage></citation></ref><ref
+id="B22"><citation><name><surname>Young</surname><given-names>J</given-names></name>
+<name><surname>Forster</surname><given-names>A</given-names></name><article-title>Day hospital and home
+physiotherapy for stroke patients: a comparative cost-effectiveness
+study</article-title><source>J R Coll Phys
+Lond</source><year>1993</year><volume>27</volume><fpage>252</fpage><lpage>257
+</lpage></citation></ref><ref
+id="B23"><citation><name><surname>Gladman</surname><given-names>J</given-names></name
+><name><surname>Whynes</surname><given-names>D</given-names></name><name><surname>Lincoln</surname><given-names>N
+</given-names></name><article-title>Cost comparison of domiciliary and hospital-based stroke
+rehabilitation</article-title><source>Age
+Ageing</source><year>1994</year><volume>23</volume><fpage>241</fpage><lpage>245
+</lpage></citation></ref><ref
+id="B24"><citation><name><surname>Egger</surname><given-names>M</given-names></name>
+<name><surname>Smith</surname><given-names>GD</given-names></name><name><surname>Schneider</surname><given-names>M
+</given-names></name><name><surname>Minder</surname><given-names>C</given-names></name><article-title>Bias in
+meta-analysis detected by a simple, graphical
+test</article-title><source>BMJ</source><year>1997</year><volume>315</volume><fpage>
+629</fpage><lpage>634</lpage>
+</citation></ref><ref
+id="B25"><citation><name><surname>Stuck</surname><given-names>AE</given-names></name>
+<name><surname>Siu</surname><given-names>AL</given-names></name><name><surname>Wieland</surname><given-names>GD</given-names
+></name><name><surname>Adams</surname><given-names>J</given-names></name><name><surname>Rubenstein</surname>
+<given-names>LZ</given-names></name><article-title>Comprehensive geriatric assessment: a meta-analysis
+of controlled
+trials</article-title><source>Lancet</source><year>1993</year><volume>342</volume>
+<fpage>1032</fpage><lpage>1036</lpage>
+</citation></ref>
+<ref id="B26">
+<citation><name><surname>Parker</surname><given-names>SG</given-names></name>
+<name><surname>Du</surname><given-names>X</given-names></name>
+<name><surname>Bardsley</surname><given-names>MJ</given-names></name>
+<name><surname>Goodfellow</surname><given-names>J</given-names></name>
+<name><surname>Cooper</surname><given-names>RG</given-names></name>
+<name><surname>Cleary</surname><given-names>R</given-names></name><etal/>
+<article-title>Measuring outcomes in care of the elderly</article-title>
+<source>J R Coll Phys Lond</source>
+<year>1994</year><volume>28</volume><fpage>428</fpage><lpage>433</lpage></citation></ref>
+<ref>
+<citation citation-type="commun">
+<name>
+<surname>Harris</surname>
+<given-names>Pat</given-names>
+</name>
+<article-title>New Z39.50 resource [Internet]</article-title>
+<source>Message to: Karen Patrias</source>
+<year>1998</year>
+<month>2</month>
+<day>27</day> 1:18 pm, cited 1998 Feb 28 [about 2 screens] 
+</citation>
+</ref>
+</ref-list>
+<?mtl /hellip?>
+</back>
+</article> 

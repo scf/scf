@@ -1,0 +1,187 @@
+<?php
+
+// $Id: pubnode.module $
+
+/**
+ * @file
+ * PubNode module
+ */
+
+require_once drupal_get_path('module', 'pubnode') . '/PubNodeModule.php';
+
+function pubnode_register_pubnode_processors () {
+  return array();
+}
+
+function pubnode_node_info() {
+  return pubnode()->nodeInfo();
+}
+
+function pubnode_menu () {
+  return pubnode()->menu();
+}
+
+function pubnode_perm () {
+  return pubnode()->perm();
+}
+
+function pubnode_access ($op, $node, $account) {
+  return pubnode()->access($op, $node, $account);
+}
+
+function pubnode_form (&$node, &$form_state) {
+  return pubnode()->form($node, $form_state);
+}
+
+function pubnode_validate($node) {
+  pubnode()->validate($node);
+}
+
+function pubnode_validate_imports(&$form, &$form_state) {
+  pubnode()->validateImports($form, $form_state);
+}
+
+function pubnode_node_form_submit(&$form, &$form_state) {
+  pubnode()->nodeFormSubmit($form, $form_state);
+}
+
+function pubnode_insert ($node) {
+  pubnode()->insert($node);
+}
+
+function pubnode_update ($node) {
+  pubnode()->update($node);
+}
+
+function pubnode_load ($node) {
+  return pubnode()->load($node);
+}
+
+function pubnode_delete ($node) {
+  pubnode()->delete($node);
+}
+
+function pubnode_view ($node, $teaser = FALSE, $page = FALSE) {
+  return pubnode()->view($node, $teaser, $page);
+}
+
+function pubnode_theme () {
+  return pubnode()->theme();
+}
+
+function pubnode_block ($op = 'list', $delta = 0, $edit = array()) {
+  return pubnode()->block($op, $delta, $edit);
+}
+
+function pubnode_nodeapi (&$node, $op, $a3 = NULL, $a4 = NULL) {
+  return pubnode()->nodeapi($node, $op, $a3, $a4);
+}
+
+function pubnode_related_terms_block_vocabs() {
+  return pubnode()->relatedTermsBlockVocabs();
+}
+
+function pubnode_autocomplete($field, $string) {
+  pubnode()->autocomplete($field, $string);
+}
+
+function pubnode_admin_settings_subform () {
+  return pubnode()->adminSettingsSubform();
+}
+
+function pubnode_list_view () {
+  return pubnode()->listView();
+}
+
+function pubnode_reprocess (&$form, &$form_state) {
+  return pubnode()->reprocess(&$form, &$form_state);
+}
+
+function pubnode_js_upload () {
+ pubnode()->jsUpload();
+}
+
+// Not very useful since can't be reliably used at top level (module
+// loading order is apparently not predictable despite dependency
+// settings...)  Use only if you know pubnode.module has been loaded.
+function pubnode_load_include ($file) {
+  require_once pubnode_include_path() . "/$file";
+}
+
+function pubnode_include_path () {
+  static $pubnode_path;
+  if (!isset($pubnode_path)) {
+    $pubnode_path = drupal_get_path('module', 'pubnode');
+  }
+  return $pubnode_path;
+}
+
+function theme_pubnode_node_form($form) {
+  // HACK: have to put "theme" here to make sure it's loaded after the
+  // standard autocomplete.js, which it overrides
+  drupal_add_js(drupal_get_path('module', 'member') .'/member_autocomplete_override.js', 'theme');
+  return drupal_render($form);
+}
+
+
+/**
+ * Theme the admin pubnode form for contributors.
+ */
+function theme_pubnode_form_contributors($form) {
+  // Change the button title to reflect the behavior when using JavaScript.
+  drupal_add_js(drupal_get_path('module', 'pubnode') .'/pubnode_form.js');
+
+  $rows = array();
+  $headers = array(
+    t('Contributor'),
+    ''
+  );
+
+  foreach (element_children($form) as $i) {
+    // No need to print the field title every time.
+    unset($form[$i]['name']['#title']);
+
+    // Build the table row.
+    $row = array(
+      'data' => array(
+        array('data' => drupal_render($form[$i]['mid']) . drupal_render($form[$i]['cid']) . drupal_render($form[$i]['name']), 'class' => 'pubnode-name'),
+        array('data' => drupal_render($form[$i]['delete']), 'class' => 'pubnode-delete'),
+      ),
+      // 'id' => 'pubnode-contributor-' . $i
+    );
+
+    // Add additional attributes to the row, such as a class for this row.
+    if (isset($form[$i]['#attributes'])) {
+      $row = array_merge($row, $form[$i]['#attributes']);
+    }
+    $rows[] = $row;
+  }
+
+  $output = theme('table', $headers, $rows);
+  $output .= drupal_render($form);
+  return $output;
+}
+
+function theme_pubnode_authors ($authors) {
+  
+  $rows = array();
+  $headers = array(
+    t('Name'),
+    t('Email'),
+    t('Affiliation')
+  );
+
+  foreach ($authors as $author) {
+    $author = (object) $author;
+    $rows[] = array(
+      'data' => array(
+        array('data' => (empty($author->lastname) ? '' : $author->lastname . ', ') . $author->firstnames),
+        array('data' => $author->email),
+        array('data' => $author->affiliation),
+      )
+    );
+  }
+
+  return theme('table', $headers, $rows);
+
+}

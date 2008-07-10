@@ -1,0 +1,96 @@
+<?php
+
+/**
+ * Implementation of hook_install().
+ */
+function modelorganism_install() {
+  drupal_install_schema('modelorganism');
+  module_load_include("php", "modelorganism", "ModelOrganismModule");
+  modelorganism()->installForumContainer();
+  $vocabs = array(
+    'scf_keyword_vocabulary',
+    'scf_organization_vocabulary',
+    'species_core_vocabulary',
+    'bio_ontologies_biological_process_vocabulary',
+    'bio_ontologies_cellular_component_vocabulary',
+    'bio_ontologies_molecular_function_vocabulary'
+  );
+  modelorganism()->addNodeTypeToVocabulariesByVarName($vocabs);
+  modelorganism()->addAssociatedTypes('gene', 'researchstatement');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function modelorganism_uninstall() {
+  drupal_uninstall_schema('modelorganism');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function modelorganism_schema () {
+  $schema['modelorganism'] = array(
+    'fields' => array(
+      'nid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'vid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'strain' => array(
+        'description' => t('Strain'),
+        'type' => 'text',
+        'not null' => TRUE,
+        'default' => '',
+        'size' => 'small'
+      ),
+    ),
+    'primary key' => array('vid'),
+    'unique keys' => array(
+      'nid_vid' => array('nid', 'vid'),
+    )
+  );
+  return $schema;
+}
+
+/**
+ * drop specific gene linking table, add strain field
+ */
+function modelorganism_update_6001 () {
+  $ret = array();
+  db_drop_table($ret, 'modelorganism_gene');
+  db_add_field($ret, 'modelorganism', 'strain',
+    array(
+      'description' => t('Strain'),
+      'type' => 'text',
+      'not null' => FALSE,
+      'size' => 'small'
+    )
+  );
+  return $ret;  
+}
+
+/**
+ * make strain field non null with default ''
+ */
+function modelorganism_update_6002 () {
+  $ret = array();
+  db_drop_field($ret, 'modelorganism', 'strain');
+  db_add_field($ret, 'modelorganism', 'strain',
+    array(
+      'description' => t('Strain'),
+      'type' => 'text',
+      'not null' => TRUE,
+      'default' => '',
+      'size' => 'small'
+    )
+  );
+  return $ret;  
+}
+
+/**
+ * add associated types
+ */
+function modelorganism_update_6003 () {
+  module_load_include("php", "modelorganism", "ModelOrganismModule");
+  modelorganism()->addAssociatedTypes('gene', 'researchstatement');
+  return array();
+}
+

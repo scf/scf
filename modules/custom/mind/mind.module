@@ -1,0 +1,231 @@
+<?php
+
+// disease page: faculty photos
+// calendar/seminars
+
+function mind_menu() {
+  $items['diseases'] = array(
+    'access arguments' => array('access content'),
+    'page callback' => 'mind_diseases',
+  );
+  return $items;
+}
+
+function mind_theme($existing, $type, $theme, $path) {
+  return array(
+      'mind_picture_grid' => array(
+        'arguments' => array('items' => NULL, 'column_count' => NULL),
+      ),
+  );
+}
+
+function mind_init() {
+  drupal_add_css(drupal_get_path('module', 'mind'). "/mind.css");
+}
+
+function mind_block($op = 'list', $delta = 0, $edit = array()) {
+  switch ($op) {
+    case 'list':
+      $map = mind_diseases_map();
+      foreach ($map as $disease => $info) {
+        $name = $info['name'];
+        $blocks["nodes_$disease"] = array(
+          'info' => 'News: '. $name,
+        );
+        $blocks["background_$disease"] = array(
+          'info' => 'Background: '. $name,
+          'region' => 'left'
+        );
+      }
+      $blocks['mind_nodes'] = array(
+        'info' => 'News: Home',
+      );
+      $blocks['mind_images'] = array(
+        'info' => 'MIND Images',
+        'region' => 'left',
+      );
+      $blocks['mind_faculty_grid'] = array(
+        'info' => 'MIND faculty grid',
+        'region' => 'left',
+      );
+      return $blocks;
+    case 'view':
+      if (substr($delta, 0, 5) == 'nodes') {
+        return mind_block_nodes(substr($delta, 6));
+      }
+      elseif (substr($delta, 0, 10) == 'background') {
+        return mind_block_background(substr($delta, 11));        
+      }
+      else if ($delta == 'mind_images') {
+        return mind_block_images();
+      }
+      else if ($delta == 'mind_faculty_grid') {
+        return mind_faculty_grid();
+      }
+      else if ($delta == 'mind_nodes') {
+        return mind_block_nodes();
+      }
+  }
+}
+
+function mind_faculty_grid() {
+  $block['subject'] = t('Faculty');
+    $output = '';
+  $sql = "SELECT * FROM {upload} u INNER JOIN {files} f ON u.fid=f.fid INNER JOIN {node} n ON u.nid = n.nid INNER JOIN {users} us ON n.uid=us.uid WHERE n.status = 1 and n.type = 'faculty'";
+  $result = db_query($sql);
+  $path = '/'. file_directory_path(). '/';
+  $i = 0;
+  while ($row = db_fetch_object($result)) {
+    $href=url("node/$row->nid");
+    $items[$i]['image'] = "<a href=\"$href\"><img src=\"". $path. $row->filename. '"></a>';
+    $items[$i]['name'] = l($row->title, "node/$row->nid");
+    $i++;
+  }
+  $block['content'] = theme('mind_picture_grid', $items);
+  return $block;
+}
+
+// from views_bonus: grid.inc
+function theme_mind_picture_grid($items, $column_count = 5) {
+  $content = '<table class="mind-picture-grid">';
+  $count = 0;
+  $column_count = 2;
+  $total = count($items);
+  foreach ($items as $item) {
+    $classes = 'mind-grid-item';
+    if ($count < $column_count) {
+      $classes .= ' first';
+    }
+    
+    if ($count % $column_count == 0) { 
+      $content .= '<tr>'; 
+    }
+    $content .= "<td class=\"$classes\">". $item['image']. "<div class=\"mind-grid-name\">". $item['name']. "</div>";
+    $content .= "</td>\n";
+
+    $count++;
+    if ($count % $column_count == 0 || $count == $total) {
+      $content .= '</tr>';
+    }
+  }
+  $content .= '</table>';
+  
+  if ($content) {
+    return $content;
+  }
+}
+
+function mind_block_images() {
+   drupal_add_js(drupal_get_path('module', 'mind'). "/jquery.innerfade.js");
+   $js  = "Drupal.behaviors.mind_images = function() {
+     $('#mimages').innerfade({});
+    }";
+   drupal_add_js($js, 'inline');
+   $path = '/'. file_directory_path(). '/';
+   $image2 = $path. 'blog.png';
+   $image1 = $path. 'moshe.jpg';
+   $content = "<ul id=\"mimages\"><li><img src=\"$image1\"></li><li><img src=\"$image2\"></li></ul>";
+   return array('content' => $content, 'subject' => '');
+}
+
+function mind_block_nodes($disease = NULL) {
+  $block['subject'] = t('News');
+  $view = views_get_view('type_term_teaser');
+  $display_id = 'default';
+  if ($disease) {
+    $view->set_arguments(array($disease));
+  }
+  else {
+    // Must be Home page.
+    $id = $view->add_item($display_id, 'filter', 'node', 'promote');
+    $item = $view->get_item($display_id, 'filter', $id);
+    $item['value'] = array(TRUE);
+    $view->set_item($display_id, 'filter', $id, $item);
+  }
+  $id = $view->add_item($display_id, 'filter', 'node', 'type');
+  $item = $view->get_item($display_id, 'filter', $id);
+  $item['value'] = array('article', 'media_review');
+  $view->set_item($display_id, 'filter', $id, $item);
+  $view->is_cacheable = FALSE;
+  $output = $view->render();
+  $block['content'] = $output;
+  return $block;
+}
+
+function mind_block_background($disease) {
+  $block['subject'] = t('Background');
+  $map = mind_diseases_map();
+  $nid = $map[$disease]['background_nid'];
+  $node = node_load($nid);
+  $block['content'] = content_format('field_excerpt', $node->field_excerpt[0]);
+  return $block;
+}
+
+function mind_preprocess_page(&$variables) {
+  // $diseases = mind_diseases_map();
+  if (arg(0) == 'diseases') {
+    // $variables['template_file'] = 'page-scf-pub';
+    unset($variables['breadcrumb']);
+  }
+}
+
+function mind_preprocess_node(&$variables) {
+  // nothing
+}
+// All our content gets placed by blocks into regions. Thats just how the SCF theme wants it.
+function mind_diseases($disease) {
+  drupal_set_title('');
+  return '';
+}
+
+function mind_diseases_map() {
+  $diseases = array(
+    'als' => array(
+      'name' => t('ALS'),
+      'background_nid' => 14,
+    ),
+    'huntingtons' => array(
+      'name' => t('Huntington\'s'), 
+      'background_nid' => 14,
+    ),
+    'alzheimers' => array(
+      'name' => t('Alzheimer\'s'), 
+      'background_nid' => 14,
+    ),
+    'parkinsons' => array(
+      'name' => t('Parkinson\'s'),
+      'background_nid' => 14,      
+    ),
+  );
+  return $diseases;
+}
+
+/**
+ * Displays file attachments in list
+ *
+ * @ingroup themeable
+ */
+function phptemplate_upload_attachments($files) {
+  $fid = key($files);
+  $sql = "SELECT nid FROM upload WHERE fid = %d";
+  if ($nid = db_result(db_query($sql, $fid))) {
+    $node = node_load($nid);
+    // 15 is a dedicated nid for images on disease pages.
+    if ($node->type != 'faculty' && $nid != 15) {
+      return theme_upload_attachments($files);
+    }
+    else {
+      $output = "<ul class=\"mind-upload-attachments\">\n";
+      foreach ($files as $file) {
+        $file = (object)$file;
+        if ($file->list && empty($file->remove)) {
+          $src = file_create_url($file->filepath);
+          $text = $file->description ? $file->description : $file->filename;
+          $output .= "<li><img src=\"$src\"></li>\n";
+        }
+      }
+      $output .= "</ul>\n";
+      return $output;
+    }
+  }
+}

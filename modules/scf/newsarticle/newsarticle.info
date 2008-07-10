@@ -1,0 +1,8 @@
+; $Id$
+name = News Article
+description = Provides the newsarticle node type allowing creation, listing and storing of news article references.
+dependencies[] = scf
+dependencies[] = member
+package = SCF
+version = VERSION
+core = 6.x

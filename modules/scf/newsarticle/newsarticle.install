@@ -1,0 +1,70 @@
+<?php
+
+/**
+ * Implementation of hook_install().
+ */
+function newsarticle_install () {
+  drupal_install_schema('newsarticle');
+  module_load_include("php", "newsarticle", "NewsArticleModule");
+  newsarticle()->installForumContainer();
+  newsarticle()->addNodeTypeToVocabulariesByVarName(array('scf_keyword_vocabulary'));
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function newsarticle_uninstall () {
+  module_load_include("php", "newsarticle", "NewsArticleModule");
+  newsarticle()->deleteAll();
+  drupal_uninstall_schema('newsarticle');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function newsarticle_schema () {
+  $schema['newsarticle'] = array(
+    'fields' => array(
+      'nid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'vid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'author_name' => array(
+        'description' => t("Name of the article's author."),
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'default' => '',
+        'length' => 32),
+      // TODO move to sep. table, include link to source
+      'media_source' => array(
+        'description' => t('The name of the media source that published the article.'),
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'default' => '',
+        'length' => 128),
+      'url' => array(
+        'description' => t('The URL of the article.'),
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'default' => '',
+        'length' => 512),
+      'pubdate' => array(
+        'description' => t('The Unix timestamp when the article was published.'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0),
+    ),
+    'primary key' => array('vid'),
+    'unique keys' => array(
+      'nid_vid' => array('nid', 'vid')
+    ),
+    'indexes' => array(
+      'media_source' => array('media_source')
+    )
+  );
+  return $schema;
+}
+
+function newsarticle_update_6001 () {
+  module_load_include("php", "newsarticle", "NewsArticleModule");
+  newsarticle()->installForumContainer();
+  return array();
+}

@@ -1,0 +1,132 @@
+<?php
+
+// $Id: gene.module $
+
+/**
+ * @file
+ * Gene module
+ */
+
+module_load_include("php", "gene", "GeneModule");
+
+function gene_node_info() {
+  return gene()->nodeInfo();
+}
+
+function gene_menu () {
+  return gene()->menu();
+}
+
+function gene_perm () {
+  return gene()->perm();
+}
+
+function gene_access ($op, $node, $account) {
+  return gene()->access($op, $node, $account);
+}
+
+function gene_form (&$node, &$form_state) {
+  return gene()->form($node, $form_state);
+}
+
+function gene_validate($node) {
+  gene()->validate($node);
+}
+
+function gene_node_form_submit(&$form, &$form_state) {
+  gene()->nodeFormSubmit($form, $form_state);
+}
+
+function gene_insert ($node) {
+  gene()->insert($node);
+}
+
+function gene_update ($node) {
+  gene()->update($node);
+}
+
+function gene_load ($node) {
+  return gene()->load($node);
+}
+
+function gene_delete ($node) {
+  gene()->delete($node);
+}
+
+function gene_view ($node, $teaser = FALSE, $page = FALSE) {
+  return gene()->view($node, $teaser, $page);
+}
+
+function gene_theme () {
+  return gene()->theme();
+}
+
+function gene_block ($op = 'list', $delta = 0, $edit = array()) {
+  return gene()->block($op, $delta, $edit);
+}
+
+function gene_autocomplete($field, $string) {
+  gene()->autocomplete($field, $string);
+}
+
+function gene_admin_settings_subform () {
+  return gene()->adminSettingsSubform();
+}
+
+function gene_list_view () {
+  return gene()->listView();
+}
+
+function gene_load_recent_nodes ($limit = 10, $element = 0) {
+  return gene()->loadRecentNodes($limit, $element);
+}
+
+/**
+ * Process variables for gene-main.tpl.php.
+ *
+ * The $variables array contains the following arguments:
+ * - $node
+ *
+ * @see gene-main.tpl.php
+ */
+function template_preprocess_gene_main(&$variables) {
+  $node = $variables['node']; 
+  $variables['egid'] = isset($node->egid) ? $node->egid : '';
+  $variables['symbol'] = isset($node->symbol) ? $node->symbol : '';
+  $variables['names'] = isset($node->names) ? $node->names : '';
+  $format = isset($node->format) ? $node->format : FILTER_FORMAT_DEFAULT;
+  $variables['body'] = isset($node->body) ? check_markup($node->body, $format, FALSE) : '';
+  $variables['phenotypes'] = isset($node->phenotypes) ? $node->phenotypes : '';
+  $variables['keywords'] = taxonomy_extra_theme_term_list($node, 'scf_keyword');
+  $variables['organism'] = taxonomy_extra_theme_term_list($node, 'species_core');
+  $variables['bio_ontologies'] = array();
+  if (module_exists("bio_ontologies")) {
+    $variables['bio_ontologies'] = bio_ontologies_theme_term_lists($node);
+  }
+  // hack: preload all assocs
+  gene()->loadAssociated($node);
+  $variables['antibodies'] = theme('antibody_table', gene()->loadAssociated($node, 'antibody'));
+  $variables['modelorganisms'] = theme('modelorganism_table', gene()->loadAssociated($node, 'modelorganism'));
+  $rsnodes = gene()->loadAssociated($node, 'researchstatement');
+  $variables['researchstatements'] = theme('researchstatement_table', $rsnodes);
+}
+
+/**
+ * Process variables for gene-table.tpl.php.
+ *
+ * The $variables array contains the following arguments:
+ * - $nodes
+ * - $title
+ * - $pager
+ *
+ * @see gene-table.tpl.php
+ */
+function template_preprocess_gene_table(&$variables) {
+  $nodes =& $variables['nodes']; 
+  foreach ($nodes as &$node) {
+    $node->build_mode = NODE_BUILD_NORMAL;
+    $node->keywords = taxonomy_extra_theme_term_list($node, 'scf_keyword');
+    $node->organism = taxonomy_extra_theme_term_list($node, 'species_core');
+  }
+}
+

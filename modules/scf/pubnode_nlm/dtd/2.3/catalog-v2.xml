@@ -1,0 +1,618 @@
+<?xml version="1.0"?>
+<!DOCTYPE catalog PUBLIC 
+"-//OASIS//DTD Entity Resolution XML Catalog V2.3//EN"
+"http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd">
+
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+         prefer="public">
+
+<!-- ============================================================= -->
+<!--  MODULE:    An OASIS XML Catalog (not a DTD Suite module)     -->
+<!--  VERSION:   2.3                                               -->
+<!--  DATE:      February 2007                                     -->
+<!--                                                               -->
+<!-- ============================================================= -->
+
+<!-- ============================================================= -->
+<!-- SYSTEM:     Archiving and Interchange DTD Suite               -->
+<!--                                                               -->
+<!-- PURPOSE:    To make the connection between PUBLIC identifiers -->
+<!--             for DTD Suite modules and their URIs              -->
+<!--                                                               -->
+<!-- CONTAINS:   1) Scope of Catalog                               -->
+<!--             2) Catalog organization comment                   -->
+<!--             3) How to set up a catalog                        -->
+<!--             4) PUBLIC/SYSTEM identifier map                   -->
+<!--                  a. NLM Journal Publishing DTD (Blue)         -->
+<!--                  b. NLM Journal Archiving and Interchange     -->
+<!--                        DTD (Green)                            -->
+<!--                  c. NLM Journal Authoring DTD (Pumpkin)       -->
+<!--                  d. NLM Book DTD (Purple: includes Book       -->
+<!--                       Collection DTD and Historical Book DTD) -->
+<!--                  e. Archiving and Interchange DTD Suite       -->
+<!--                       common (shared) modules                 -->
+<!--                  f. Suite common (shared) modules from        -->
+<!--                       external sources (table models,         -->
+<!--                       general entity sets, etc.)              -->
+<!--                                                               -->
+<!-- CREATED FOR:                                                  -->
+<!--             Digital Archive of Journal Articles               -->
+<!--             National Center for Biotechnology Information     -->
+<!--                (NCBI)                                         -->
+<!--             National Library of Medicine (NLM)                -->
+<!--                                                               -->
+<!-- ORIGINAL CREATION DATE:                                       -->
+<!--             June 2002                                         -->
+<!--                                                               -->
+<!--             Suggestions for refinements and enhancements to   -->
+<!--             this DTD should be sent in email to:              -->
+<!--                 archive-dtd@ncbi.nlm.nih.gov                  -->
+<!-- ============================================================= -->
+
+
+<!-- ============================================================= -->
+<!--                    DTD VERSION/CHANGE HISTORY                 -->
+<!-- ============================================================= -->
+<!--
+     =============================================================
+
+Version  Reason/Occasion                   (who) vx.x (yyyy-mm-dd)
+
+     =============================================================
+     Version 2.3                       (DAL/BTU) v2.3 (2007-02-02)
+     
+     Enhancement Release (2.3) following the Working Group meetings 
+     of Oct-Nov/2006-Jan/2007. No backward-incompatible changes.
+     Archiving loosened even more. New structures for all the DTDs.
+     Big catalog change = all modules updated to  version 2.3
+     
+  5. Updated public identifiers of the all modules to
+      February 2007   "v2.3 20070202" 
+
+     =============================================================
+     Version 2.2                       (DAL/BTU) v2.2 (2006-10-13)
+
+     Backwards-compatible changes to meet operational needs.
+     Typical changes include adding attribute values and making 
+     required elements optional.
+
+  4. Updated public identifiers of the Book DTD, the Book 
+     Collection DTD, the Historical Book DTD, and book-related 
+     modules (excepting historical book modules) from 
+     "v2.1 20050630" to "v2.2 20061013" 
+     
+     =============================================================
+     Version 2.2                       (DAL/BTU) v2.2 (2006-04-30)
+     
+     Backwards-compatible changes to meet operational needs.
+     Typical changes include adding attribute values and making 
+     required elements optional.
+          
+  3. Updated public identifiers of changed modules to new version
+     number "v2.2 20060430//EN"          
+
+     =============================================================
+     Version 2.1                       (DAL/BTU) v2.1 (2005-12-05)
+     
+     CATALOG-ONLY CHANGES     
+
+  2. Renamed "ISOlat" files to "isolat" to match existing filenames
+
+  1. Closed unclosed comments and added initial comment             -->
+
+<!-- ============================================================== -->
+<!--                    SCOPE (Suite Version 2.3)                   -->
+<!-- ============================================================== -->
+
+<!-- This catalog is made up of several groups, each with its own
+     xml:base attribute, for:
+
+       - NLM Journal Publishing DTD (Blue)
+       - NLM Journal Archiving and Interchange DTD (Green)
+       - NLM Journal Authoring DTD (Pumpkin)
+       - NLM Book DTD (Purple: includes Book Collection DTD and 
+                        Historical Book DTD)
+       - Archiving and Interchange DTD Suite common (shared) modules
+       - Suite common (shared) modules from external sources
+            (table models, general entity sets, etc.)               -->
+
+<!-- ============================================================== -->
+<!--                    CATALOG ORGANIZATION                        -->
+<!-- ============================================================== -->
+
+<!--  GROUPS AND ENTRIES 
+     
+     Entries are grouped into logical clusters, organized by the
+     particular DTD variant. 
+     
+     Each catalog entry associates a PUBLIC identifier with a SYSTEM
+     identifier. 
+     
+     The SYSTEM identifier is resolved with respect to the xml:base
+     attribute which is set on the group element. Thus, for example:
+
+        xml:base="file:///C:/Work/Tasks/DTDJournal/"
+        +
+        uri="journalpublishing.dtd"
+        =
+        file:///C:/Work/Tasks/DTDJournal/journalpublishing.dtd
+        
+     The XML looks like this:
+     
+     <group xml:base="file:///C:/Work/Tasks/DTDJournal/">
+     
+       <public publicId="-//NLM//DTD Journal Publishing DTD v2.3 20070202//EN"
+               uri="journalpublishing.dtd"/>
+       ...
+     </group>
+                                                                    -->
+
+
+<!-- ============================================================== -->
+<!--                    HOW TO SET UP                               -->
+<!-- ============================================================== -->
+
+<!-- The OASIS catalog and the NCBI Suite of Modules provide a wide
+     range of flexibility for setting up. Here are two easy ways to
+     do it:
+
+
+     1. WITHOUT an OASIS catalog (DTD components on a local system): 
+
+        - unzip the DTD packages you want to use into a single
+          directory:
+
+            - the journal-publishing package
+            - the archive article package
+            - the journal-authoring package
+            - the book package
+
+        - create your own DTD customization, if you need to,
+          anywhere, using local (relative or absolute) SYSTEM
+          identifiers to reference DTD modules.
+
+        - create a document instance anywhere, and point its
+          SYSTEM identifier to your customized DTD or to the
+          package DTD you have chosen to use, using a local
+          (relative or absolute) SYSTEM identifier.
+
+        The SYSTEM identifiers used in the DTD modules are relative
+        to the directory in which you have placed the DTD package
+        and your customized DTD, and so your editor/processor will
+        find them when reading the DTD.
+
+     2. WITH this OASIS catalog (DTD components on a local system):
+
+        - unzip the DTD packages you want to use into a single
+          directory, or into separate directories.
+
+        - in this file (the catalog), edit the xml:base attribute
+          on the <group> elements.
+
+          Here are instructions for the two most likely
+          configurations:
+
+             - if you have unzipped only one of the DTD packages
+               (journal, archive article, journal-authoring, or
+               book):
+               
+                - set the xml:base attribute on the corresponding
+                  <group> element in this catalog to the directory 
+                  where you put the unzipped components,
+                  
+                - AND set the xml:base attribute on the last
+                  two groups in this catalog (the modular library
+                  and the public models) to that same directory.
+
+             - if you have unzipped more than one DTD package into
+               a single directory:
+               
+                 - set all xml:base attributes to that directory.
+
+        - create your own DTD customization, if you need to,
+          anywhere, using PUBLIC identifiers to reference the
+          DTD modules.
+
+        - tell your editor/processor about this OASIS catalog
+          (NB: many apps must be closed and relaunched when
+          a catalog file is first specified AND when it is changed)
+
+        - create a document instance anywhere, and point its
+          SYSTEM identifier to the DTD you want to use, giving
+          an absolute or relative SYSTEM path.
+
+        Your editor/processor will map the PUBLIC identifiers
+        in the DTD to the SYSTEM identifiers specified in
+        this catalog, using xml:base to locate their whereabouts.   -->
+
+
+<!-- ============================================================== -->
+<!--                    PUBLIC-SYSTEM IDENTIFIER MAP                -->
+<!-- ============================================================== -->
+
+
+<!-- ============================================================== -->
+<!--                    JOURNAL PUBLISHING DTD (BLUE)               -->
+<!-- ============================================================== -->
+
+<group xml:base="file:///C:/Work/Tasks/DTDJournal/"
+         prefer="public">
+
+  <public publicId="-//NLM//DTD Journal Publishing DTD v2.3 20070202//EN" 
+               uri="journalpublishing.dtd"/>
+ 
+  <public publicId="-//NLM//DTD Journal Publishing DTD-Specific Modules v2.3 20070202//EN" 
+               uri="journalpubcustom-modules.ent"/>
+
+  <public publicId="-//NLM//DTD Journal Publishing DTD Customize Classes Module v2.3 20070202//EN" 
+               uri="journalpubcustom-classes.ent"/>
+
+  <public publicId="-//NLM//DTD Journal Publishing DTD Customize Mixes Module v2.3 20070202//EN" 
+               uri="journalpubcustom-mixes.ent"/>
+
+  <public publicId="-//NLM//DTD Journal Publishing DTD Customize Content and Attributes Module v2.3 20070202//EN" 
+               uri="journalpubcustom-models.ent"/>
+
+  <public publicId="-//NLM//DTD NLM Citation v2.3 20070202//EN" 
+               uri="nlmcitation.ent"/>
+
+</group>
+
+
+<!-- ============================================================== -->
+<!--                    JOURNAL ARTICLE ARCHIVING DTD (GREEN)       -->
+<!-- ============================================================== -->
+
+
+<group xml:base="file:///C:/Work/Tasks/DTDArchiving/"
+         prefer="public">
+
+  <public publicId="-//NLM//DTD Journal Archiving and Interchange DTD v2.3 20070202//EN" 
+               uri="archivearticle.dtd"/>
+
+  <public publicId="-//NLM//DTD Journal Archiving DTD-Specific Modules v2.3 20070202//EN" 
+               uri="archivecustom-modules.ent"/>
+
+  <public publicId="-//NLM//DTD Journal Archiving DTD Customize Classes Module v2.3 20070202//EN"
+               uri="archivecustom-classes.ent"/>
+
+  <public publicId="-//NLM//DTD Journal Archiving DTD Customize Mixes Module v2.3 20070202//EN" 
+               uri="archivecustom-mixes.ent"/>
+
+  <public publicId="-//NLM//DTD Journal Archiving DTD Customize Content and Attributes Module v2.3 20070202//EN" 
+               uri="archivecustom-models.ent"/>
+
+</group>
+
+
+<!-- ============================================================== -->
+<!--                    JOURNAL ARTICLE AUTHORING DTD (PUMPKIN)     -->
+<!-- ============================================================== -->
+
+
+<group xml:base="file:///C:/Work/Tasks/DTDAuthoring/"
+         prefer="public">
+
+  <public publicId="-//NLM//DTD Article Authoring DTD v2.3 20070202//EN" 
+               uri="articleauthoring.dtd"/>
+ 
+  <public publicId= "-//NLM//DTD Article Authoring DTD-Specific Modules v2.3 20070202//EN" 
+               uri="articleauthcustom-modules.ent"/>
+
+  <public publicId= "-//NLM//DTD Article Authoring DTD Over-ride Classes Module v2.3 20070202//EN" 
+               uri="articleauthcustom-classes.ent"/>
+ 
+  <public publicId= "-//NLM//DTD Article Authoring DTD Over-ride Mixes Module v2.3 20070202//EN" 
+               uri="articleauthcustom-mixes.ent"/>
+ 
+  <public publicId= "-//NLM//DTD Article Authoring DTD Over-ride Content and Attribute Module v2.3 20070202//EN" 
+               uri="articleauthcustom-models.ent"/>
+
+</group>
+
+<!-- ============================================================== -->
+<!--                    NCBI BOOK DTDS (PURPLE)                     -->
+<!-- ============================================================== -->
+
+<group xml:base="file:///C:/Work/Tasks/DTDBook/"
+         prefer="public">
+
+<!-- .............................................................. -->
+<!--                    NCBI BOOK DTD                               -->
+<!-- .............................................................. -->
+
+  <public publicId="-//NLM//DTD Book DTD v2.3 20070202//EN" 
+               uri="book.dtd"/>
+ 
+
+  <public publicId="-//NLM//DTD Book DTD Module of Modules v2.3 20070202//EN" 
+               uri="bookcustom-modules.ent"/>
+        
+  <public publicId="-//NLM//DTD NCBI Book DTD Over-ride Classes Module v2.3 20070202//EN"
+               uri="bookcustom-classes.ent"/>
+
+  <public publicId="-//NLM//DTD NCBI Book DTD Over-ride Mixes Module v2.3 20070202//EN" 
+               uri="bookcustom-mixes.ent"/>
+
+  <public publicId="-//NLM//DTD NCBI Book DTD Content and Attribute Over-ride Module v2.3 20070202//EN" 
+               uri="bookcustom-models.ent"/>
+
+
+  <public publicId="-//NLM//DTD NCBI Book Image Map Elements v2.3 20070202//EN" 
+               uri="bookimagemap.ent"/>
+
+  <public publicId="-//NLM//DTD NCBI Book DTD Book Metadata Elements v2.3 20070202//EN" 
+               uri="bookmeta.ent"/>
+
+  <public publicId="-//NLM//DTD NCBI Book Multi-link Elements v2.3 20070202//EN" 
+               uri="bookmultilink.ent"/>
+
+  <public publicId="-//NLM//DTD NCBI Book DTD Book Component Metadata Elements v2.3 20070202//EN" 
+               uri="bookpart.ent"/>
+
+  <public publicId="-//NLM//DTD NCBI Book DTD Book Related Object Element v2.3 20070202//EN" 
+               uri="bookrelated-object.ent"/>
+ 
+<!-- .............................................................. -->
+<!--                    NCBI BOOK COLLECTION DTD                    -->
+<!--                    Uses all the book-specific modules above    -->
+<!-- .............................................................. -->
+
+ 
+  <public publicId="-//NLM//DTD NCBI Book Collection DTD v2.3 20070202//EN" 
+               uri="bookcollection.dtd"/>
+
+ 
+<!-- .............................................................. -->
+<!--                    NCBI HISTORICAL BOOK COLLECTION DTD         -->
+<!--                    Also uses all the book-specific modules     -->
+<!-- .............................................................. -->
+
+  <public publicId="-//NLM//DTD NCBI Historical Book DTD v2.3 20070202//EN" 
+               uri="historical.dtd"/>
+ 
+  
+  <public publicId="-//NLM//DTD NCBI Historical Book DTD Module of Modules v2.3 20070202//EN" 
+               uri="historical-modules.ent"/>
+        
+  <public publicId="-//NLM//DTD NCBI Historical Book DTD Over-ride Classes Module v2.3 20070202//EN"
+               uri="historical-classes.ent"/>
+
+  <public publicId="-//NLM//DTD NCBI Historical Book DTD Over-ride Mixes Module v2.3 20070202//EN" 
+               uri="historical-mixes.ent"/>
+
+  <public publicId="-//NLM//DTD NCBI Historical Book DTD Content and Attribute Over-ride Module v2.3 20070202//EN" 
+               uri="historical-models.ent"/>
+
+
+  <public publicId="-//NLM//DTD NCBI Historical Book DTD Annotation Elements v2.3 20070202//EN" 
+               uri="annotation.ent"/>
+
+  <public publicId="-//NLM//DTD NCBI Historical Book DTD Metadata Elements v2.3 20070202//EN" 
+               uri="historicalmeta.ent"/>
+
+
+</group>
+
+
+<!-- ============================================================== -->
+<!--                    ARCHIVING AND INTERCHANGE DTD SUITE         -->
+<!--                    MODULAR LIBRARY                             -->
+<!-- ============================================================== -->
+
+<group xml:base="file:///C:/Work/Tasks/Common/"
+         prefer="public">
+
+<!--                    MODULE OF MODULES                           -->
+
+  <public publicId="-//NLM//DTD Archiving and Interchange DTD Suite Module of Modules v2.3 20070202//EN" 
+               uri="modules.ent"/>
+
+
+<!--                    CLASSES AND MIXES                           -->
+
+  <public publicId="-//NLM//DTD Default Element Classes Module v2.3 20070202//EN" 
+               uri="default-classes.ent"/>
+
+  <public publicId="-//NLM//DTD Default Element Mixes Module v2.3 20070202//EN" 
+               uri="default-mixes.ent"/>
+
+
+<!--                    ELEMENT COMMON (SHARED) ELEMENTS/CHARACTERS -->
+
+  <public publicId="-//NLM//DTD Archiving and Interchange DTD Suite Common (Shared) Elements Module v2.3 20070202//EN"
+               uri="common.ent"/>
+                                                       
+  <public publicId="-//NLM//DTD Archiving and Interchange DTD Suite Notation Declarations v2.3 20070202//EN" 
+               uri="notat.ent"/>
+                                                       
+  <public publicId="-//NLM//DTD Archiving and Interchange DTD Suite XML Special Characters Module v2.3 20070202//EN" 
+               uri="xmlspecchars.ent"/>
+                                                       
+  <public publicId="-//NLM//DTD Archiving and Interchange DTD Suite Custom Special Characters Module v2.3 20070202//EN" 
+               uri="chars.ent"/>
+
+
+<!--                    CLASS MODULES                               -->
+
+  <public publicId="-//NLM//DTD Archiving and Interchange DTD Suite Journal Article Metadata Elements v2.3 20070202//EN" 
+               uri="articlemeta.ent"/>
+  
+  <public publicId="-//NLM//DTD Archiving and Interchange DTD Suite Back Matter Elements v2.3 20070202//EN" 
+               uri="backmatter.ent"/>
+
+  <public publicId="-//NLM//DTD Archiving and Interchange DTD Suite Display Class Elements v2.3 20070202//EN" 
+               uri="display.ent"/>
+    
+  <public publicId="-//NLM//DTD Archiving and Interchange DTD Suite Formatting Element Classes v2.3 20070202//EN" 
+               uri="format.ent"/>
+
+  <public publicId="-//NLM//DTD Archiving and Interchange DTD Suite Journal Metadata Elements v2.3 20070202//EN" 
+               uri="journalmeta.ent"/>
+
+  <public publicId="-//NLM//DTD Archiving and Interchange DTD Suite Link Class Elements v2.3 20070202//EN" 
+               uri="link.ent"/>
+  
+  <public publicId="-//NLM//DTD Archiving and Interchange DTD Suite List Class Elements v2.3 20070202//EN" 
+               uri="list.ent"/>
+  
+  <public publicId="-//NLM//DTD Archiving and Interchange DTD Suite Math Class Elements v2.3 20070202//EN" 
+               uri="math.ent"/>
+ 
+  <public publicId="-//NLM//DTD Archiving and Interchange DTD Suite Paragraph-Like Elements v2.3 20070202//EN" 
+               uri="para.ent"/>
+
+  <public publicId="-//NLM//DTD Archiving and Interchange DTD Suite Subject Phrase Class Elements v2.3 20070202//EN" 
+               uri="phrase.ent"/>
+
+  <public publicId="-//NLM//DTD Archiving and Interchange DTD Suite Bibliographic Reference (Citation) Class Elements v2.3 20070202//EN" 
+               uri="references.ent"/>
+
+  <public publicId="-//NLM//DTD Archiving and Interchange DTD Suite Section Class Elements v2.3 20070202//EN" 
+               uri="section.ent"/>
+
+
+<!--                    SET UP TABLES                              -->
+
+  <public publicId="-//NLM//DTD Archiving and Interchange DTD Suite XHTML Table Setup Module v2.3 20070202//EN" 
+               uri="XHTMLtablesetup.ent"/>
+
+
+  <public publicId="-//NLM//DTD Archiving and Interchange DTD Suite OASIS XML Table Setup Module v1.2 20040830//EN" 
+               uri="oasis-tablesetup.ent"/>
+
+<!--                    SET UP MATHML                              -->
+
+  <public publicId="-//NLM//DTD Archiving and Interchange DTD Suite MathML Setup Module v2.3 20070202//EN" 
+               uri="mathmlsetup.ent"/>
+
+</group>
+
+
+<!-- ============================================================= -->
+<!--                    COMMONLY-USED PUBLIC MODELS AND PUBLIC     --> 
+<!--                    CHARACTER-ENTITY SETS USED IN THE SUITE    -->
+<!-- ============================================================= -->
+
+<group xml:base="file:///C:/Work/Entities/"
+         prefer="public">
+
+<!-- .............................................................. -->
+<!--                    TABLES: XHTML TABLE MODULES                 -->
+<!-- .............................................................. -->
+
+  <public publicId="-//W3C//ELEMENTS XHTML Tables 1.0//EN" 
+               uri="xhtml-table-1.mod"/>
+
+  <public publicId="-//W3C//ENTITIES XHTML Inline Style 1.0//EN" 
+               uri="xhtml-inlstyle-1.mod"/>
+
+
+<!-- .............................................................. -->
+<!--                    TABLES: OASIS EXCHANGE TABLE MODULES        -->
+<!-- .............................................................. -->
+
+  <public publicId="-//OASIS//DTD XML Exchange Table Model 19990315//EN" 
+               uri="oasis-exchange.ent"/>
+
+<!-- .............................................................. -->
+<!--                    MATHML MODULES                              -->
+<!-- .............................................................. -->
+                                                       
+  <public publicId="-//W3C//DTD MathML 2.0//EN" 
+               uri="mathml2.dtd"/>
+
+  <public publicId="-//W3C//ENTITIES MathML 2.0 Qualified Names 1.0//EN" 
+               uri="mathml2-qname-1.mod"/>
+
+  <public publicId="-//W3C//ENTITIES Extra for MathML 2.0//EN" 
+               uri="mathml/mmlextra.ent"/>
+      
+  <public publicId="-//W3C//ENTITIES Aliases for MathML 2.0//EN" 
+               uri="mathml/mmlalias.ent"/>
+
+ 
+<!-- .............................................................. -->
+<!--                    ISO 8879 ENTITIES                           -->
+<!-- .............................................................. -->
+
+
+  <public publicId="-//W3C//ENTITIES Box and Line Drawing for MathML 2.0//EN" 
+               uri="iso8879/isobox.ent"/>
+  
+  <public publicId="-//W3C//ENTITIES Russian Cyrillic for MathML 2.0//EN" 
+               uri="iso8879/isocyr1.ent"/>
+
+  <public publicId="-//W3C//ENTITIES Non-Russian Cyrillic for MathML 2.0//EN" 
+               uri="iso8879/isocyr2.ent"/>
+
+  <public publicId="-//W3C//ENTITIES Diacritical Marks for MathML 2.0//EN" 
+               uri="iso8879/isodia.ent"/>
+
+  <public publicId="-//W3C//ENTITIES Added Latin 1 for MathML 2.0//EN" 
+               uri="iso8879/isolat1.ent"/>
+
+  <public publicId="-//W3C//ENTITIES Added Latin 2 for MathML 2.0//EN" 
+               uri="iso8879/isolat2.ent"/>
+
+  <public publicId="-//W3C//ENTITIES Numeric and Special Graphic for MathML 2.0//EN" 
+               uri="iso8879/isonum.ent"/>
+
+  <public publicId="-//W3C//ENTITIES Publishing for MathML 2.0//EN" 
+               uri="iso8879/isopub.ent"/>
+ 
+<!-- .............................................................. -->
+<!--                    ISO 9573-13 ENTITIES                        -->
+<!-- .............................................................. -->
+
+  <public publicId="-//W3C//ENTITIES General Technical for MathML 2.0//EN" 
+               uri="iso9573-13/isotech.ent"/>
+
+  <public publicId="-//W3C//ENTITIES Greek Symbols for MathML 2.0//EN" 
+               uri="iso9573-13/isogrk3.ent"/>
+
+  <public publicId="-//W3C//ENTITIES Math Alphabets: Script for MathML 2.0//EN" 
+               uri="iso9573-13/isomscr.ent"/>
+
+  <public publicId="-//W3C//ENTITIES Added Math Symbols: Arrow Relations for MathML 2.0//EN" 
+               uri="iso9573-13/isoamsa.ent"/>
+ 
+  <public publicId="-//W3C//ENTITIES Added Math Symbols: Binary Operators for MathML 2.0//EN" 
+               uri="iso9573-13/isoamsb.ent"/>
+ 
+  <public publicId="-//W3C//ENTITIES Added Math Symbols: Delimiters for MathML 2.0//EN" 
+               uri="iso9573-13/isoamsc.ent"/>
+ 
+  <public publicId="-//W3C//ENTITIES Added Math Symbols: Negated Relations for MathML 2.0//EN" 
+               uri="iso9573-13/isoamsn.ent"/>
+
+  <public publicId="-//W3C//ENTITIES Added Math Symbols: Ordinary for MathML 2.0//EN" 
+               uri="iso9573-13/isoamso.ent"/>
+ 
+  <public publicId="-//W3C//ENTITIES Added Math Symbols: Relations for MathML 2.0//EN" 
+               uri="iso9573-13/isoamsr.ent"/>
+ 
+  <public publicId="-//W3C//ENTITIES Math Alphabets: Fraktur for MathML 2.0//EN" 
+               uri="iso9573-13/isomfrk.ent"/>
+ 
+  <public publicId="-//W3C//ENTITIES Math Alphabets: Open Face for MathML 2.0//EN" 
+               uri="iso9573-13/isomopf.ent"/>
+ 
+<!-- .............................................................. -->
+<!--                    NON-MATHML ENTITIES(backwards compatibility)-->
+<!-- .............................................................. -->
+  
+  <public publicId="-//W3C//ENTITIES Greek Letters//EN" 
+               uri="xmlchars/isogrk1.ent"/>
+
+  <public publicId="-//W3C//ENTITIES Monotoniko Greek//EN" 
+               uri="xmlchars/isogrk2.ent"/>
+
+  <public publicId="-//W3C//ENTITIES Alternative Greek Symbols//EN" 
+               uri="xmlchars/isogrk4.ent"/>
+
+</group>
+
+<!-- ============================================================== -->
+
+</catalog>

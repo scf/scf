@@ -1,0 +1,7 @@
+; $Id: $
+name = Members
+description = Member profile
+dependencies[] = scf
+package = SCF
+version = VERSION
+core = 6.x

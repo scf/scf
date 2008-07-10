@@ -1,0 +1,87 @@
+<?php
+
+// $Id: iic_util.module $
+
+/**
+ * @file
+ * IIC_UTIL module
+ */
+
+function iic_util_date_string ($date) {
+  return format_date($date, 'custom', 'Y-m-d');
+}
+
+function iic_util_date_display ($date) {
+  return format_date($date, 'custom', 'j F Y');
+}
+
+/**
+ * utility function returning the (loaded) node of the current page,
+ * or FALSE if the current page is not a node view
+ */
+function iic_util_current_page_node () {
+  static $node = FALSE;
+  if (!$node && (arg(0) == 'node')) {
+    $nid = arg(1);
+    if (isset($nid) && is_numeric($nid)) {
+      $node = node_load(intval($nid));
+      return $node;
+    }
+  }
+  return $node;
+}
+
+/**
+ * @returns TRUE IFF current page is a node view
+ */
+function iic_util_current_page_is_node_view () {
+  return (arg(0) == 'node' && (is_null(arg(2)) || arg(2) == 'view'));
+}
+
+/**
+ * @returns TRUE IFF current page is a node edit
+ */
+function iic_util_current_page_is_node_edit () {
+  $arg2 = arg(2);
+  return (arg(0) == 'node' && isset($arg2) && $arg2 == 'edit');
+}
+
+
+/**
+ * @returns TRUE IFF current page is viewing (or editing) the specific
+ * node with nid $testnid
+ */
+function iic_util_current_page_is_node ($testnid) {
+  if (arg(0) == 'node') {
+    $nid = arg(1);
+    return (isset($nid) && is_numeric($nid) && ($nid == $testnid));
+  }
+  // 
+  return FALSE;
+}
+
+/**
+ * util func for use in block config
+ */
+function iic_util_current_page_node_is_of_type () {
+  $types = func_get_args();
+  $node = iic_util_current_page_node();
+  if ($node && in_array($node->type, $types)) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * Delete all nodes of a given type.  Note this doesn't just do the
+ * DELETE queries directly, it goes through the proper drupal channels
+ * for each node to delete, ensuring that all the appropriate nodeapi
+ * calls are made for each one.
+ */
+function iic_util_delete_all_nodes ($type) {
+    $sql = "SELECT nid FROM {node} WHERE type = '%s'";
+    $nids = db_query($sql, $type);
+    while ($nid = db_result($nids)) {
+      node_delete($nid);
+    }
+}

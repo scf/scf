@@ -1,0 +1,126 @@
+<?php
+
+// $Id: modelorganism.module $
+
+/**
+ * @file
+ * Modelorganism module
+ */
+
+module_load_include("php", "modelorganism", "ModelOrganismModule");
+
+function modelorganism_node_info() {
+  return modelorganism()->nodeInfo();
+}
+
+function modelorganism_menu () {
+  return modelorganism()->menu();
+}
+
+function modelorganism_perm () {
+  return modelorganism()->perm();
+}
+
+function modelorganism_access ($op, $node, $account) {
+  return modelorganism()->access($op, $node, $account);
+}
+
+function modelorganism_form (&$node, &$form_state) {
+  return modelorganism()->form($node, $form_state);
+}
+
+function modelorganism_validate($node) {
+  modelorganism()->validate($node);
+}
+
+function modelorganism_node_form_submit(&$form, &$form_state) {
+  modelorganism()->nodeFormSubmit($form, $form_state);
+}
+
+function modelorganism_insert ($node) {
+  modelorganism()->insert($node);
+}
+
+function modelorganism_update ($node) {
+  modelorganism()->update($node);
+}
+
+function modelorganism_load ($node) {
+  return modelorganism()->load($node);
+}
+
+function modelorganism_delete ($node) {
+  modelorganism()->delete($node);
+}
+
+function modelorganism_view ($node, $teaser = FALSE, $page = FALSE) {
+  return modelorganism()->view($node, $teaser, $page);
+}
+
+function modelorganism_theme () {
+  return modelorganism()->theme();
+}
+
+function modelorganism_block ($op = 'list', $delta = 0, $edit = array()) {
+  return modelorganism()->block($op, $delta, $edit);
+}
+
+function modelorganism_autocomplete($field, $string) {
+  modelorganism()->autocomplete($field, $string);
+}
+
+function modelorganism_admin_settings_subform () {
+  return modelorganism()->adminSettingsSubform();
+}
+
+function modelorganism_list_view () {
+  return modelorganism()->listView();
+}
+
+function modelorganism_load_recent_nodes ($limit = 10, $element = 0) {
+  return modelorganism()->loadRecentNodes($limit, $element);
+}
+
+/**
+ * Process variables for modelorganism-main.tpl.php.
+ *
+ * The $variables array contains the following arguments:
+ * - $node
+ *
+ * @see modelorganism-main.tpl.php
+ */
+function template_preprocess_modelorganism_main(&$variables) {
+  $node = $variables['node']; 
+  $variables['body'] = isset($node->body) ? $node->body : '';
+  $variables['strain'] = isset($node->strain) ? $node->strain : '';
+  $variables['source'] = taxonomy_extra_theme_term_list($node, 'scf_organization');
+  $variables['species'] = taxonomy_extra_theme_term_list($node, 'species_core');
+  $variables['keywords'] = taxonomy_extra_theme_term_list($node, 'scf_keyword');
+  $variables['bio_ontologies'] = array();
+  if (module_exists("bio_ontologies")) {
+    $variables['bio_ontologies'] = bio_ontologies_theme_term_lists($node);
+  }
+  // hack: preload all assocs
+  modelorganism()->loadAssociated($node);
+  $variables['genes'] = theme('gene_table', modelorganism()->loadAssociated($node, 'gene'));
+  $variables['researchstatements'] = theme('researchstatement_table', modelorganism()->loadAssociated($node, 'researchstatement'));
+}
+
+/**
+ * Process variables for modelorganism-table.tpl.php.
+ *
+ * The $variables array contains the following arguments:
+ * - $nodes
+ * - $pager
+ *
+ * @see modelorganism-table.tpl.php
+ */
+function template_preprocess_modelorganism_table(&$variables) {
+  $nodes =& $variables['nodes']; 
+  foreach ($nodes as &$node) {
+    $node->build_mode = NODE_BUILD_NORMAL;
+    $node->species = taxonomy_extra_theme_term_list($node, 'species_core');
+    $node->source = taxonomy_extra_theme_term_list($node, 'scf_organization');
+  }
+}
+

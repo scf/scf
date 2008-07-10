@@ -1,0 +1,9 @@
+; $Id$
+name = Interview
+description = Provides the interview node type allowing creation, listing and storing of interviews.
+package = SCF
+dependencies[] = scf
+dependencies[] = member
+dependencies[] = contributor
+version = VERSION
+core = 6.x
