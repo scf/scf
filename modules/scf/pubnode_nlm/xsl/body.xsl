@@ -21,6 +21,7 @@
       <xsl:apply-templates select="article/front/article-meta/permissions" mode="display"/>
       <xsl:apply-templates select="article/front/article-meta/copyright-statement" mode="display"/>
       <xsl:apply-templates select="article/front/article-meta/author-notes/corresp" mode="display"/>
+      <xsl:apply-templates select="article/front/article-meta/author-notes/fn" mode="display"/>
     </div>
   </div>
 </xsl:template>
@@ -41,6 +42,9 @@
   <!-- for compatibility in case copyright-statement is direct child of article-meta -->
 </xsl:template>
 
+<xsl:template match="article-meta/author-notes/fn">
+  <!-- for compatibility in case copyright-statement is direct child of article-meta -->
+</xsl:template>
 
 <!-- **************************************************************** -->
 <xsl:template match="article-meta/permissions" mode="display">
@@ -89,10 +93,17 @@
 <!-- **************************************************************** -->
 <xsl:template match="author-notes/corresp" mode="display">
   <div class="corresp">
+    <xsl:apply-templates select="." mode="anchor"/>
     <xsl:apply-templates/>
   </div>
 </xsl:template>
 
+<xsl:template match="author-notes/fn" mode="display">
+  <div class="fn">
+    <xsl:apply-templates select="." mode="anchor"/>
+    <xsl:apply-templates/>
+  </div>
+</xsl:template>
 
 <!-- **************************************************************** -->
 <xsl:template match="@*|*" mode="href">
@@ -113,3 +124,4 @@
 
 
 </xsl:stylesheet>
+

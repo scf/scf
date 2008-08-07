@@ -548,12 +548,15 @@ class PubNodeModule extends ScfNodeModule {
         '#weight' => 0
       );
     }
+
+    /*
     if ($page) {
       $node->content['edited_info'] = array(
         '#value' => '<div id="editedinfo">Edited by...</div>',
         '#weight' => 10
       );
     }
+    */
     return $node;
   }
 
@@ -920,4 +923,5 @@ class PubNodeModule extends ScfNodeModule {
 function pubnode () {
   return PubNodeModule::getInstance();
 }
+
 

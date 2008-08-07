@@ -6,11 +6,16 @@
 
 <!-- **************************************************************** -->
 <xsl:template match="sec" mode="num">
+
   <xsl:if test="parent::sec">
     <xsl:apply-templates select="parent::sec" mode="num"/>
     <xsl:text>.</xsl:text>
   </xsl:if>
   <xsl:value-of select="count(preceding-sibling::sec) + 1"/>
+ 
+  <xsl:if test="not(parent::sec)">
+    <xsl:text>.</xsl:text>
+  </xsl:if>
 </xsl:template>
 
 
@@ -89,3 +94,4 @@
 
 
 </xsl:stylesheet>
+

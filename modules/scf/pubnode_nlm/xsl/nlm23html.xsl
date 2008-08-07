@@ -304,7 +304,7 @@
 
 
 <!-- **************************************************************** -->
-<xsl:template match="aff/label|fn/label">
+<xsl:template match="aff/label|fn/label|corresp/label">
   <sup>
     <xsl:apply-templates/>
   </sup>
@@ -641,7 +641,7 @@
           <xsl:text>footnote</xsl:text>
         </xsl:otherwise>
       </xsl:choose>
-    </xsl:attribute>
+    </xsl:attribute> Edited by
     <xsl:apply-templates/>
   </div>
 </xsl:template>
@@ -892,3 +892,4 @@
 </xsl:template>
 
 </xsl:stylesheet>
+
