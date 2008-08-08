@@ -1079,15 +1079,17 @@
 	<xsl:template match="year" mode="none">
 		<xsl:choose>
 			<xsl:when test="../month or ../season or ../access-date">
+			  <xsl:text> (</xsl:text>
 				<xsl:apply-templates mode="none"/>
-				<xsl:text> </xsl:text>
+				<xsl:text>)</xsl:text>
+				<xsl:text>. </xsl:text>
 			</xsl:when>
 
 			<xsl:otherwise>
+			  <xsl:text> (</xsl:text>
 				<xsl:apply-templates mode="none"/>
-				<xsl:if test="../volume or ../issue">
-					<xsl:text>;</xsl:text>
-				</xsl:if>
+				<xsl:text>). </xsl:text>
+				
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
@@ -1132,7 +1134,7 @@
 				</xsl:choose>
 			</xsl:when>
 			<xsl:otherwise>
-				<xsl:text>:</xsl:text>
+				<xsl:text>, </xsl:text>
 				<xsl:apply-templates/>
 				<xsl:choose>
 					<xsl:when test="$hermano='lpage'">

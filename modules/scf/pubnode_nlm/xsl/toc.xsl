@@ -20,7 +20,7 @@
 <!-- **************************************************************** -->
 <xsl:template match="sec">
   <li>
-    <span class="label">
+   <span class="label">
       <xsl:apply-templates select="." mode="num"/>
     </span>
     <a>
@@ -46,13 +46,14 @@
 <!-- **************************************************************** -->
 <xsl:template match="ack|ref-list|glossary">
   <li>
+   
     <a>
       <xsl:attribute name="href">
         <xsl:text>#</xsl:text>
         <xsl:apply-templates select="." mode="id"/>
       </xsl:attribute>
       <xsl:if test="not(title)">
-        <xsl:apply-templates select="." mode="gentitle"/>
+        <xsl:apply-templates select="." mode="title"/>
       </xsl:if>
       <xsl:apply-templates select="title"/>
     </a>
