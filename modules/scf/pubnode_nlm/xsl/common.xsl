@@ -14,7 +14,9 @@
   <xsl:value-of select="count(preceding-sibling::sec) + 1"/>
  
   <xsl:if test="not(parent::sec)">
-    <xsl:text>.</xsl:text>
+    <xsl:if test="not(descendant::sec)">
+      <xsl:text>.</xsl:text>
+    </xsl:if>
   </xsl:if>
 </xsl:template>
 
