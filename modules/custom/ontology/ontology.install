@@ -1,0 +1,47 @@
+<?php
+
+function ontology_install() {
+	drupal_install_schema('ontology');
+}
+
+function ontology_uninstall() {
+	drupal_uninstall_schema('ontology');
+}
+
+function ontology_schema() {
+	$schema = array();
+  	$schema['ontology_relationships'] = array(
+  		'fields' => array(
+  			'trid' => array(
+  				'type' => 'serial',
+  				'unsigned' => TRUE,
+  				'not null' => TRUE
+  			),
+  			'subject_id' => array(
+  				'type' => 'int',
+  				'unsigned' => TRUE,
+  				'not null' => TRUE
+  			),
+  			'predicate' => array(
+  				'type' => 'char',
+  				'length' => 64,
+  				'not null' => TRUE
+  			),
+  			'object_id' => array(
+  				'type' => 'int',
+  				'unsigned' => TRUE,
+  				'not null' => TRUE
+  			)
+  		),
+  		'primary key' => array('trid'),
+  		'indexes' > array(
+  			'subject' => array('subject_id'),
+  			'object' => array('object_id')
+  		)
+  	);
+  	
+  	return $schema;
+}
+
+
+?>

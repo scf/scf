@@ -1,0 +1,909 @@
+<?php
+
+/**
+ * Implementation of hook_help().
+ */
+function ontology_help($path, $arg) {
+	switch ($path) {
+		case 'admin/content/taxonomy/ontology/import':
+		return t('<p>Use this form to import ontology relationships from the Gene Ontology .OBO file.</p>');
+	}
+}
+
+/**
+ * Implementation of hook_menu
+ */
+function ontology_menu() {
+ $items = array();
+  $items['ontology/define/%'] = array(
+    'title' => 'Define Term',
+    'page callback' => 'ontology_service_term_description',
+    'page arguments' => array(2),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
+  $items['ontology/node/title'] = array(
+  	'title' => 'Node Title',
+  	'page callback' => 'ontology_service_node_title',
+  	'page arguments' => array(),
+  	'access arguments' => array('access content'),
+  	'type' => MENU_CALLBACK
+  );
+
+  $items['ontology/graph'] = array(
+  	'title' => 'View Graph',
+  	'page callback' => 'ontology_service_retrieve_graph',
+  	'page arguments' => array(2),
+  	'access arguments' => array('access content'),
+  	'type' => MENU_CALLBACK
+  );
+  $items['admin/content/taxonomy/ontology/import'] = array(
+  	'title' => 'Import Ontology',
+  	'page callback' => 'drupal_get_form',
+  	'page arguments' => array('ontology_import_form'),
+  	'access arguments' => array('administer taxonomy'),
+  	'type' => MENU_LOCAL_TASK,
+  	'weight' => 15
+  );
+  $items['ontology/autocomplete/%'] = array(
+  	'title' => 'Autocomplete webservice',
+  	'page callback' => 'ontology_service_autocomplete',
+  	'page arguments' => array(2),
+  	'access arguments' => array('access content'),
+  	'type' => MENU_CALLBACK
+  );
+  $items['ontology/node/terms'] = array(
+  	'title' => 'Terms by article',
+  	'page callback' => 'ontology_service_article_terms',
+  	'page arguments' => array(),
+  	'access arguments' => array('access content'),
+  	'type' => MENU_CALLBACK
+  );
+  $items['ontology/node/terms/add'] = array(
+  	'title' => 'Add term to article',
+  	'page callback' => 'ontology_service_add_node_term',
+  	'page arguments' => array(),
+  	'access arguments' => array('annotate content'),
+  	'type' => MENU_CALLBACK
+  );
+  $items['ontology/node/terms/remove'] = array(
+  	'title' => 'Remove terms from article',
+  	'page callback' => 'ontology_service_remove_node_term',
+  	'page arguments' => array(),
+  	'access arguments' => array('annotate content'),
+  	'type' => MENU_CALLBACK
+  ); 
+  $items['ontology/node/terms/matches'] = array(
+  	'title' => 'Terms in article',
+  	'page callback' => 'ontology_service_article_matches',
+  	'page arguments' => array(),
+  	'access arguments' => array('access content'),
+  	'type' => MENU_CALLBACK
+  );
+  $items['ontology/access'] = array(
+  	'title' => 'Access callback',
+  	'page callback' => 'ontology_service_term_access',
+  	'page arguments' => array(),
+  	'access arguments' => array('access content'),
+  	'type' => MENU_CALLBACK
+  );
+  $items['ontology/suggest/%/%'] = array(
+  	'title' => t('Suggest terms'),
+  	'page callback' => 'drupal_get_form',
+  	'page arguments' => array('ontology_suggest_form', 2, 3),
+  	'type' => MENU_CALLBACK,
+  	'access arguments' => array('annotate content')
+  );
+  return $items;
+}
+
+/**
+ * Implementation of hook_theme
+ */
+function ontology_theme() {
+	return array(
+		'taxonomy_term_page' => array(
+			'arguments' => array('tids' => array(), 'result' => NULL),
+			'function' => 'ontology_theme_taxonomy_term_page'
+		)
+	);
+}
+
+function ontology_theme_taxonomy_term_page($tids, $result) {
+	$output = '';
+	if (count($tids) == 1) {
+		$tid = $tids[0];
+		$output = '<a href="/sites/all/files/graphbrowser/main.html#' . $tid . '" class="pubnode-graph" target="_blank">View in GO Tree</a>';
+	}
+	$output .= theme_taxonomy_term_page($tids, $result);
+	return $output;
+}
+
+/**
+ * Web service to retrieve the definition of a term.
+ *
+ * @param unknown_type $term_id
+ */
+function ontology_service_term_description($term_id) {
+	$term = taxonomy_get_term($term_id);
+	print $term->description;
+	exit;
+}
+
+function ontology_service_node_title() {
+	$node_id = $_REQUEST['nid'];
+	$node = node_load($node_id);
+	print $node->title;
+	exit;
+}
+
+/**
+ * This is the "main" function for the graph generation web service.
+ * 
+ * It takes two URL parameters: tid for the term to focus on, and (optionally) nid to specify
+ * a node ID.  If nid is included, any terms in the graph that the node is tagged with will
+ * be highlighted.
+ * This function does not return a value; it outputs the GraphViz layout format for the graph,
+ * then exits.
+ */
+function ontology_service_retrieve_graph() {
+	
+	// use page parameters because it's a web service
+	$term_id = $_REQUEST['tid'];
+	if (isset($_REQUEST['nid']) && $_REQUEST['nid'])
+		$node_id = $_REQUEST['nid'];
+	else
+		$node_id = 0;
+	
+	if (isset($_REQUEST['l']) && $_REQUEST['l'])
+		$has_labels = 1;
+	else
+		$has_labels = 0;
+		
+	$graph = ontology_get_graph($term_id);
+	
+	// if we have a node id, check to see if any of the terms associated with this node are in the graph
+	if ($node_id) {
+		$terms = taxonomy_node_get_terms(node_load($node_id));
+		
+		foreach ($terms as $term) {
+			if (isset($graph[$term->tid])) {
+				$graph[$term->tid][2] = 1;
+			}
+		}
+	}
+
+	$graphviz_output = _ontology_to_graphviz($graph, $has_labels);
+	print $graphviz_output;
+	exit;
+}
+
+/**
+ * This is a recursive helper function for ontology_retrieve_graph.
+ *
+ * It retrieves the graph centering around the current node, showing all paths up to the root and all children one step below.
+ * @param int $term_id The ID of the term to center on
+ * @param string $search_type One of "full" to get both parents and children, "ancestor" to get just parents, or "descendant" to just get the current node.
+ * @return array The graph for the current node, as an array of the format [term ID] => [node name, [parent ID => relationship], 0]
+ */
+function ontology_get_graph($term_id, $search_type = 'full') {
+	if (!$term_id) exit;
+	$graph = array();
+	$cache_dir = drupal_get_path('module', 'ontology') . '/cache/';
+	
+	if (!file_exists($cache_dir. $term_id)){
+		// do DB query, then cache and return the results
+		$ancestors = ontology_get_ancestors($term_id);
+		$descendants = ontology_get_descendants($term_id);
+		$term = taxonomy_get_term($term_id);
+		
+		// create the cache file
+		$node = array('label' => $term->name, 'ancestors' => $ancestors, 'descendants' => $descendants);		
+		$fh = fopen($cache_dir . $term_id, 'w');
+		if ($fh) {
+			fwrite($fh, serialize($node));
+			fclose($fh);
+		}
+		
+		$graph[$term_id] = array($term->name, $ancestors, 0);
+	}
+	else {
+		$node = unserialize(file_get_contents($cache_dir . $term_id));
+		$graph[$term_id] = array($node['label'], $node['ancestors'], 0);
+	}
+	
+	if ($search_type == 'full' or $search_type == 'ancestor')
+		if (isset($node['ancestors'])) {
+			foreach ($node['ancestors'] as $ancestor_id => $relationship) {
+				$ancestor_graph = ontology_get_graph($ancestor_id, 'ancestor');
+				foreach ($ancestor_graph as $id => $ancestor)
+					$graph[$id] = $ancestor;	
+			}
+		}
+	
+	if ($search_type == 'full')
+		if (isset($node['descendants'])) {
+			foreach ($node['descendants'] as $descendant_id => $relationship) {
+				$descendant_graph = ontology_get_graph($descendant_id, 'descendant');
+				foreach ($descendant_graph as $id => $descendant)
+					$graph[$id] = $descendant;
+			}
+		}
+			
+	return $graph;
+}
+
+/**
+ * Retrieves the immediate ancestors of the current node and their relationships.
+ *
+ * @param int $term_id The ID of the node to look up.
+ * @return array An array of the format [parent ID => relationship].
+ */
+function ontology_get_ancestors($term_id) {
+	if ($term_id) {
+		$result = db_query('select object_id, predicate from {ontology_relationships} where subject_id = %d', $term_id);
+		
+		$ancestors = array();
+		while ($term = db_fetch_object($result)) {
+			$ancestors[$term->object_id] = $term->predicate;
+		}
+		return $ancestors;
+	}
+	else {
+		return array();
+	}
+}
+
+/**
+ * Retrieves the immediate descendants of the current node and their relationships.
+ *
+ * @param int $term_id The ID of the node to look up.
+ * @return array An array of the format [child ID => relationship].
+ */
+function ontology_get_descendants($term_id) {
+	if ($term_id) {
+		$result = db_query('select subject_id, predicate from {ontology_relationships} where object_id = %d', $term_id);
+		
+		$descendants = array();
+		while ($term = db_fetch_object($result)) {
+			$descendants[$term->subject_id] = $term->predicate;
+		}
+		return $descendants;
+	}
+	else {
+		return array();
+	}
+}
+
+/**
+ * Transforms a graph data structure into the GraphViz layout format.
+ *
+ * This function outputs the graph data structure to a temp file, runs dot on the file,
+ * and returns the result.
+ * @param array $graph The graph data structure to be used, as returned by ontology_get_graph.
+ * @param boolean $labels Set to true to include line labels.
+ * @return string The GraphViz format
+ */
+function _ontology_to_graphviz($graph, $has_labels) {
+	module_load_include('php', 'ontology', 'cssparser');
+	$cssparser = new CSSParser();
+	$module_path = drupal_get_path('module', 'ontology');
+	$css_path = preg_replace('/modules.*$/', 'files', $module_path) . '/graphbrowser/';
+	$cssparser->Parse($css_path . 'graph.css');
+	
+	$unflatten = 0;
+	$out_edges = array();
+	$leaf_counts = array();
+
+	$graphviz_input = "digraph G {\n";
+	$graphviz_input .= "\tsize=\"11,11\";\n";
+	$graphviz_input .= "\tratio=\"compress\";\n";
+	$graphviz_input .= "\tnode [fontname=Helvetica,fontsize=10]\n";
+	$graphviz_input .= "\tedge [fontname=Helvetica,fontsize=10]\n";
+
+	$colors = array();
+	foreach ($graph as $in_node_id => $node) {
+		if (!isset($out_edges[$in_node_id]))
+			$out_edges[$in_node_id] = 0;
+		
+		$label = $node[0];
+		$edges = $node[1];
+		$tagged = $node[2];
+		
+		$label = _ontology_wordwrap($label, 25);
+		
+		$node_color = '';
+		if ($tagged) {
+			$color = $cssparser->get('.node_tagged', 'background-color');
+			$edgecolor = $cssparser->get('.node_tagged', 'border-color');
+			$node_color = ',color="' . $edgecolor . '",fillcolor="' . $color . '"'; 
+		}
+		else if (taxonomy_term_count_nodes($in_node_id) > 0) {
+			$color = $cssparser->get('.node_content', 'background-color');
+			$edgecolor = $cssparser->get('.node_content', 'border-color');
+			$node_color = ',color="' . $edgecolor . '",fillcolor="' . $color . '"';
+		}
+		
+		$graphviz_input .= "\t$in_node_id [label=\"$label\"$node_color]\n";
+		
+		foreach ($edges as $out_node_id => $relationship) {	
+			if (!isset($out_edges[$out_node_id]))
+				$out_edges[$out_node_id] = 0;
+			$out_edges[$out_node_id]++;
+			
+			if (isset($graph[$out_node_id])) {
+				if (isset($colors[$relationship])) {
+					$color = $colors[$relationship];
+				}
+				else {
+					$color = $cssparser->get('.edge_' . $relationship, 'color');
+					$colors[$relationship] = $color;
+				}
+				
+				$label_text = '';
+				if ($has_labels) {
+					$label_text = ',label=' . $relationship;
+				}
+
+				$graphviz_input .= "\t$in_node_id -> $out_node_id [color=\"" . $color . '"' . $label_text . "]\n";
+			}
+		}
+	}
+	$graphviz_input .= "}\n";
+	
+	// do we need to run unflatten?  check if there are any nodes with 5 or more leaves.
+	foreach ($out_edges as $id => $edgecount) {
+		if ($edgecount == 0) {
+			foreach ($graph[$id][1] as $parent_id => $relationship) {
+				if (!isset($leaf_counts[$parent_id]))
+					$leaf_counts[$parent_id] = 0;
+				$leaf_counts[$parent_id]++;
+				
+				if ($leaf_counts[$parent_id] >= 5) {
+					$unflatten = 1;
+					break;
+				}
+			}
+		}
+	}
+	
+	// now run dot on the input file, making sure to lock the file in case other processes need to use it
+	$fh = fopen('graphviz_input.dot', 'w');
+	if (flock($fh, LOCK_EX)) {
+		fwrite($fh, $graphviz_input);
+		
+		if ($unflatten) {
+			$graphviz_output = `/usr/local/bin/unflatten -l5 graphviz_input.dot | /usr/local/bin/dot`;
+		}
+		else {
+			$graphviz_output = `/usr/local/bin/dot graphviz_input.dot`;
+		}
+			
+		fclose($fh);
+	}
+	
+	// executing dot over the shell will produce line breaks if the line is too long
+	// replace them before we do the output
+	$graphviz_output = str_replace("\\\n", '', $graphviz_output);
+	return $graphviz_output;
+}
+
+/**
+ * Finds where a term occurs in a node (if at all) and outputs the matching sentences as a web service.
+ *
+ * This function expects GET parameters for nid (the node to look at) and tid (the term to check).
+ * The matching sentences are displayed in XML format, with each matching sentence in a <sentence> tag.
+ */
+function ontology_service_article_matches() {
+
+	if (!isset($_GET['nid']) or !isset($_GET['tid'])) {
+		print 0;
+		exit;
+	}
+	
+	$nid = $_GET['nid'];
+	$tid = $_GET['tid'];
+	
+	$terms_to_check = array($tid => taxonomy_get_term($tid));
+	$suggestions = _ontology_get_occurrences($nid, $terms_to_check);
+	
+	$output = "<?xml version='1.0'?>\n<matches>";
+	// go through each sentence entirely seeing if the term matches
+	foreach ($suggestions as $term_id => $suggestion) {
+		if ($term_id != $tid) continue; // this shouldn't happen, but just in case...
+		
+		foreach ($suggestion[1] as $sentence)
+			$output .= '<sentence>' . $sentence . '</sentence>';
+	}
+	
+	$output .= "</matches>\n";
+	
+	print $output;
+	exit;
+}
+
+/**
+ * Determines if a word occurs in the stopword list for term matching.
+ *
+ * This is a helper function for ontology_article_matches and should not be called directly.
+ * @param string $word The word to check
+ * @return boolean True if the word is a stopword, false if it is not.
+ */
+function _ontology_is_stopword($word) {
+	$stopwords = array('a', 'an', 'and', 'as', 'by', 'during', 'from', 'in', 'into', 'involved', 'of', 'or', 'to', 'the', 'with');
+	if (in_array($word, $stopwords)) return true;
+	return false;	
+}
+
+/**
+ * Retrieves the terms for a node and returns them as a web service.
+ *
+ * This function expects a GET parameter nid (the ID of the node to check).
+ * It outputs the terms in XML format, then exits.
+ */
+function ontology_service_article_terms() {
+	$node_id = $_GET['nid'];
+	$node = node_load($node_id);
+	
+	$output = "<?xml version=\"1.0\"?>\n<terms>\n";
+	if (isset($node)) {
+	
+		$terms = taxonomy_node_get_terms($node);
+		foreach ($terms as $term) {
+			if ($term->vid == 6 or $term->vid == 7 or $term->vid == 8) // skip terms outside of the ontology
+				$output .= '<term><name>' . $term->name . '</name><id>' . $term->tid . '</id></term>';
+		}
+	}
+	$output .= "</terms>\n";
+	
+	print $output; exit;
+}
+
+/**
+ * Implementation of hook_form for importing the ontology relationships from the latest .OBO file.
+ *
+ * @return The ontology form in Drupal form API format.
+ */
+function ontology_import_form() {
+	$form = array('#attributes' => array('enctype' => 'multipart/form-data'));
+  
+	$form['source'] = array('#type' => 'fieldset', '#title' => t('Source'));
+	$form['source']['upload'] = array(
+		'#type' => 'file',
+		'#title' => t('OBO file'),
+	);
+	
+	$form['submit'] = array('#type' => 'submit', '#value' => t('Import'));
+
+	return $form;	
+}
+
+/**
+ * Implementation of hook_form_validate for importing the ontology relationships from the latest .OBO file.
+ * 
+ * This function simply makes the uploaded file available to the submit function.
+ */
+function ontology_import_form_validate($form, &$form_state) {
+  $form_state['upload_file'] = file_save_upload('upload');
+  if (!$form_state['upload_file']) {
+    form_set_error('upload', t('Please upload a file.'));
+  }
+}
+
+/**
+ * Implementation of hook_form_submit for importing the ontology relationships from the latest .OBO file.
+ *
+ * This function deletes the existing content in ontology_relationships and imports the new content.
+ */
+function ontology_import_form_submit($form, &$form_state) {
+	db_query('delete from {ontology_relationships}');
+	
+	$bio_process_vocab = taxonomy_extra_get_vocab(6);
+	$cell_components_vocab = taxonomy_extra_get_vocab(7);
+	$molec_functions_vocab = taxonomy_extra_get_vocab(8);
+	
+	$term_glossary = array(); // format: term name => taxonomy ID
+	$term_index = array(); // format: GO ID term => taxonomy ID
+	foreach ($bio_process_vocab as $id => $term) {
+		$term_glossary[$term->name] = $id;
+	}
+	foreach ($cell_components_vocab as $id => $term) {
+		$term_glossary[$term->name] = $id;
+	}
+	foreach ($molec_functions_vocab as $id => $term) {
+		$term_glossary[$term->name] = $id;
+	}
+
+	unset($bio_process_vocab);
+	unset($cell_components_vocab);
+	unset($molec_functions_vocab);
+	
+	$term_relations = array(); // format: GO ID of term => [GO ID of related term => relationship]
+	
+	$file = $form_state['upload_file'];
+	$handle = fopen($file->filepath, 'r');
+	
+	// parse the file into term_index and term_relations
+	$current_id = '';
+	while ($line = fgets($handle)) {
+		if (trim($line) == '[Typedef]') break;
+		
+		if (preg_match('/^id: (.*?)$/', $line, $matches)) {
+			// set the ID of the current term we're looking at
+			$current_id = $matches[1];
+		}
+		else if (preg_match('/^name: (.*?)$/', $line, $matches)) {
+			// use the name to look up the taxonomy ID of this term
+			if (!isset($term_index[$current_id])) {
+				if (!isset($term_glossary[$matches[1]])) continue;
+				$term_index[$current_id] = $term_glossary[$matches[1]];
+			}
+		}
+		else if (preg_match('/^is_a: (.*?) !/', $line, $matches)) {
+			// create a relationship here
+			$term_relations[$current_id][$matches[1]] = 'is_a';
+		}
+		else if (preg_match('/^relationship: ([a-z_]+?) (.+?) !/', $line, $matches)) {
+			$term_relations[$current_id][$matches[2]] = $matches[1];
+		}
+	}
+	
+	// go through term_index and term_relations and insert into the db
+	foreach ($term_relations as $subject => $relations) {
+		foreach ($relations as $object => $predicate) {
+			if (!isset($term_index[$subject])) continue;
+			if (!isset($term_index[$object])) continue;
+			
+			db_query('insert into {ontology_relationships}(subject_id, predicate, object_id) values(%d, \'%s\', %d)', $term_index[$subject], $predicate, $term_index[$object]);
+		}
+	}
+	
+	drupal_set_message('The ontology relationships have been imported.');
+}
+
+/**
+ * Helper function for _ontology_to_graphviz that performs word wrapping.
+ *
+ * Spaces are replaced by newlines such that each line does not exceed the maximum length.
+ * @param string $text The text to word wrap
+ * @param int $length The maximum line length
+ * @return string The word wrapped text.
+ */
+function _ontology_wordwrap($text, $length) {
+	$text_pieces = explode(' ', $text);
+	$new_text = array_shift($text_pieces);
+	$line_length = strlen($new_text);
+	
+	while($text_pieces) {
+		$next_piece = array_shift($text_pieces);
+		if ($line_length + 1 + strlen($next_piece) > $length) {
+			$new_text .= '\n' . $next_piece;
+			$line_length = strlen($next_piece);
+		}
+		else {
+			$new_text .= ' ' . $next_piece;
+			$line_length += 1 + strlen($next_piece);
+		}
+	}
+	
+	return $new_text;
+}
+
+/**
+ * Web service to search the taxonomy / ontology for a term using typeahead.
+ *
+ * The default taxonomy autocomplete function is not used for several reasons:
+ * -It only searches a single vocabulary
+ * -It searches the entire string, rather than only starting at the front of the string
+ * -Its result format does not include the term ID
+ * This function outputs the results as XML, then quits.
+ * @param String $string The user-provided string to autocomplete
+ */
+function ontology_service_autocomplete($string) {
+	$result = db_query_range('select tid, name from {term_data} where vid in (6,7,8) and name like "%s%%" order by name', $string, 0, 30);
+	
+	$output = "<?xml version=\"1.0\"?>\n<terms>\n";
+	while ($term = db_fetch_object($result)) {
+		$output .= '<term><name>' . $term->name . '</name><id>' . $term->tid . '</id></term>';
+	}
+	$output .= "</terms>\n";
+
+	print $output; exit;
+}
+
+/**
+ * Web service to add a term to a node
+ *
+ * This function expects GET parameters nid (the node ID) and tid (the term ID).
+ * It will print 1 on success and 0 on failure, and then will exit.
+ */
+function ontology_service_add_node_term() {
+	if (!isset($_GET['nid']) or !isset($_GET['tid'])) {
+		print 0;
+		exit;
+	}
+	
+	$nid = $_GET['nid'];
+	$tid = $_GET['tid'];
+	
+	// add it to the node ID
+	$node = node_load($nid);
+	$term = taxonomy_get_term($tid);
+	
+	$old_term_list = taxonomy_node_get_terms($node);
+	foreach ($old_term_list as $old_term)
+		if ($old_term->tid == $term->tid) {
+			print 0;
+			exit;
+		}
+
+	
+	$old_term_list[] = $term;
+	taxonomy_node_save($node, $old_term_list);
+	
+	print 1; exit;
+}
+
+/**
+ * Web service to remove a term from a node
+ *
+ * This function expects GET parameters nid (the node ID) and tid (the term ID).
+ * It will print 1 on success and 0 on failure, and then will exit.
+ */
+function ontology_service_remove_node_term() {
+	if (!isset($_GET['nid']) or !isset($_GET['tid']))
+		{ print 0; exit; }
+	
+	$nid = $_GET['nid'];
+	$tid = $_GET['tid'];
+	
+	// add it to the node ID
+	$node = node_load($nid);
+	$term = taxonomy_get_term($tid);
+	
+	$old_term_list = taxonomy_node_get_terms($node);
+	foreach ($old_term_list as $index => $old_term)
+		if ($old_term->tid == $term->tid) {
+			unset($old_term_list[$index]);
+		}
+
+	taxonomy_node_save($node, $old_term_list);
+	
+	print 1; exit;	
+}
+
+/**
+ * Implementation of hook_init, to add client-side search code
+ */
+function ontology_init() {
+	drupal_add_js(drupal_get_path('module', 'ontology') . '/search.js');
+	drupal_add_css(drupal_get_path('module', 'ontology') . '/search.css');
+}
+
+/**
+ * Web service to determine if the user has access to add or remove terms
+ *
+ * This function returns 1 if the user has access and 0 if he does not.
+ */
+function ontology_service_term_access() {
+	$router_item = menu_get_item('ontology/node/terms/add');
+	if ($router_item['access']) {
+		print 1;
+		exit;
+	}
+	print 0;
+	exit;
+}
+
+/**
+ * This function analyzes the text of a node body and finds all instances of the provided terms.
+ *
+ * This is a helper function and should not be called directly.
+ * @param unknown_type $nid The ID of the node to examine.
+ * @param unknown_type $id The ID of the term or vocabulary to check against the node.
+ * @param unknown_type $is_term True to interpret $id as a term ID, false to interpret $id as a vocabulary ID
+ * @return array An array of the format [matching term ID => [term ID, [sentences where term occurs]]]
+ */
+function _ontology_get_occurrences($nid, $terms_to_check) {
+	module_load_include('php', 'ontology', 'PorterStemmer');
+		
+	$node = node_load($nid);
+	// turn headers into sentences, then strip out all remaining HTML tags
+	$body = preg_replace('/<h[1-6]>(.*?)<\/h[1-6]>/', " $1. \n", $node->body);
+	$body = str_replace(array('<p>', '</p>', '<br>', '<br/>'), ' ', $body);
+	$body = strip_tags($body);
+	
+	// segment and stem terms, removing stop words
+	$term_stems = array();
+	$term_stem_counts = array();
+	foreach ($terms_to_check as $term) {
+		$term_pieces = explode(' ', $term->name);
+		$term_stem_counts[$term->tid] = count($term_pieces);
+		
+		foreach ($term_pieces as $piece) {
+			if (_ontology_is_stopword($piece))
+				continue;
+			
+			$piece = PorterStemmer::Stem($piece);
+				
+			if (!isset($term_stems[$piece]))
+				$term_stems[$piece] = array();
+				
+			$term_stems[$piece][$term->tid] = 1;
+		}
+	}
+	
+	// break node body into sentences
+	$sentences = preg_split("/\.\s/", $body);
+	
+	// iterate through each sentence
+	$suggestions = array();	
+	foreach ($sentences as $sentence) {
+		
+		$sentence_hits = array();
+		foreach ($terms_to_check as $term) {
+			// check for exact match first
+			if (strpos($sentence, $term->name) !== false) {
+				if (!isset($suggestions[$term->tid]))
+					$suggestions[$term->tid] = array($term->name, array());
+				
+				$sentence_hits[$term->tid] = 1;
+				$suggestions[$term->tid][1][] = $sentence;
+				continue;
+			}
+		}
+			
+		// check for individual stem matches
+		$term_hits = array();
+		$sentence_pieces = explode(' ', $sentence);
+		$sentence_terms = array();
+		// first, find all the unique stems in the sentence
+		// this avoids stems being counted multiple times
+		foreach ($sentence_pieces as $piece) {
+			if (_ontology_is_stopword($piece)) continue;
+			
+			$piece = PorterStemmer::Stem($piece);
+			$sentence_terms[$piece] = 1;
+		}
+		
+		foreach ($sentence_terms as $piece => $freq) {
+			if (isset($term_stems[$piece])) {				
+				foreach ($term_stems[$piece] as $tid => $stemcount) {
+					if (!isset($sentence_hits[$tid])) {
+						if (!isset($term_hits[$tid])) $term_hits[$tid] = 0;
+						
+						$term_hits[$tid]++;
+						
+						if ($term_hits[$tid] / $term_stem_counts[$tid] > .5) {
+							if (!isset($suggestions[$tid]))
+								$suggestions[$tid] = array($terms_to_check[$tid]->name, array());
+							
+							$sentence_hits[$tid] = 1;
+							$suggestions[$tid][1][] = $sentence;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// return: term ID => [name, [occurrences]]
+	return $suggestions;
+}
+
+/**
+ * Implementation of hook_form, which suggests terms to tag a node with.
+ *
+ * @param unknown_type $form_state The Drupal form state object
+ * @param int $vocab_id The ID of the vocabulary to take suggestions from.
+ * @param int $node_id The node ID to suggest terms for.
+ * @return The form in Drupal form API format.
+ */
+function ontology_suggest_form(&$form_state, $vocab_id, $node_id) {
+	$suggestions = array();
+	
+	$node = node_load($node_id);
+	$form = array(
+		'description' => array(
+			'#type' => 'markup',
+			'#value' => 'Here is the list of GO terms that StemBook has suggested for the chapter <a href="/node/' . $node_id . '">' . $node->title . '</a>.  Use this form to select terms from this list.'
+		)
+	);
+
+	$terms_to_check = taxonomy_extra_get_vocab($vocab_id);
+	$suggestions = _ontology_get_occurrences($node_id, $terms_to_check);
+
+	// get the 20 most common terms
+	uasort($suggestions, '_ontology_suggestion_sort_helper');
+	
+	// don't use array_splice, since that loses the keys you use
+	$new_suggestions = array();
+	$skeys = array_keys($suggestions);
+	$count = (count($skeys) > 20) ? 20 : count($skeys);
+	for ($i = 0; $i < $count; $i++) {
+		$new_suggestions[$skeys[$i]] = $suggestions[$skeys[$i]];
+	}
+	
+	$matched_terms = taxonomy_node_get_terms($node);
+	
+	foreach ($new_suggestions as $id => $term) {
+		$selected = 0;
+		if (isset($matched_terms[$id]))
+			$selected = 1;
+			
+		$name = $term[0];
+		$occurrences = count($term[1]);
+					
+		if ($occurrences == 1)
+			$occurrence_string = '1 occurrence';
+		else
+			$occurrence_string = $occurrences . ' occurrences';
+		
+		$form[$id] = array(
+			'#type' => 'checkbox',
+			'#title' => $name . ' (' . $occurrence_string . ') &nbsp;&nbsp;<a href="/sites/all/files/graphbrowser/main.html#' . $id . '/' . $node_id . '" target="graph"><img src="/sites/all/themes/scf_base/images/icon-graph.gif" border="0" title="View in GO Tree"/></a>',
+		);
+		
+		if ($selected) {
+			$form[$id]['#attributes'] = array('checked' => 'checked');
+		}
+	}
+	
+	$form['termids'] = array(
+		'#type' => 'hidden',
+		'#value' => implode(',', array_keys($suggestions))
+	);
+	$form['nodeid'] = array(
+		'#type' => 'hidden',
+		'#value' => $node_id
+	);
+	
+	$form['submit'] = array(
+		'#type' => 'submit',
+		'#value' => t('Add selected terms')
+	);
+	
+	return $form;
+}
+
+/**
+ * uasort() helper function, used by ontology_suggest_form.
+ *
+ * This function helps uasort() order suggestion arrays (as returned by _ontology_get_occurrences)
+ * so that the most frequent terms come first.  It should not be called directly.
+ * @param array $a A suggestion array
+ * @param array $b A suggestion array
+ * @return int
+ */
+function _ontology_suggestion_sort_helper($a, $b) {
+	$a_counts = count($a[1]);
+	$b_counts = count($b[1]);
+
+	return ($b_counts - $a_counts);
+}
+
+/**
+ * Implementation of hook_form_submit for the suggestion form
+ * 
+ * This function updates the tags for the given node.
+ */
+function ontology_suggest_form_submit($form, &$form_state) {
+	$form_terms = explode(',', $form_state['values']['termids']);
+	$node_id = $form_state['values']['nodeid'];
+	$node = node_load($node_id);
+	$term_list = taxonomy_node_get_terms($node);
+		
+	foreach ($form_terms as $tid) {
+		if (isset($form_state['values'][$tid]) and $form_state['values'][$tid]) {
+			$term_list[$tid] = taxonomy_get_term($tid);
+		}
+		else {
+			unset($term_list[$tid]);
+		}
+	}
+	
+	taxonomy_node_save($node, $term_list);
+	drupal_set_message('The terms you selected have been added.');
+}
+
+?>

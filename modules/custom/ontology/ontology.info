@@ -1,0 +1,8 @@
+; $Id$
+name = Ontology Functionality
+description = Functionality and web services for the Ontology Viewer
+dependencies[] = taxonomy
+dependencies[] = taxonomy_extra
+package = Harvard IIC
+version = VERSION
+core = 6.x

@@ -156,7 +156,7 @@ function taxonomy_extra_theme () {
 function taxonomy_extra_block ($op = 'list', $delta = 'listing', $edit = array()) {
   if ($op == 'list') {
     $blocks['related_terms'] = array(
-      'info' => t('Related terms'),
+      'info' => t('Annotated terms'),
       'weight' => 0,
       'status' => 0,
       'cache' => BLOCK_NO_CACHE
@@ -270,7 +270,7 @@ function taxonomy_extra_related_terms_block () {
       $start = '<div id="related-resources" class="clear-block">';
       $end = '</div>';
       return array(
-        'subject' => t("Related terms"),
+        'subject' => t("Annotated terms"),
         'content' => $start . implode('', $out) . $end
       );
     }
@@ -323,6 +323,10 @@ function taxonomy_extra_theme_vocab_terms ($node, $vocab) {
               
               if ($delete_button_flag) {
               	$term_link .= related_terms_block_delete_button($node->nid, $term->tid);
+              }
+              
+              if (($vid == 6 or $vid == 7 or $vid == 8) and iic_util_current_page_is_node($node->nid)) {
+              	$term_link .= '&nbsp;&nbsp;<a href="/sites/all/files/graphbrowser/main.html#' . $term->tid . '/' . $node->nid . '" target="_blank"><img src="/sites/all/themes/scf_base/images/icon-graph.gif" border="0" title="View in GO Tree" /></a>';
               }
               $terms[] = $term_link;
             }
@@ -476,7 +480,14 @@ function taxonomy_extra_add_node_vocab_term($nid, $vid) {
 	// look up the term ID in the database
 	$term_name = $_POST['textfield'];
 	$terms = taxonomy_get_term_by_name($term_name);
-	$term = $terms[0];
+	
+	if (count($terms)) {	
+	 $term = $terms[0];
+	}
+	else {
+	 print drupal_to_js(array('data' => ''));
+	 exit;
+	}
 	
 	// add it to the node ID
 	$node = node_load($nid);
@@ -492,7 +503,7 @@ function taxonomy_extra_add_node_vocab_term($nid, $vid) {
 	taxonomy_node_save($node, $old_term_list);
 	
 	// generate the HTML here
-	// TO-DO - integrate this with the main theme somehow?
+	// TODO - integrate this with the main theme somehow?
 	print drupal_to_js(array('data' => '<li><a title="'
 	 . $term->description .
 	'" href="/taxonomy/term/'.$term->tid.'" rel="tag">'.$term->name.'</a>'.related_terms_block_delete_button($nid,$term->tid).'</li>'));
@@ -586,6 +597,35 @@ function taxonomy_extra_form_addterm(&$form_state, $nid, $vid) {
  */
 function related_terms_block_delete_button($node_id, $term_id) {
 	return <<<HTML
-&nbsp;<input type="image" src="/sites/all/themes/scf_base/images/icon-x.gif" onclick="$.post('/node_remove_taxonomy_term/$node_id/$term_id', {}, function() { \$('a[href$=/$term_id]').parent().hide('slow'); });" />
+&nbsp;<input type="image" title="Remove this term" src="/sites/all/themes/scf_base/images/icon-untag.gif" onclick="$.post('/node_remove_taxonomy_term/$node_id/$term_id', {}, function() { \$('a[href$=/$term_id]').parent().hide('slow'); });" />
 HTML;
+}
+
+/**
+ * Determines "related terms" for the current term, and the relationships between the different terms.
+ * 
+ * It uses the taxonomy_extra_relationships table.
+ * Added by MAG 7/11/2008
+ * @param int $term_id The ID of the term to look up
+ * @return array An array of related terms.  The "ancestors" and "descendants" fields of the array contain the ancestors and descendants of this term.
+ */
+function taxonomy_extra_related_terms($term_id) {
+	
+}
+
+function taxonomy_extra_term_description($term_id) {
+	$term = taxonomy_get_term($term_id);
+	print $term['description'];
+	exit;
+}
+
+function taxonomy_extra_get_vocab($vid, $key = 'tid') {
+	$result = db_query('select * from term_data where vid = %d', $vid);
+	
+	$vocab = array();
+	while ($term = db_fetch_object($result)) {
+		$vocab[$term->$key] = $term;
+	}
+	
+	return $vocab;
 }
