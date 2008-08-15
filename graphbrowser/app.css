@@ -1,0 +1,53 @@
+/* CSS file */
+ @font-face {
+    src:url("assets/Helvetica.ttf");
+    fontFamily: Helvetica;
+    advancedAntiAliasing: true;
+}
+ 
+ @font-face {
+ 	src:url("assets/HelveticaBold.ttf");
+ 	fontFamily: Helvetica;
+ 	advancedAntiAliasing: true;
+ 	fontWeight: bold;
+}
+
+.navbar {
+	background-image: Embed('assets/bg_nav.png');
+	background-repeat: repeat-x;
+	borderSkin: ClassReference('com.degrafa.skins.CSSSkin');
+	color: #666666;
+}
+
+.background {
+	background-image: Embed('assets/bk.gif');
+	background-repeat: repeat;
+	borderSkin: ClassReference('com.degrafa.skins.CSSSkin');
+}
+
+Panel {
+	color: #0077c0;
+	font-size: 12pt;
+	borderAlpha: 1.0;
+	alpha: 1.0;
+}
+
+Button {
+	color: #0077c0;
+}
+
+Label, Text {
+	color: #000000;
+}
+
+.navbartext {
+	color: #666666;
+}
+
+.navbarlink {
+	color: #0077c0;
+}
+
+.topmenulink {
+	color: #ffffff;
+}

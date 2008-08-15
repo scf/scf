@@ -1,0 +1,30 @@
+/* CSS file */
+.edge_is_a {
+	color: #000000;
+}
+
+.edge_part_of {
+	color: #0F5E99;
+}
+
+.edge_regulates {
+	color: #DB7916;
+}
+
+.edge_positively_regulates {
+	color: #059c05;
+}
+
+.edge_negatively_regulates {
+	color: #DB1616;
+}
+
+.node_tagged {
+	background-color: #55FF55;
+	border-color: #000000;
+}
+
+.node_content {
+	background-color: #93DF93;
+	border-color: #000000;
+}
