@@ -415,7 +415,9 @@
 <!-- **************************************************************** -->
 <xsl:template match="caption/title">
   <div class="title">
+    <b>
     <xsl:apply-templates/>
+    </b>
   </div>
 </xsl:template>
 
@@ -424,6 +426,7 @@
 <xsl:template match="fig/label|table-wrap/label">
   <div class="label">
     <xsl:apply-templates/>
+    <xsl:text>. </xsl:text>
   </div>
 </xsl:template>
 
@@ -738,7 +741,7 @@
 
 
 <!-- **************************************************************** -->
-<xsl:template match="italic">
+<xsl:template match="italic|sec/title/italic">
   <i>
     <xsl:apply-templates select="@*"/>
     <xsl:apply-templates/>

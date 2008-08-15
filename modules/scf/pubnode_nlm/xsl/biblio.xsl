@@ -856,7 +856,7 @@
 		<xsl:apply-templates select="."/>
 	</xsl:template>
 	
-	<xsl:template match="bold | italic | monospace | overline | sc | strike | sub |sup | underline" mode="none">
+	<xsl:template match="bold|italic|monospace|overline|sc|strike|sub|sup|underline" mode="none">
 		<xsl:apply-templates select="."/>
 	</xsl:template>
 	
@@ -938,8 +938,10 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template match="volume" mode="none">
-		<xsl:apply-templates/>
+	<xsl:template match="volume" mode="none"> 
+	  <em>
+	  <xsl:apply-templates/>
+	  </em>
 	</xsl:template>
 
 	<xsl:template match="edition" mode="none">

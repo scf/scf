@@ -42,7 +42,12 @@
 <xsl:template match="title">
   <xsl:apply-templates/>
 </xsl:template>
-
+<xsl:template match="italic|title/italic">
+  <i>
+    <xsl:apply-templates select="@*"/>
+    <xsl:apply-templates/>
+  </i>
+</xsl:template>
 <!-- **************************************************************** -->
 <xsl:template match="ack|ref-list|glossary">
   <li>

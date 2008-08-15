@@ -17,7 +17,7 @@ div.pubnode.nlm .figure .title   { display: inline; }
 div.pubnode.nlm .table .label,
 div.pubnode.nlm .figure .label   { font-weight: bold; margin-right: .5em; }
 div.pubnode.nlm .table .caption,
-div.pubnode.nlm .figure .caption { font-size: 90%; font-style: italic; }
+div.pubnode.nlm .figure .caption { font-size: 90%; }
 
 div.pubnode.nlm .table thead     { border-bottom: 1px solid #dcdcdc; }
 div.pubnode.nlm .table thead tr  {
