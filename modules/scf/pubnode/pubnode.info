@@ -7,4 +7,3 @@ dependencies[] = member
 package = SCF
 version = VERSION
 core = 6.x
-php = 5.2
