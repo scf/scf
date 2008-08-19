@@ -718,11 +718,13 @@ function _ontology_get_occurrences($nid, $terms_to_check) {
 	$term_stem_counts = array();
 	foreach ($terms_to_check as $term) {
 		$term_pieces = explode(' ', $term->name);
-		$term_stem_counts[$term->tid] = count($term_pieces);
+		$term_stem_counts[$term->tid] = 0; //count($term_pieces);
 		
 		foreach ($term_pieces as $piece) {
 			if (_ontology_is_stopword($piece))
 				continue;
+				
+			$term_stem_counts[$term->tid]++;
 			
 			$piece = PorterStemmer::Stem($piece);
 				
