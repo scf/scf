@@ -566,6 +566,7 @@
   </dl>
 </xsl:template>
 
+
 <!-- **************************************************************** -->
 <xsl:template match="def-item">
   <xsl:apply-templates select="*"/>
@@ -586,6 +587,19 @@
   </dd>
 </xsl:template>
 
+
+<!-- **************************************************************** -->
+<xsl:template match="list">
+  <ul>
+    <xsl:copy-of select="@*"/>
+    <xsl:apply-templates select="*"/>
+  </ul>
+</xsl:template>
+<xsl:template match="list-item">
+  <li>
+    <xsl:apply-templates select="*"/>
+  </li>
+</xsl:template>
 
 <!-- **************************************************************** -->
 <!-- ** BACK MATTER ************************************************* -->
