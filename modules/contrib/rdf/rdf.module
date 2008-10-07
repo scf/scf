@@ -1,0 +1,296 @@
+<?php
+// $Id: rdf.module,v 1.8 2008/02/21 23:01:55 arto Exp $
+/**
+ * rdf.module - Enables the use of RDF metadata in Drupal 6.x.
+ *
+ * @author Arto Bendiken <http://bendiken.net/>
+ * @copyright Copyright (c) 2007-2008 Arto Bendiken. All rights reserved.
+ * @license GPL <http://creativecommons.org/licenses/GPL/2.0/>
+ * @package rdf.module
+ */
+
+//////////////////////////////////////////////////////////////////////////////
+// Core API hooks
+
+/**
+ * Implementation of hook_init().
+ */
+function rdf_init() {
+  $path = drupal_get_path('module', 'rdf');
+  require_once $path . '/rdf.api.inc';
+
+  // Attempt to load the ARC2 library, if available. This library must be
+  // manually installed by the administrator due to license incompatibility.
+  if (!class_exists('ARC2')) {
+    @include_once RDF_ARC2_PATH . '/ARC2.php';
+  }
+
+  // Integrate into the Services API, if available.
+  if (module_exists('services')) {
+    require_once $path . '/rdf.services.inc';
+  }
+}
+
+/**
+ * Implementation of hook_help().
+ */
+function rdf_help($path, $arg = NULL) {
+  switch ($path) {
+    case 'admin/content/rdf':
+      return '<p>' . t('Any knowledge about anything can be decomposed into statements of <em>triples</em> (3-tuples) consisting of <em>subject</em>, <em>predicate</em>, and <em>object</em>.') . '</p>';
+    case 'admin/settings/rdf':
+      return '<p>' . t('<a href="http://drupal.org/handbook/modules/rdf" title="Resource Description Framework">RDF</a> is a <a href="http://www.w3.org/RDF/">W3C standard</a> for modeling and sharing distributed knowledge based on a decentralized open-world assumption.') . '</p>';
+    case 'admin/settings/rdf#formats':
+      return '<p>' . t('RDF data can be serialized into a number of textual formats (also known as representations). The two built-in, always available formats are <a href="http://drupal.org/node/219870">RDF/PHP</a> and <a href="http://drupal.org/node/219874">RDF/JSON</a>. For interoperability with more RDF formats, you can <a href="@modules">enable add-on modules</a> such as <em>RDF Import</em> and <em>RDF Export</em> which add parsing/serialization support for several widespread formats.', array('@modules' => url('admin/build/modules'))) . '</p>';
+    case 'admin/settings/rdf/namespaces':
+      return '<p>' . t('<a href="http://drupal.org/node/219858#namespaces">Namespaces</a> define URI abbreviations for use in <a href="http://drupal.org/node/219856#curie" title="Compact URIs">CURIEs</a> and for purposes of human-friendly display of RDF data.') . '</p>';
+    case 'admin/settings/rdf/contexts':
+      return '<p>' . t('<a href="http://drupal.org/node/219858#contexts">Contexts</a>, also known as <a href="http://www.w3.org/2004/03/trix/">named graphs</a>,  ....') . '</p>';
+    case 'admin/settings/rdf/repositories':
+      return '<p>' . t('<a href="http://drupal.org/node/219858#repositories">Repositories</a> are storage containers for RDF data, and can be implemented, for instance, in terms of an in-memory triple store, a serialized file on disk, an RDBMS database, or an RPC connection to a remote service.') . '</p>';
+  }
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function rdf_perm() {
+  return array(
+    'access RDF data',
+    'administer RDF data',
+    'administer RDF repositories',
+    'administer RDF namespaces',
+  );
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function rdf_menu() {
+  return array(
+    // Administer >> Content management >> RDF data
+    'admin/content/rdf' => array(
+      'title' => 'RDF data',
+      'access arguments' => array('administer RDF data'),
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('rdf_admin_data'),
+      'file' => 'rdf.admin.inc',
+    ),
+    'admin/content/rdf/list' => array(
+      'title' => 'List',
+      'type' => MENU_DEFAULT_LOCAL_TASK,
+    ),
+    // Administer >> Site configuration >> RDF settings
+    'admin/settings/rdf' => array(
+      'title' => 'RDF settings',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('rdf_admin_settings'),
+      'file' => 'rdf.admin.inc',
+    ),
+    'admin/settings/rdf/namespaces' => array(
+      'title' => 'Namespaces',
+      'access arguments' => array('administer RDF namespaces'),
+      'page callback' => 'rdf_admin_namespaces',
+      'file' => 'rdf.admin.inc',
+      'weight' => 10,
+    ),
+    'admin/settings/rdf/namespaces/list' => array(
+      'title' => 'List',
+      'type' => MENU_DEFAULT_LOCAL_TASK,
+    ),
+    'admin/settings/rdf/contexts' => array(
+      'title' => 'Contexts',
+      'access arguments' => array('administer RDF data'),
+      'page callback' => 'rdf_admin_contexts',
+      'file' => 'rdf.admin.inc',
+      'weight' => 20,
+    ),
+    'admin/settings/rdf/contexts/list' => array(
+      'title' => 'List',
+      'type' => MENU_DEFAULT_LOCAL_TASK,
+    ),
+    'admin/settings/rdf/repositories' => array(
+      'title' => 'Repositories',
+      'access arguments' => array('administer RDF repositories'),
+      'page callback' => 'rdf_admin_repositories',
+      'file' => 'rdf.admin.inc',
+      'weight' => 30,
+    ),
+    'admin/settings/rdf/repositories/list' => array(
+      'title' => 'List',
+      'type' => MENU_DEFAULT_LOCAL_TASK,
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_hook_info()
+ */
+function rdf_hook_info() {
+  return array(
+    'rdf' => array(
+      'rdf' => array(
+        'insert' => array(
+          'runs when' => t('After inserting a new RDF statement'),
+        ),
+        'update' => array(
+          'runs when' => t('After deleting an existing RDF statement'),
+        ),
+      ),
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_theme()
+ */
+function rdf_theme() {
+  return array(
+    'rdf_property_table' => array(
+      'arguments' => array('data' => NULL),
+      'file' => 'rdf.theme.inc',
+    ),
+    'rdf_triple_table' => array(
+      'arguments' => array('data' => NULL),
+      'file' => 'rdf.theme.inc',
+    ),
+    'rdf_triple_row' => array(
+      'arguments' => array('subject' => NULL, 'predicate' => NULL, 'object' => NULL),
+      'file' => 'rdf.theme.inc',
+    ),
+    'rdf_triple_cell' => array(
+      'arguments' => array('value' => NULL),
+      'file' => 'rdf.theme.inc',
+    ),
+    'rdf_admin_settings' => array(
+      'arguments' => array('form' => NULL),
+      'file' => 'rdf.admin.inc',
+    ),
+    'rdf_admin_data' => array(
+      'arguments' => array('form' => NULL),
+      'file' => 'rdf.admin.inc',
+    ),
+  );
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// RDF API hooks
+
+/**
+ * Implementation of hook_rdf_formats().
+ */
+function rdf_rdf_formats() {
+  return array(
+    'rdf+php' => array(
+      'title'       => t('RDF/PHP'),
+      'link'        => 'http://drupal.org/node/219870',
+      'mime_type'   => 'application/vnd.php.serialized',
+      'encoding'    => 'ascii',
+      'file_ext'    => 'txt',
+      'serialize'   => 'rdf_serialize_php',
+      'unserialize' => 'rdf_unserialize_php',
+    ),
+    'rdf+json' => array(
+      'title'       => t('RDF/JSON'),
+      'link'        => 'http://drupal.org/node/219874',
+      'mime_type'   => 'application/json',
+      'encoding'    => 'utf-8',
+      'file_ext'    => 'js',
+      'serialize'   => 'rdf_serialize_json',
+      'unserialize' => 'rdf_unserialize_json',
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_rdf_namespaces().
+ */
+function rdf_rdf_namespaces() {
+  return array(
+    '_'        => 'http://bnode.net/',
+    'rdf'      => 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+    'rdfs'     => 'http://www.w3.org/2000/01/rdf-schema#',
+    'xsi'      => 'http://www.w3.org/2001/XMLSchema-instance#',
+    'xsd'      => 'http://www.w3.org/2001/XMLSchema#',
+    'owl'      => 'http://www.w3.org/2002/07/owl#',
+    'dc'       => 'http://purl.org/dc/elements/1.1/',
+    'dcterms'  => 'http://purl.org/dc/terms/',
+    'dcmitype' => 'http://purl.org/dc/dcmitype/',
+  );
+}
+
+/**
+ * Implementation of hook_rdf_contexts().
+ */
+function rdf_rdf_contexts() {
+  return array(RDF_SITE_URI);
+}
+
+/**
+ * Implementation of hook_rdf_repositories().
+ */
+function rdf_rdf_repositories() {
+  return array(
+    'system' => array(
+      'title'      => t('System'),
+      'type'       => 'system',
+      'persistent' => TRUE,
+      'mutable'    => FALSE,
+      'enabled'    => TRUE,
+      'statements' => NULL,
+      'module'     => 'rdf',
+      'callbacks'  => array(
+        'query'    => array('function' => 'rdf_rdf_query', 'arguments' => array()),
+      ),
+      'filters'    => array(
+        'subject'  => RDF_SITE_URI,
+      ),
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_rdf_properties().
+ */
+function rdf_rdf_properties() {
+  return array(
+    'rdf'      => array('first', 'object', 'predicate', 'rest', 'subject', 'type', 'value'),
+    'rdfs'     => array('comment', 'domain', 'isDefinedBy', 'label', 'member', 'range', 'seeAlso', 'subClassOf', 'subPropertyOf'),
+    'xsd'      => array('base64Binary', 'boolean', 'byte', 'date', 'dateTime', 'decimal', 'double', 'duration', 'float', 'hexBinary', 'int', 'integer', 'language', 'long', 'short', 'string', 'time', 'token'),
+    'owl'      => array('allValuesFrom', 'backwardCompatibleWith', 'cardinality', 'complementOf', 'differentFrom', 'disjointWith', 'distinctMembers', 'equivalentClass', 'equivalentProperty', 'hasValue', 'imports', 'incompatibleWith', 'intersectionOf', 'inverseOf', 'maxCardinality', 'minCardinality', 'oneOf', 'onProperty', 'priorVersion', 'sameAs', 'someValuesFrom', 'unionOf', 'versionInfo'),
+    'dc'       => array('contributor', 'coverage', 'creator', 'date', 'description', 'format', 'identifier', 'language', 'publisher', 'relation', 'rights', 'source', 'subject', 'title', 'type'),
+    'dcterms'  => array('abstract_', 'accessRights', 'accrualMethod', 'accrualPeriodicity', 'accrualPolicy', 'alternative', 'audience', 'available', 'bibliographicCitation', 'conformsTo', 'contributor', 'coverage', 'created', 'creator', 'date', 'dateAccepted', 'dateCopyrighted', 'dateSubmitted', 'description', 'educationLevel', 'extent', 'format', 'hasFormat', 'hasPart', 'hasVersion', 'identifier', 'instructionalMethod', 'isFormatOf', 'isPartOf', 'isReferencedBy', 'isReplacedBy', 'isRequiredBy', 'issued', 'isVersionOf', 'language', 'license', 'mediator', 'medium', 'modified', 'provenance', 'publisher', 'references', 'relation', 'replaces', 'requires', 'rights', 'rightsHolder', 'source', 'spatial', 'subject', 'tableOfContents', 'temporal', 'title', 'type', 'valid'),
+    'dcmitype' => array(),
+  );
+}
+
+/**
+ * Implementation of hook_rdf_resources().
+ */
+function rdf_rdf_resources($context) {
+  switch ($context) {
+    case NULL:
+    case RDF_SITE_URI:
+      return array(RDF_SITE_URI => new RDF_QueryCallback('rdf_load_site'));
+  }
+}
+
+/**
+ * Implementation of hook_rdf_query().
+ */
+function rdf_rdf_query($subject, $predicate, $object, $options = array()) {
+  $context = isset($options['context']) ? $options['context'] : NULL;
+
+  $data = array();
+  foreach (module_implements('rdf_resources') as $module) {
+    $function = $module . '_rdf_resources';
+    if ($resources = $function($context)) {
+      foreach ($resources as $uri => $callback) {
+        if (!$subject || (string)$subject == $uri) {
+          $data = array_merge_recursive($data, _rdf_filter(array($uri => rdf_expand_qnames($callback->call())), $subject, $predicate, $object, $options));
+        }
+      }
+    }
+  }
+  return rdf_denormalize($data);
+}

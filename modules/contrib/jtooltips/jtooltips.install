@@ -1,0 +1,10 @@
+<?php
+// $Id: jtooltips.install,v 1.2 2007/11/20 09:48:04 psicomante Exp $
+/**
+* Implementation of hook_uninstall().
+*/
+function jtooltips_uninstall() {
+  variable_del('jtooltips_jstiptype');
+  variable_del('jtooltips_javascript');
+}
+?>

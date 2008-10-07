@@ -1,0 +1,6 @@
+; $Id: popups.info,v 1.4 2008/03/11 16:56:08 starbow Exp $
+name = Popups
+description = General dialog creation utilities
+package = User interface
+core = 6.x
+

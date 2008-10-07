@@ -1,0 +1,365 @@
+<?php
+// $Id: print.module,v 1.25.2.27 2008/05/23 11:50:57 jcnventura Exp $
+
+/**
+ * @file
+ * Displays Printer-friendly versions of Drupal pages.
+ *
+ * This is the core module of the PF package, with the Drupal hooks
+ * and other administrative functions.
+ */
+
+define("PRINT_PATH", "print");
+
+/**
+ * Default values of the print_settings variable
+ *
+ * @return
+ *   array with the values
+ */
+function print_settings_default() {
+  return array('logo_url' => '',
+               'css' => '',
+               'urls' => 1,
+               'comments' => 0,
+               'newwindow' => 1,
+              );
+}
+
+/**
+ * Default values of the print_html_settings variable
+ */
+function print_html_settings_default() {
+  return array('show_link' => 1,
+               'link_class' => 'print-page',
+               'show_sys_link' => 1,
+               'book_link' => 1,
+               'new_window' => 0,
+               'sendtoprinter' => 0,
+              );
+}
+
+/**
+ * Default values of the print_sourceurl_settings variable
+ *
+ * @return
+ *   array with the values
+ */
+function print_sourceurl_settings_default() {
+  return array('enabled' => 1, 'date' => 0, 'forcenode' => 0);
+}
+
+/**
+ * Default values of the print_robot_settings variable
+ *
+ * @return
+ *   array with the values
+ */
+function print_robot_settings_default() {
+  return array('noindex' => 1, 'nofollow' => 1, 'noarchive' => 0, 'nocache' => 0);
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function print_perm() {
+  return array('access print', 'administer print');
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function print_theme() {
+  return array(
+    'print_format_link' => array(
+      'arguments' => array(),
+    ),
+    'print_text' => array(
+      'arguments' => array(),
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function print_menu() {
+  $items = array();
+
+  $items[PRINT_PATH] = array(
+    'title' => 'Printer-friendly',
+    'page callback' => 'print_controller_html',
+    'access arguments' => array('access print'),
+    'type' => MENU_CALLBACK,
+    'file' => 'print.pages.inc',
+  );
+  $items['admin/settings/print'] = array(
+    'title' => 'Printer-friendly Pages',
+    'description' => 'Adds a printer-friendly version link to content and administrative pages.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('print_html_settings'),
+    'access arguments'  => array('administer print'),
+    'file' => 'print.admin.inc',
+  );
+  $items['admin/settings/print/html'] = array(
+    'title' => 'Web page',
+    'weight' => 0,
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+  $items['admin/settings/print/common'] = array(
+    'title' => 'Settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('print_main_settings'),
+    'access arguments'  => array('administer print'),
+    'weight' => 10,
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'print.admin.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_link().
+ */
+function print_link($type, $node = NULL, $teaser = FALSE) {
+  $print_html_settings = variable_get('print_html_settings', print_html_settings_default());
+  static $print_display_comment = FALSE;
+
+  if (($print_display_comment == FALSE) && (isset($node->type))) {
+    $node_type = $node->type;
+    $print_display_comment = variable_get('print_display_comment_'. $node->type, 0);
+    $print_display = variable_get('print_display_'. $node->type, 1);
+  }
+  else {
+    $node_type = '';
+    $print_display = 1;
+  }
+
+  // No link is shown for several motives...
+  if ( !($teaser) && ($node_type != 'book') && (!isset($node->book)) &&
+      ($print_html_settings['show_link']) && user_access('access print') &&
+      (($type == 'comment' && $print_display_comment) ||
+      ($type == 'node' && $print_display))) {
+    $links = array();
+
+    $format = theme('print_format_link');
+
+    $query_arr = $_GET;
+    if ($type == 'comment') {
+      $query_arr['comment'] = $node->cid;
+    }
+    $query = drupal_query_string_encode($query_arr, array('q'));
+    if (empty($query)) $query = NULL;
+
+    $links['print'] = array('href' => PRINT_PATH ."/". $node->nid,
+                            'title' => $format['text'],
+                            'attributes' => $format['attributes'],
+                            'html' => $format['html'],
+                            'query' => $query,
+                           );
+
+    return $links;
+  }
+  else {
+    return;
+  }
+}
+
+/**
+ * Implementation of hook_link_alter().
+ */
+function print_link_alter(&$links, $node) {
+  foreach ($links as $module => $link) {
+    if (strpos($module, 'book_printer') !== FALSE) {
+      $print_html_settings = variable_get('print_html_settings', print_html_settings_default());
+
+      if ($print_html_settings['book_link']) {
+        $format = theme('print_format_link');
+        $format['attributes']['title'] = $link['attributes']['title'];
+
+        $links[$module]['href'] = PRINT_PATH ."/". $link['href'];
+        $links[$module]['attributes'] = $format['attributes'];
+      }
+    }
+  }
+}
+
+/**
+ * Implementation of hook_help().
+ */
+function print_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#print':
+      // Return a line-break version of the module README
+      return filter_filter('process', 1, NULL, file_get_contents(drupal_get_path('module', 'print') ."/README.txt") );
+  }
+
+  $print_html_settings = variable_get('print_html_settings', print_html_settings_default());
+
+  if (($print_html_settings['show_link']) && ($print_html_settings['show_sys_link']) &&
+      user_access('access print') && (preg_match("/^node\//i", $path) == 0)) {
+    static $output = FALSE;
+
+    if ($output === FALSE) {
+      $output = TRUE;
+    
+      return print_insert_link();
+    }
+  }
+}
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function print_form_alter(&$form, $form_state, $form_id) {
+  // Add the node-type settings option to activate the printer-friendly version link
+  if ($form_id == 'node_type_form') {
+    $form['workflow']['print_display'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Show printer-friendly version link'),
+      '#default_value' => variable_get('print_display_'. $form['#node_type']->type, 1),
+      '#description' => t('Displays the link to a printer-friendly version of the content. Further configuration is available on the !settings.', array('!settings' => l(t('settings page'), 'admin/settings/print' ))),
+    );
+    $form['comment']['print_display_comment'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Show printer-friendly version link in individual comments'),
+      '#default_value' => variable_get('print_display_comment_'. $form['#node_type']->type, 0),
+      '#description' => t('Displays the link to a printer-friendly version of the comment. Further configuration is available on the !settings.', array('!settings' => l(t('settings page'), 'admin/settings/print' ))),
+    );
+  }
+}
+
+/**
+ * Auxiliary function to fill the Printer-friendly link attributes
+ *
+ * @param $title
+ *   text to displayed by the link when hovering over it with the mouse
+ * @param $class
+ *   class attribute to be used in the link
+ * @return
+ *   array of formatted attributes
+ */
+function print_fill_attributes($title = '', $class = '', $new_window = FALSE) {
+  $print_settings = variable_get('print_settings', print_settings_default());
+  $robots_settings = variable_get('print_robot_settings', print_robot_settings_default());
+
+  $attributes = array();
+  $attributes['title'] = $title;
+  $attributes['class'] = $class;
+
+  if ($new_window) {
+    switch ($print_settings['newwindow']) {
+    case 0:
+      $attributes['target'] = '_blank';
+      break;
+    case 1:
+      $attributes['onclick'] = 'window.open(this.href); return false';
+      break;
+    }
+  }
+  if (!empty($robots_settings['nofollow'])) {
+    $attributes['rel'] = 'nofollow';
+  }
+  return $attributes;
+}
+
+/**
+ * Auxiliary function to set the link text and html flag
+ *
+ * @param $type
+ *   type of link: 0 or 1 for a text-only link, 2 for icon-only and 3 for
+ *   both text and icon
+ * @param $text
+ *   text to be displayed on the link to the printer-friendly page
+ * @param $img
+ *   path to the icon file
+ * @return
+ *   array with the link text and html flag
+ */
+function _print_format_link_aux($type = 0, $text = '', $img = '') {
+  if ($type >= 2) {
+    $img = '<img width="16px" height="16px" style="vertical-align:middle" src="'. $img .'" alt="'. $text .'" />';
+    $html = TRUE;
+    switch ($type) {
+    case 2:
+      $text = $img;
+      break;
+    case 3:
+      $text = $img .' '. $text;
+      break;
+    }
+  }
+  else {
+    $html = FALSE;
+  }
+  
+  return array('text' => $text,
+               'html' => $html,
+              );
+}
+
+/**
+ * Format the Printer-friendly link
+ *
+ * @return
+ *   array of formatted attributes
+ * @ingroup themeable
+ */
+function theme_print_format_link() {
+  $print_html_settings = variable_get('print_html_settings', print_html_settings_default());
+  $text = t('Printer-friendly version');
+  $img = base_path() . drupal_get_path('module', 'print') .'/icons/print_icon.gif';
+  $title = t('Display a printer-friendly version of this page.');
+  $class = $print_html_settings['link_class'];
+  $new_window = $print_html_settings['new_window'];
+  $format = _print_format_link_aux($print_html_settings['show_link'], $text, $img);
+
+  return array('text' => $format['text'],
+               'html' => $format['html'],
+               'attributes' => print_fill_attributes($title, $class, $new_window),
+              );
+}
+
+/**
+ * Define the strings displayed by the module in the printer-friendly template
+ *
+ * @return
+ *   array with the used text strings
+ * @ingroup themeable
+ */
+function theme_print_text() {
+  return array('retrieved' => "",
+               'sourceURL' => "",
+               'published' => "",
+               'by' => "",
+               'created' => "",
+               'links' => "",
+              );
+}
+
+/**
+ * Auxiliary function to display a formatted Printer-friendly link
+ *
+ * Function made available so that developers may call this function from
+ * their defined pages/blocks.
+ *
+ * @param $path
+ *   path of the original page (optional). If not specified, the current URL 
+ *   is used
+ * @return
+ *   string with the HTML link to the printer-friendly page
+ */
+function print_insert_link($path = NULL) {
+  if (user_access('access print')) {
+    if ($path === NULL) {
+      $path = PRINT_PATH ."/". $_GET['q'];
+      $query = drupal_query_string_encode($_GET, array('q'));
+      if (empty($query)) {
+        $query = NULL;
+      }
+    }
+    $format = theme('print_format_link');
+    return '<span class="print">'. l($format['text'], $path, array('attributes' => $format['attributes'], 'query' => $query, 'absolute' => TRUE, 'html' => $format['html'])) .'</span>';
+  }
+}

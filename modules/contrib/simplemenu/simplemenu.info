@@ -1,0 +1,4 @@
+; $Id: simplemenu.info,v 1.4.2.2.2.1 2008/02/28 21:47:17 m3avrck Exp $
+name = SimpleMenu
+description = Creates a menu bar that is displayed at the top of every page.
+core = 6.x

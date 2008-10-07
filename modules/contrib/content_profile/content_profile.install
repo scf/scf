@@ -1,0 +1,70 @@
+<?php
+// $Id: content_profile.install,v 1.1.2.2 2008/02/18 15:06:20 fago Exp $
+
+/**
+ * Implementation of hook_enable()
+ */
+function content_profile_enable() {
+  //enable the default content type 'profile' to te a content profile
+  $setting = variable_get('content_profile_profile', FALSE);
+  if (!$setting && $setting !== array()) {
+    variable_set('content_profile_profile', array());
+  }
+}
+
+/**
+ * Implementation of hook_install()
+ */
+function content_profile_install() {
+  // Set the module weight to -1, so content_profile_user() gets called before
+  // node_user(), so that one can't set a node's uid to 0 on user deletion
+  // before the profile nodes are deleted.
+  db_query("UPDATE {system} SET weight = -1 WHERE name = 'content_profile'");
+  
+  content_profile_import();
+}
+
+/**
+ * Import settings from nodeprofile / bio
+ */
+function content_profile_import() {
+  //nodeprofile
+  if ($settings = variable_get('nodeprofile_settings', array())) {
+    $cp_setting = array();
+    foreach ($settings as $setting => $data) {
+      foreach ($data as $type => $value) {
+        $cp_settings[$type][$setting] = $value;
+      }
+    }
+    foreach ($cp_settings as $type => $data) {
+      variable_set('content_profile_'. $type, $data);
+    }
+    variable_del('nodeprofile_settings');
+  }
+  //bio
+  if ($type = variable_get('bio_nodetype', FALSE)) {
+    variable_set('content_profile_'. $type, array());
+    variable_del('bio_nodetype');
+  }
+}
+
+/**
+ * Implementation of hook_uninstall()
+ */
+function content_profile_uninstall() {
+  foreach (node_get_types('names') as $typename => $visiblename) {
+    if (variable_get('content_profile_'. $typename, 0)) {
+      variable_del('content_profile_'. $typename);
+    }
+  }
+  variable_del('content_profile_settings');
+}
+
+/**
+ * Set module weight to -1, as explained in content_profile_install().
+ */
+function content_profile_update_6001() {
+  $ret = array();
+  $ret[] = update_sql("UPDATE {system} SET weight = -1 WHERE name = 'content_profile'");
+  return $ret;
+}

@@ -325,8 +325,17 @@ function taxonomy_extra_theme_vocab_terms ($node, $vocab) {
               	$term_link .= related_terms_block_delete_button($node->nid, $term->tid);
               }
               
+              // @TODO - fix hardcoded vocabulary checking!  Damn.
               if (($vid == 6 or $vid == 7 or $vid == 8) and iic_util_current_page_is_node($node->nid)) {
-              	$term_link .= '&nbsp;&nbsp;<a href="/sites/all/files/graphbrowser/main.html#' . $term->tid . '/' . $node->nid . '" target="_blank"><img src="/sites/all/themes/scf_base/images/icon-graph.gif" border="0" title="View in GO Tree" /></a>';
+              	$term_link .= '&nbsp;&nbsp;' . l('<img src="' . drupal_get_path('module', 'scf') . '/images/icon-graph.gif" border="0" title="' . t('View in GO Tree') . '" />',
+              	drupal_get_path('module', 'graphbrowser') . '/main.html',
+              	array(
+              	  'fragment' => $term->tid . '/' . $node->nid,
+              	  'html' => TRUE,
+              	  'attributes' => array(
+              	    'target' => '_blank',
+              	  ),
+              	));
               }
               $terms[] = $term_link;
             }
@@ -545,7 +554,7 @@ function taxonomy_extra_form_addterm(&$form_state, $nid, $vid) {
 	$form = array();
 	/*$form['cancel'] = array(
 		'#type' => 'image_button',
-		'#src' => 'sites/all/themes/scf_base/images/icon-x.gif',
+		'#src' => drupal_get_path('module', 'scf') . '/images/icon-x.gif',
 		'#attributes' => array(
 			'onclick' => "$('#taxonomy-extra-addtermdiv-" . $vid . "').slideUp('slow');return false;"
 		),
@@ -596,8 +605,9 @@ function taxonomy_extra_form_addterm(&$form_state, $nid, $vid) {
  * @return The HTML for the delete button
  */
 function related_terms_block_delete_button($node_id, $term_id) {
+  $imgpth = drupal_get_path('module', 'scf') . '/images/';
 	return <<<HTML
-&nbsp;<input type="image" title="Remove this term" src="/sites/all/themes/scf_base/images/icon-untag.gif" onclick="$.post('/node_remove_taxonomy_term/$node_id/$term_id', {}, function() { \$('a[href$=/$term_id]').parent().hide('slow'); });" />
+&nbsp;<input type="image" title="Remove this term" src="${imgpth}icon-untag.gif" onclick="$.post('/node_remove_taxonomy_term/$node_id/$term_id', {}, function() { \$('a[href$=/$term_id]').parent().hide('slow'); });" />
 HTML;
 }
 

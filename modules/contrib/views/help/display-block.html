@@ -1,0 +1,12 @@
+<!-- $Id: display-block.html,v 1.2 2008/04/29 00:35:07 merlinofchaos Exp $ -->
+Block displays will show up in the Drupal block system; once a block display is created and saved, it can be enabled by visiting administer &gt;&gt; site building &gt;&gt; blocks and selecting it from the list. 
+
+Blocks <strong>do not</strong> accept arguments from any source; the only way to get arguments to a block is to provide defaults to it, possibly via the PHP Code default setting. A very common scenario is the following:
+
+<pre>
+if (arg(0) == 'node' && is_numeric(arg(1))) {
+  return arg(1);
+}
+</pre>
+
+If placed into the PHP Code argument default textarea, that will scan the URL to see if it is a standard 'node' URL and if it is, use the node as an argument.

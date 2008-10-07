@@ -1,0 +1,240 @@
+<?php
+// $Id: simplemenu.module,v 1.9.2.11.2.1 2008/02/28 21:47:17 m3avrck Exp $
+
+/**
+ * @file
+ * Creates a simplemenu.
+ */
+
+/**
+ * Implementation of hook_menu().
+ */
+function simplemenu_menu() {
+  $items = array();
+
+  $items['admin/settings/simplemenu'] = array(
+    'title' => 'SimpleMenu',
+    'description' => 'Select the menu to display.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('simplemenu_admin_settings'),
+    'access arguments' => array('administer simplemenu')
+    );
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_init()
+ */
+function simplemenu_init() {
+  global $theme;
+  $exclusions = variable_get('simplemenu_exclusions', array());
+  if (user_access('view simplemenu') && (!isset($exclusions[$theme])) ) {
+    global $theme, $custom_theme;
+    $path = drupal_get_path('module', 'simplemenu');
+    $simplemenu_theme = variable_get('simplemenu_theme', 'original');
+    drupal_add_css($path .'/simplemenu.css');
+
+    if ($simplemenu_theme != 'custom') {
+      drupal_add_css($path .'/themes/'. $simplemenu_theme .'/'. $simplemenu_theme .'.css');
+    }
+
+    $settings = array(
+      'effect' => variable_get('simplemenu_effect', 'opacity'),
+      'effectSpeed' => variable_get('simplemenu_effect_speed', 'fast'),
+      'element' => variable_get('simplemenu_element', 'body'),
+      'hideDelay' => variable_get('simplemenu_hide_delay', 800),
+      'placement' => variable_get('simplemenu_element_method', 'prepend'),
+    );
+
+    drupal_add_js(array('simplemenu' => $settings), 'setting');
+    drupal_add_js('var simplemenu = '. drupal_to_js(simplemenu_get_menu()) .';', 'inline');
+    drupal_add_js($path .'/simplemenu.js');
+    drupal_add_js($path .'/superfish.js');
+  }
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function simplemenu_perm() {
+  return array('view simplemenu', 'administer simplemenu');
+}
+
+/**
+ * SimpleMenu settings page.
+ */
+function simplemenu_admin_settings() {
+  if (module_exists('menu')) {
+    $form['default_menu']['simplemenu_menu'] = array(
+      '#type' => 'select',
+      '#title' => t('Menu'),
+      '#options' => menu_parent_options(menu_get_menus(), array( 'mlid' => 0 )), // return complete tree;
+      '#default_value' => variable_get('simplemenu_menu', 'navigation:0'),
+      '#description' => t('Select the menu to display.')
+    );
+  }
+
+  $form['default_menu']['simplemenu_theme'] = array(
+    '#type' => 'select',
+    '#title' => t('Theme'),
+    '#options' => array('original' => 'original', 'blackblue' => 'black & blue', 'custom' => 'custom'),
+    '#default_value' => variable_get('simplemenu_theme', 'original'),
+    '#description' => t('Select which theme to use. If you specify custom, you need to define CSS in your theme.')
+  );
+
+  $form['default_menu']['advanced'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Advanced settings'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE
+  );
+
+  $form['default_menu']['advanced']['simplemenu_element'] = array(
+    '#type' => 'textfield',
+    '#title' => t('CSS selector to attach menu to'),
+    '#default_value' => variable_get('simplemenu_element', 'body'),
+    '#description' => t('A valid CSS selector to attach the menu to. <em>Example: body, #primary, div.my-class</em>'),
+    '#required' => TRUE
+  );
+
+  $form['default_menu']['advanced']['simplemenu_element_method'] = array(
+    '#type' => 'radios',
+    '#title' => t('Attach method'),
+    '#options' => drupal_map_assoc(array('prepend', 'append')),
+    '#default_value' => variable_get('simplemenu_element_method', 'prepend'),
+    '#description' => t('Choose how the menu should be attached to the above selector.'),
+    '#required' => TRUE
+  );
+
+  $form['default_menu']['advanced']['simplemenu_exclusions'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Theme exclusions'),
+    '#options' => drupal_map_assoc(array_keys(list_themes())),
+    '#default_value' => variable_get('simplemenu_exclusions', array()),
+    '#description' => t('Select which themes to <strong>not</strong> display the menu. Use this when you have a theme that displays its own admin navigation.'),
+  );
+  
+  $form['default_menu']['advanced']['simplemenu_hide_delay'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Hide delay'),
+    '#size' => 4,
+    '#default_value' => variable_get('simplemenu_hide_delay', 800),
+    '#description' => t('How long (in milliseconds) should a menu still appear after losing focus.')
+  );
+  
+  $form['default_menu']['advanced']['simplemenu_effect'] = array(
+    '#type' => 'radios',
+    '#title' => t('Show effect'),
+    '#options' => array('opacity' => t('Fade'), 'height' => t('Slide'), 'none' => t('None')),
+    '#default_value' => variable_get('simplemenu_effect', 'opacity'),
+    '#description' => t('The effect used when displaying a menu.')
+  );
+  
+  $form['default_menu']['advanced']['simplemenu_effect_speed'] = array(
+    '#type' => 'radios',
+    '#title' => t('Show speed'),
+    '#options' => array('slow' => t('Slow'), 'medium' => t('Medium'), 'fast' => t('Fast')),
+    '#default_value' => variable_get('simplemenu_effect_speed', 'fast'),
+    '#description' => t('The speed of the effect, not used when "none" is set to show effect.')
+  );
+
+  return system_settings_form($form);
+}
+
+/**
+ * Render an HTML list of links for a given menu.
+ */
+function simplemenu_get_menu() {
+  $output = '';
+
+  // if a user turned off menu module but SimpleMenu was previously set
+  // reset variable so a menu appears
+  $menu_name = module_exists('menu') ? variable_get('simplemenu_menu', 'navigation:0') : 'navigation:0';
+  $menu = simplemenu_menu_tree($menu_name);
+
+  if (!$menu) {
+    $menu = '<li><a href="'. url('admin/settings/simplemenu') .'">'. t('No menu items found. Try a different menu as the default.') .'</a></li>';
+  }
+
+  $output .= $menu;
+
+  return $output;
+}
+
+/**
+ * Custom implementation of menu_tree().
+ * We want to retrieve the entire menu structure for a given menu,
+ * regardless of whether or not the menu item is expanded or not.
+ */
+
+function simplemenu_menu_tree($menu_name = 'navigation:0') {
+  static $menu_output = array();
+
+  if (!isset($menu_output[$menu_name])) {  
+    $tree = simplemenu_tree_all_data($menu_name);
+    $menu_output[$menu_name] = menu_tree_output($tree);
+  }
+  return $menu_output[$menu_name];  
+}
+
+/**
+ * Modified menu_tree_all_data(), providing the complete menu tree below $root_menu
+ * (which can be *any* menu item, not just the root of a custom menu).
+ *
+ * @param $root_menu
+ *   root menu item of the tree to return as "menu_name:mlid" (mlid = menu link id)
+ *
+ * @todo we don't actually need $menu_name, $mlid would be sufficient
+ */
+function simplemenu_tree_all_data($root_menu = 'navigation:0') {
+  static $tree = array();
+  
+  list($menu_name, $mlid) = explode(':', $root_menu);
+
+  // Generate the cache ID.
+  // "links:navigation:all:2" means "all from root to 2" (what the ...), so for "all from 2 down" we do "links:navigation:all:2:all"
+  $cid = "links:$menu_name:all:$mlid". ($mlid ? ':all' : '');
+
+  if (!isset($tree[$cid])) {
+    // If the static variable doesn't have the data, check {cache_menu}.
+    $cache = cache_get($cid, 'cache_menu');
+    if ($cache && isset($cache->data)) {
+      $data = $cache->data;
+    }
+    else {
+      // Build and run the query, and build the tree.
+      if ($mlid > 0) {
+        $item = menu_link_load($mlid);
+        // The tree is a subtree of $menu_name, so we need to restrict the query to
+        // this subtree.
+        $px = "p$item[depth]";
+        $where = " AND ml.$px = %d AND ml.mlid != %d";
+        $args = array($item[$px], $mlid);
+      }
+      else {
+        // Get all links in this menu.
+        $where = '';
+        $args = array();
+      }
+      array_unshift($args, $menu_name);
+      // Select the links from the table, and recursively build the tree.  We
+      // LEFT JOIN since there is no match in {menu_router} for an external
+      // link.
+      $data['tree'] = menu_tree_data(db_query("
+        SELECT m.load_functions, m.to_arg_functions, m.access_callback, m.access_arguments, m.page_callback, m.page_arguments, m.title, m.title_callback, m.title_arguments, m.type, m.description, ml.*
+        FROM {menu_links} ml LEFT JOIN {menu_router} m ON m.path = ml.router_path
+        WHERE ml.menu_name = '%s'". $where ."
+        ORDER BY p1 ASC, p2 ASC, p3 ASC, p4 ASC, p5 ASC, p6 ASC, p7 ASC, p8 ASC, p9 ASC", $args));
+      $data['node_links'] = array();
+      menu_tree_collect_node_links($data['tree'], $data['node_links']);
+      // Cache the data.
+      cache_set($cid, $data, 'cache_menu');
+    }
+    // Check access for the current user to each item in the tree.
+    menu_tree_check_access($data['tree'], $data['node_links']);
+    $tree[$cid] = $data['tree'];
+  }
+
+  return $tree[$cid];
+}

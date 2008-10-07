@@ -1,0 +1,5 @@
+; $Id: logintoboggan.info,v 1.5 2007/11/20 13:07:43 thehunmonkgroup Exp $
+
+name = "LoginToboggan"
+description = "Improves Drupal's login system."
+core = "6.x"

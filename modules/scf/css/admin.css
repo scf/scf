@@ -1,0 +1,30 @@
+@CHARSET "UTF-8";
+/* -------------------------------------------------------------- 
+
+  @file admin.css
+  Styling for special admin region in the scf theme
+	
+-------------------------------------------------------------- */
+
+#admin_region { 
+  background: white;
+	bottom: 10px;
+  border: 1px solid #ccc;
+  display: none;
+	left: 10%;
+  -moz-border-radius: 10px;
+	padding: 20px;
+  position: fixed; 
+	right: 10%;
+	overflow: auto;
+	max-height: 60%;
+	z-index: 100000; }
+	
+#admin_region .block {
+  border-left: 1px solid #ccc;
+  float: left;
+	padding: 0 20px;
+}
+#admin_region .block:first-child {
+  border-left: 0; 
+	padding-left: 10px; }

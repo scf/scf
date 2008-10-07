@@ -1,0 +1,50 @@
+; $Id$
+; ============================================================================
+;
+; @file scf_stub.info
+;
+; ============================================================================
+
+name = scf_stub
+description = Stub theme for the Scientific Collaborative Framework (SCF).
+core = 6.x
+engine = phptemplate
+
+; 
+; Default regions (need to declare if we're to add new ones)
+; ============================================================================
+
+regions[left] = Left sidebar
+regions[right] = Right sidebar
+regions[content] = Content
+regions[header] = Header
+regions[footer] = Footer
+
+; 
+; SCF regions
+; ============================================================================
+
+; 
+; login/register, username, profile and logout
+; ----------------------------------------------------------------------------
+
+regions[account] = Account information
+
+; 
+; admin blocks with visibility toggled using ESC
+; ----------------------------------------------------------------------------
+
+regions[site_admin] = Site Administration
+
+; 
+; SCF styles
+; ============================================================================
+
+stylesheets[screen][] = css/screen.css
+stylesheets[print][] = css/print.css
+
+; 
+; SCF client side scripts
+; ============================================================================
+
+scripts[] = jscript/common.js

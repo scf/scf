@@ -1,0 +1,13 @@
+<?phpfunction vocabindex_schema()
+{
+	 $schema['vocabindex']=array(		'description'=>t('The table in which the aliases for vocabulary index pages are stored.'),		'fields'=>array(			'vid'=>array(				'description'=>t('The primary identifier for a vocabulary index page.'),				'type'=>'int',				'not null'=>TRUE
+				),			'path'=>array(				'description'=>t('The alias for a vocabulary index page.'),				'type'=>'varchar',
+				'length'=>'128',				'not null'=>TRUE,				),
+			),		'primary key'=>array('vid'),		);
+		return $schema;}function vocabindex_install()
+{	drupal_install_schema('vocabindex');
+	
+	drupal_set_message(t('Vocabulary Index has been succesfully installed. Please proceed to <a href="!link">the settings page</a> to get started.', array('!link'=>url('admin/content/vocabindex/settings'))));}function vocabindex_uninstall()
+{	drupal_uninstall_schema('vocabindex');
+	
+	drupal_set_message(t('Vocabulary Index has been succesfully uninstalled. We hope you enjoyed the ride!'));}

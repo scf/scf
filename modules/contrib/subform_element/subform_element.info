@@ -1,0 +1,4 @@
+; $Id: subform_element.info,v 1.1.4.1 2007/11/12 13:11:30 fago Exp $
+name = Subform Element
+description = An API module, which provides a new form element that makes reusing other forms easy
+core = 6.x

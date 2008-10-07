@@ -1,0 +1,53 @@
+<?php
+// $Id: rdf.install,v 1.4 2008/02/11 21:51:17 arto Exp $
+/**
+ * rdf.install - RDF API installation/uninstallation.
+ *
+ * @author Arto Bendiken <http://bendiken.net/>
+ * @copyright Copyright (c) 2007-2008 Arto Bendiken. All rights reserved.
+ * @license GPL <http://creativecommons.org/licenses/GPL/2.0/>
+ * @package rdf.module
+ */
+
+//////////////////////////////////////////////////////////////////////////////
+// Core API hooks
+
+/**
+ * Implementation of hook_enable().
+ */
+function rdf_enable() {
+  rdf_install();
+  drupal_set_message(t('RDF API successfully installed. Please review the available <a href="@settings">configuration settings</a>.', array('@settings' => url('admin/settings/rdf'))));
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function rdf_install() {
+  db_query("UPDATE {system} SET weight = -10 WHERE name = 'rdf' AND type = 'module'");
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function rdf_uninstall() {}
+
+/**
+ * Implementation of hook_requirements().
+ */
+function rdf_requirements($phase) {
+  $status = array();
+  $t = get_t(); // Ensure translations don't break at install time
+
+  if ($phase == 'runtime') {
+    $arc2 = class_exists('ARC2');
+    $status['rdf'] = array(
+      'title' => $t('RDF library'),
+      'value' => $arc2 ? $t('ARC2 @version', array('@version' => ARC2::getVersion())) : $t('Not installed'),
+      'description' => $arc2 ? '' : $t('<a href="@arc2">ARC2</a> is not available. It is recommended that you install this library in order to enable support for more RDF formats and for SPARQL queries. To install, <a href="@download">download</a> the latest version of the library and unzip it to %path under the Drupal directory. For more information please refer to the <a href="@handbook">handbook</a>.', array('@arc2' => 'http://arc.semsol.org/', '@download' => 'http://arc.semsol.org/download', '%path' => RDF_ARC2_PATH . '/', '@handbook' => 'http://drupal.org/node/219852')),
+      'severity' => $arc2 ? REQUIREMENT_OK : REQUIREMENT_WARNING,
+    );
+  }
+
+  return $status;
+}

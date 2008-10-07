@@ -32,6 +32,7 @@ abstract class ScfNodeModule extends OONodeModule {
   	return array(
   		'node_list' => array(
   			'template' => 'node-list',
+  			'path' => drupal_get_path('module', 'scf'),
   			'arguments' => array(
   				'items' => array(),
   				'title' => NULL,
@@ -271,7 +272,7 @@ function scfnode_form_add_association(&$form_state, $nid, $name) {
     $form = array();
     /*$form['cancel'] = array(
       '#type' => 'image_button',
-      '#src' => 'sites/all/themes/scf_base/images/icon-x.gif',
+      '#src' => drupal_get_path('module', 'scf') . '/images/icon-x.gif',
       '#attributes' => array(
         'onclick' => "$('#association-addtermdiv-" . $name . "').slideUp('slow');return false;"
       ),

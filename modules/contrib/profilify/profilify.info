@@ -1,0 +1,4 @@
+; $Id: profilify.info,v 1.1 2007/12/30 02:34:10 cwgordon7 Exp $
+name = "Profilify"
+description = "Automatically generates an install profile based on the current configuration."
+core = "6.x"

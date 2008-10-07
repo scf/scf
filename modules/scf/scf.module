@@ -139,6 +139,7 @@ function scf_theme() {
  * - $pagers
  *
  * @see bio-resources.tpl.php
+ * @TODO this should be theme_ not template_ ?
  */
 function template_preprocess_bio_resources(&$variables) {
   $tables = array();
@@ -155,6 +156,408 @@ function template_preprocess_bio_resources(&$variables) {
   $variables['tables'] = $tables;
   $variables['search']['gene'] = l(t('Search Entrez Gene'), 'search/sciencecommons_geneproxy');
 }
+
+/**
+ * Implementation of hook_theme_registry_alter().
+ */
+function scf_theme_registry_alter(&$theme_registry) {
+  // names of hooks handled by scf
+  $theme_hooks = array(
+    'block',
+    'comment',
+    'comment_wrapper',
+    'node',
+    'forums',
+    'forum_list',
+    'forum_topic_list',
+    'forum_icon',
+    'forum_submitted',
+//    'forum_topic_navigation'  (not currently handled)
+    'page',
+  );
+  // Get the path to this module
+  $modulepath = drupal_get_path('module', 'scf');
+  // Add the module path on top in the array of paths
+  foreach ($theme_hooks AS $theme_hook) {
+    array_unshift($theme_registry[$theme_hook]['theme paths'], $modulepath);
+  }
+  // dsm($theme_registry[$theme_hook]['theme paths']);
+}
+
+////////// begin theme preprocess functions //////////
+/**
+ * Add to the general preprocessing for this theme
+ */
+function scf_preprocess(&$variables, $hook) {
+      // @TODO move somewhere only called once
+      // add CSS
+      $module_path = drupal_get_path('module', 'scf');
+      $styles = array(
+        'layout',
+        'admin',
+        // 'brand',
+//        'print',
+        'screen',
+      );
+      foreach ($styles as $style) {
+        drupal_add_css($module_path . '/css/' . $style . '.css');
+      }
+  
+  switch ($hook) {
+  
+    case 'page':
+      
+      // Provide invoking URL for page templates
+      // - could do in scf_base_preprocess_page - but you seen the size of that sucker!4  (ben-agaric: uh, where?)
+      $variables['url_path'] = $_GET['q'];
+      $variables['url_path_token'] = preg_replace('/\//', '-', $_GET['q']);
+      $variables['url_path_alias'] = drupal_get_path_alias($_GET['q']);
+      $variables['url_path_alias_token'] = preg_replace('/\//', '-',$variables['url_path_alias']);
+      
+      // Replace out the Reaserch statement title 
+      // @todo This is better placed in the researchstatement.module
+      if (isset($variables['node']) && $variables['node']->type) {
+        $node = $variables['node'];
+        if ($node->type == 'researchstatement') {
+          // Could drupal_set_title too but want search engines to identify the statements
+          $variables['title'] = 'Research statement';
+        } else if (isset($node->display_title)) {
+          $variables['display_title'] = $node->display_title;
+          //if ($node->type == 'pubnode') {
+	  // $variables['display_title'] .= '<a href="#editedinfo">*</a>';
+          //}
+        }
+      }
+      
+      // Rather than use Conditional Comments, we use this...
+      $user_agent = ( isset( $_SERVER['HTTP_USER_AGENT'] ) ) ? strtolower( $_SERVER['HTTP_USER_AGENT'] ) : '';
+      switch (true) {
+        case strchr($user_agent, 'msie 5.0'):
+        case strchr($user_agent, 'msie 5.5'):
+        case strchr($user_agent, 'msie 6.0'):
+          $ie_style = path_to_theme() .'/css/ie.css';
+          $ie_js = path_to_theme() .'/jscript/ie.js';
+          if (file_exists($ie_style)) {
+            drupal_add_css($ie_style, 'theme', 'all', FALSE);
+            $variables['styles'] = drupal_get_css();
+          }
+          if (file_exists($ie_js)) {
+            drupal_add_js($ie_js, 'theme');
+            $variables['scripts'] = drupal_get_js();
+          }
+      }
+      break;
+  }
+}
+
+/**
+ * Add to the variables for node.tpl.php
+ *
+ * Most themes utilize their own copy of node.tpl.php. The default is located
+ * inside "modules/node/node.tpl.php". Look in there for the full list of
+ * variables.
+ *
+ * The $variables array contains the following arguments:
+ * - $node
+ * - $teaser
+ * - $page
+ *
+ * @see node.tpl.php
+ */
+function scf_preprocess_node(&$variables) {
+  $links = array();
+  
+  $node = $variables['node'];
+  $type = $node->type;
+  $nid = $node->nid;
+  $sticky = $node->sticky;
+  $promoted = $node->promote;
+  $published = $node->status;
+  
+  $edit_perm = node_access('update', $node);
+  $add_perm = node_access('create', $node);
+  $del_perm = node_access('delete', $node);
+  $admin_perm = user_access('administer nodes');
+  
+  if ($edit_perm) {
+    $links['node_edit'] = array(
+      'title' => t('Edit'), 
+      'href' => 'node/' . $nid . '/edit', 
+      'attributes' => array('title' => t('Edit this !type', array('!type' => $type))), 
+      'query' => drupal_get_destination());
+  }
+  if ($add_perm) {
+    $links['node_add'] = array(
+      'title' => t('Add'), 
+      'href' => "node/add/$type", 
+      'attributes' => array('title' => t('Add a new !type', array('!type' => $type))), 
+      'query' => drupal_get_destination());
+  }
+  if ($del_perm) {
+    $links['node_del'] = array(
+      'title' => t('Delete'), 
+      'href' => 'node/' . $nid . '/delete', 
+      'attributes' => array('title' => t('Delete this !type', array('!type' => $type))), 
+      'query' => drupal_get_destination());
+  }
+  if ($admin_perm && $published) {
+    $links['node_unstatus'] = array(
+      'title' => t('Un-publish'), 
+      'href' => 'node/' . $nid . '/publish/off', 
+      'attributes' => array('title' => t('Un-publish this !type', array('!type' => $type))), 
+      'query' => drupal_get_destination());
+  }
+  if ($admin_perm && !$promoted) {
+    $links['node_promote'] = array(
+      'title' => t('Promote'), 
+      'href' => 'node/' . $nid . '/promote/on', 
+      'attributes' => array('title' => t('Promote this !type to the front page', array('!type' => $type))), 
+      'query' => 'destination=' . variable_get('site_frontpage','node'));
+  }
+  if ($admin_perm && $promoted) {
+    $links['node_unpromote'] = array(
+      'title' => t('Demote'), 
+      'href' => 'node/' . $nid . '/promote/off', 
+      'attributes' => array('title' => t('Demote this !type from the front page', array('!type' => $type))), 
+      'query' => drupal_get_destination());
+  }
+  if ($admin_perm && !$sticky) {
+    $links['node_sticky'] = array(
+      'title' => t('Feature'), 
+      'href' => 'node/' . $nid . '/feature/on', 
+      'attributes' => array('title' => t('Feature this !type at the top of this list', array('!type' => $type))), 
+      'query' => drupal_get_destination());
+  }
+  if ($admin_perm && $sticky) {
+    $links['node_unsticky'] = array(
+      'title' => t('De-feature'), 
+      'href' => 'node/' . $nid . '/feature/off', 
+      'attributes' => array('title' => t('Return this !type to normal list sort order', array('!type' => $type))), 
+      'query' => drupal_get_destination());
+  }
+  if ($admin_perm && !$sticky && !$promoted) {
+    $links['node_promotefeature'] = array(
+      'title' => t('Feature front'), 
+      'href' => 'node/' . $nid . '/promotefeature', 
+      'attributes' => array('title' => t('Feature this !type on the front page', array('!type' => $type))), 
+      'query' => 'destination=' . variable_get('site_frontpage','node'));
+  }
+
+  // @todo Be nice to hook this into a view of unpublished nodes of type X
+  //if ($admin_perm) {
+  //  $links['node_status'] = array(
+  //    'title' => t('Un-published !type content', array('!type' => $type)), 
+  //    'href' => 'admin/content/node', 
+  //    'query' => "status=0&type=$type");
+  //}
+  
+  if ($links) {
+    $variables['admin_links'] = theme('links', $links, array('class' => 'action_links links inline'));
+  }
+}
+
+/**
+ * Add to variables for block.tpl.php
+ *
+ * Prepare the values passed to the theme_block function to be passed
+ * into a pluggable template engine. Uses block properties to generate a
+ * series of template file suggestions. If none are found, the default
+ * block.tpl.php is used.
+ *
+ * Most themes utilize their own copy of block.tpl.php. The default is located
+ * inside "modules/system/block.tpl.php". Look in there for the full list of
+ * variables.
+ *
+ * The $variables array contains the following arguments:
+ * - $block
+ *
+ * @see block.tpl.php
+ */
+function scf_preprocess_block(&$variables) {
+  $links = array();
+  
+  if (user_access('administer blocks')) {
+    $links['block_edit'] = array(
+      'title' => t('Edit'), 
+      'href' => 'admin/build/block/configure/' . $variables['block']->module .'/'. $variables['block']->delta, 
+      'attributes' => array('title' => t('Edit this block')), 
+      'query' => drupal_get_destination());
+  }
+  
+  $variables['admin_links'] = theme('links', $links, array('class' => 'action_links links inline'));
+  
+}
+
+/**
+ * @TODO: this results in drupal 6 invalid foreach forum theme_links, do not bring it back until fixed.  This errer certainly occurred before but was masked by hiding notices.
+ * Add to the variables for forums.tpl.php
+ *
+ * The $variables array contains the following arguments:
+ * - $forums
+ * - $topics
+ * - $parents
+ * - $tid
+ * - $sortby
+ * - $forum_per_page
+ *
+ * @see forums.tpl.php
+function scf_preprocess_forums(&$variables) {
+
+  // Clean out some SCF types to simplify the user interface
+  foreach ($variables['links'] as $type => $link) {
+    switch ($type) {
+      case 'antibody' :
+      case 'interview' :
+      case 'modelorganism' :
+      case 'newsarticle' :
+      case 'pubnode' :
+      case 'pubgroup' :
+        unset($variables['links'][$type]);
+    }
+  }
+
+  if (user_access('administer forums')) {
+    $variables['links']['forum_addcontainer'] = array(
+      'title' => t('Add container'), 
+      'href' => 'admin/content/forum/add/container', 
+      'attributes' => array('title' => t('Add a new container')), 
+      'query' => drupal_get_destination());
+    $variables['links']['forum_addforum'] = array(
+      'title' => t('Add forum'), 
+      'href' => 'admin/content/forum/add/forum', 
+      'attributes' => array('title' => t('Add a new forum')), 
+      'query' => drupal_get_destination());
+  }
+  // Attach these admin links to the existing links variable
+  $variables['links'] = theme('links', $variables['links'], array('class' => 'links inline'));
+}
+ */
+
+/**
+ * Add to the variables to format a forum listing.
+ *
+ * $variables contains the following information:
+ * - $forums
+ * - $parents
+ * - $tid
+ *
+ * @see forum-list.tpl.php
+ * @see theme_forum_list()
+ */
+function scf_preprocess_forum_list(&$variables) {
+  foreach ($variables['forums'] as $id => $forum) {
+    $links = array();
+    $type = $variables['forums'][$id]->is_container ? 'container' : 'forum';
+    if (user_access('administer forums')) {
+      $links['forum_edit'] = array(
+        'title' => t('Edit'), 
+        'href' => "admin/content/forum/edit/$type/$id", 
+        'attributes' => array('title' => t('Edit this !type', array('!type' => $type))), 
+        'query' => drupal_get_destination());
+    }
+    $variables['forums'][$id]->admin_links = theme('links', $links, array('class' => 'action_links links inline'));
+  }
+}
+
+/**
+ * Preprocess variables to format the topic listing.
+ *
+ * $variables contains the following data:
+ * - $tid
+ * - $topics
+ * - $sortby
+ * - $forum_per_page
+ *
+ * @see forum-topic-list.tpl.php
+ * @see theme_forum_topic_list()
+ */
+function scf_preprocess_forum_topic_list(&$variables) {
+  foreach ($variables['topics'] as $id => $topic) {
+    $links = array();
+    if (user_access('administer forums')) {
+      $links['forum_edit'] = array(
+        'title' => t('Edit'), 
+        'href' => 'node/' . $topic->nid . '/edit', 
+        'attributes' => array('title' => t('Edit this topic')), 
+        'query' => drupal_get_destination());
+    }
+    $variables['topics'][$id]->admin_links = theme('links', $links, array('class' => 'action_links links inline'));
+  }
+}
+
+/**
+ * Process variables to format submission info for display in the forum list and topic list.
+ *
+ * $variables will contain: $topic
+ *
+ * @see forum-submitted.tpl.php
+ * @see theme_forum_submitted()
+ */
+function scf_preprocess_forum_submitted(&$variables) {
+  $variables['author'] = '';
+  if (isset($variables['topic']->uid)) {
+    if ($author = _member_get_node($variables['topic']->uid)) {
+      $variables['author'] = theme('member_link', $author);
+    }
+    else {
+      $variables['author'] = theme('username', $variables['topic']);
+    }
+  }
+  $variables['time'] = isset($variables['topic']->timestamp) ? format_interval(time() - $variables['topic']->timestamp) : '';
+}
+
+/**
+ * Preprocess variables to format the next/previous forum topic navigation links.
+ *
+ * $variables contains $node.
+ *
+ * @see forum-topic-navigation.tpl.php
+ * @see theme_forum_topic_navigation()
+ */
+function scf_preprocess_forum_topic_navigation(&$variables) {
+  $forum = taxonomy_get_term($variables['node']->tid);
+  $variables['forum'] = $variables['node']->tid;
+  $variables['forum_title'] = phptemplate_truncate_by_word_count($forum->name, 12);
+  $variables['forum_url'] = url('forum/' . $variables['node']->tid);
+  
+  if (isset($variables['prev_title'])) {
+    $variables['prev_title'] = phptemplate_truncate_by_word_count($variables['prev_title'], 12);
+  }
+  if (isset($variables['next_title'])) {
+    $variables['next_title'] = phptemplate_truncate_by_word_count($variables['next_title'], 12);
+  }
+}
+////////// end theme functions //////////
+
+
+
+/**
+ * Trim the given string by the gven number of words. Create as an alternative
+ * to node_teaser() which truncates to utf8 character.
+ *
+ * @TODO totally replace this
+ * 
+ * @param $text
+ *   The text being acted upon
+ * @param $words
+ *   The number of words to truncate this string to
+ * @param $hellip
+ *   Flag whether '...' should appear at the end of the string
+ * @return
+ *   The resulting string
+ */
+function phptemplate_truncate_by_word_count($text, $limit = 120, $hellip = TRUE) {
+  $text = strip_tags($text);
+  $words = str_word_count($text, 2);
+  $pos = array_keys($words);
+  if (count($words) > $limit) {
+      $text = substr($text, 0, $pos[$limit]) . ($hellip ? '...' : '');
+  }
+  return $text;
+}
+
+
+
 
 // Not very useful since can't be reliably used at top level (module
 // loading order is apparently not predictable despite dependency

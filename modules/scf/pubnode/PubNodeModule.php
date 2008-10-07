@@ -79,9 +79,11 @@ class PubNodeModule extends ScfNodeModule {
     $doctype = $form_state['values']['doctype'];
     if (!empty($doctype)) {
       $processors = $this->registeredProcessors();
+drupal_set_message('<pre>'. var_export($processors,TRUE) .'</pre>');
       $pspec = $processors[$doctype];
       if (!empty($pspec)) {
         $importer = $this->determineImporter($form_state);
+drupal_set_message('<pre>'. var_export($importer,TRUE) .'</pre>');
         if (!empty($importer)) {
           if ($importer->import($form_state)) {
             $processor = $this->createFromSpec($pspec);

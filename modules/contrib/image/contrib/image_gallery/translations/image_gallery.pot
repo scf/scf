@@ -1,0 +1,223 @@
+# $Id: image_gallery.pot,v 1.2 2008/04/14 18:20:46 hass Exp $
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  image_gallery.module,v 1.26 2008/04/10 18:08:54 drewish
+#  image_gallery.info,v 1.5 2008/01/06 22:15:25 drewish
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2008-04-14 20:17+0200\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: image_gallery.module:12
+msgid "Image galleries can be used to organize and present groups of images. Galleries may be nested. To add a new gallery click the \"add gallery\" tab."
+msgstr ""
+
+#: image_gallery.module:70
+msgid "Gallery settings"
+msgstr ""
+
+#: image_gallery.module:74
+msgid "Images per page"
+msgstr ""
+
+#: image_gallery.module:77
+msgid "Sets the number of images to be displayed in a gallery page."
+msgstr ""
+
+#: image_gallery.module:81
+msgid "Display node info"
+msgstr ""
+
+#: image_gallery.module:83
+msgid "Checking this will display the \"Posted by\" node information on the gallery pages."
+msgstr ""
+
+#: image_gallery.module:87
+msgid "Image display sort order"
+msgstr ""
+
+#: image_gallery.module:90
+msgid "Create date, newest first"
+msgstr ""
+
+#: image_gallery.module:91
+msgid "Create date, oldest first"
+msgstr ""
+
+#: image_gallery.module:92
+msgid "File name"
+msgstr ""
+
+#: image_gallery.module:93
+msgid "Image title"
+msgstr ""
+
+#: image_gallery.module:128;196
+msgid "Home"
+msgstr ""
+
+#: image_gallery.module:197;24;30
+msgid "Image galleries"
+msgstr ""
+
+#: image_gallery.module:215
+msgid "Name"
+msgstr ""
+
+#: image_gallery.module:215
+msgid "Operations"
+msgstr ""
+
+#: image_gallery.module:217
+msgid "edit gallery"
+msgstr ""
+
+#: image_gallery.module:222
+msgid "No galleries available"
+msgstr ""
+
+#: image_gallery.module:227;284;318
+msgid "Delete"
+msgstr ""
+
+#: image_gallery.module:249
+msgid "Gallery name"
+msgstr ""
+
+#: image_gallery.module:253
+msgid "The name is used to identify the gallery."
+msgstr ""
+
+#: image_gallery.module:258
+msgid "Description"
+msgstr ""
+
+#: image_gallery.module:262
+msgid "The description can be used to provide more information about the image gallery."
+msgstr ""
+
+#: image_gallery.module:265
+msgid "Parent"
+msgstr ""
+
+#: image_gallery.module:268
+msgid "Weight"
+msgstr ""
+
+#: image_gallery.module:271
+msgid "When listing galleries, those with with light (small) weights get listed before containers with heavier (larger) weights. Galleries with equal weights are sorted alphabetically."
+msgstr ""
+
+#: image_gallery.module:279
+msgid "Submit"
+msgstr ""
+
+#: image_gallery.module:300
+msgid "Created new gallery %term."
+msgstr ""
+
+#: image_gallery.module:303
+msgid "The gallery %term has been updated."
+msgstr ""
+
+#: image_gallery.module:306
+msgid "The gallery %term has been deleted."
+msgstr ""
+
+#: image_gallery.module:318
+msgid "Are you sure you want to delete the image gallery %name?"
+msgstr ""
+
+#: image_gallery.module:318
+msgid "Deleting an image gallery will delete all sub-galleries. This action cannot be undone."
+msgstr ""
+
+#: image_gallery.module:318
+msgid "Cancel"
+msgstr ""
+
+#: image_gallery.module:323
+msgid "The image gallery %term and all sub-galleries have been deleted."
+msgstr ""
+
+#: image_gallery.module:347
+msgid "root"
+msgstr ""
+
+#: image_gallery.module:361
+msgid "Image galleries may be nested below other galleries."
+msgstr ""
+
+#: image_gallery.module:400
+msgid "Last updated: %date"
+msgstr ""
+
+#: image_gallery.module:439
+msgid "Posted by: !name"
+msgstr ""
+
+#: image_gallery.module:458
+msgid "Image Galleries"
+msgstr ""
+
+#: image_gallery.module:398;420
+msgid "There is 1 image in this gallery"
+msgid_plural "There are @count images in this gallery"
+msgstr[0] ""
+msgstr[1] ""
+
+#: image_gallery.module:17
+msgid "administer images"
+msgstr ""
+
+#: image_gallery.module:33
+msgid "Create and manage image galleries."
+msgstr ""
+
+#: image_gallery.module:36
+msgid "List"
+msgstr ""
+
+#: image_gallery.module:42
+msgid "Add gallery"
+msgstr ""
+
+#: image_gallery.module:48
+msgid "Edit image gallery"
+msgstr ""
+
+#: image_gallery.module:55
+msgid "Image gallery"
+msgstr ""
+
+#: image_gallery.module:59
+msgid "Configure appearance of image galleries."
+msgstr ""
+
+#: image_gallery.module:0
+msgid "image_gallery"
+msgstr ""
+
+#: image_gallery.info:0
+msgid "Image Gallery"
+msgstr ""
+
+#: image_gallery.info:0
+msgid "Allows sorting and displaying of image galleries based on categories."
+msgstr ""
+
+#: image_gallery.info:0
+msgid "Image"
+msgstr ""
+

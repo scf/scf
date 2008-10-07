@@ -1,0 +1,684 @@
+<?php
+// $Id: sioc.module,v 1.32.2.3.2.8 2008/03/27 14:59:40 scor Exp $
+
+/**
+ * @file
+ * Module that allows content to be exported using the SIOC format from the site.
+ */
+
+/**
+ * Implementation of hook_help().
+ */
+function sioc_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#sioc':
+      $output = t("
+      <h3>SIOC</h3>
+      <p>This module is an exporter for SIOC (Semantically-Interlinked Online Community) 
+      metadata.  When browsing nodes or comments in forums or blogs, you will see SIOC 
+      links on the menu which will bring you to the corresponding metadata export.</p>");
+      return $output;
+    case 'admin/modules#description':
+      return t("Enables your site to export metadata for the Semantic Web using SIOC.");
+  }
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function sioc_menu() {  
+  sioc_autodiscovery();
+  doap_autodiscovery();
+  $items['sioc/blog/%user'] = array(
+    'title' => 'sioc blog',
+    'page callback' => 'sioc_page',
+    'access callback' => TRUE,
+    'weight' => '9',
+    'type' => MENU_CALLBACK,
+  );
+  $items['sioc/user/%user'] = array(
+    'title' => 'sioc user',
+    'page callback' => 'sioc_page',
+    'access callback' => TRUE,
+    'weight' => '9',
+    'type' => MENU_CALLBACK,
+  );
+  $items['sioc/node/%node'] = array(
+    'title' => 'sioc post',
+    'page callback' => 'sioc_page',
+    'access callback' => node_access('view', node_load(array('nid' => arg(2)))),
+    'weight' => '9',
+    'type' => MENU_CALLBACK,
+  );
+  $items['sioc/story/%node'] = array(
+    'title' => 'sioc story',
+    'page callback' => 'sioc_page',
+    'access callback' => node_access('view', node_load(array('nid' => arg(2)))),
+    'weight' => '9',
+    'type' => MENU_CALLBACK,
+  );
+  $items['sioc/forum/%forum_term'] = array(
+    'title' => 'sioc forum',
+    'page callback' => 'sioc_page',
+    'access callback' => TRUE,
+    'weight' => '9',
+    'type' => MENU_CALLBACK,
+  );
+  $items['sioc'] = array(
+    'title' => 'sioc',
+    'page callback' => 'sioc_page',
+    'access callback' => TRUE,
+    'weight' => '9',
+    'type' => MENU_CALLBACK,
+  );
+  
+  return $items;
+}
+
+/**
+ * Menu callback; provides the main page of the administration section.
+ */
+function sioc_page() {
+  switch (arg(1)) {
+    case 'blog':
+      export_sioc_forum(arg(1), arg(2), NULL, arg(3), arg(4));
+      return;
+    case 'comment':
+      export_sioc_post(arg(1), NULL, arg(2), arg(3), arg(4));
+      return;
+    case 'forum':
+      export_sioc_forum(arg(1), NULL, arg(2), arg(3), arg(4));
+      return;
+    case 'node':
+      export_sioc_post(arg(1), arg(2), NULL, arg(3), arg(4));
+      return;
+    case 'stories':
+      export_sioc_forum(arg(1), arg(2), NULL, arg(3), arg(4));
+      return;
+    case 'role':
+      export_sioc_role(arg(2));
+      return;
+    case 'user':
+      export_sioc_user(arg(2));
+      return;
+    case 'site':
+      export_sioc_site(arg(2), arg(3));
+      return;
+    default:
+      print theme('page', sioc_page_default(), '');
+      return;
+  }
+}
+
+function sioc_page_default() {
+  $output = t("<p>This module is an exporter for SIOC (Semantically-Interlinked Online 
+      Community) metadata.  For more information, see 
+      <a href=\"http://sioc-project.org/\">sioc-project.org</a>.</p>\n
+      <p>When browsing nodes or comments in forums or blogs, you will see links to SIOC 
+      metadata on the menu (e.g. \"sioc forum\", \"sioc post\") which will bring you to 
+      the corresponding metadata export for that item.</p>\n
+    <p>You can begin by viewing <a href=\"sioc/site\">metadata about this site</a>.</p>");
+  return $output;
+}
+
+/**
+ * Displays a SIOC export containing recent posts from a user's blog.
+ */
+function export_sioc_forum($type, $uid = 0, $tid = 0, $start = 0, $limit = 15) {
+
+  $resources = array();
+
+  if (!is_numeric($uid)) { $uid = "0"; }
+  if (!is_numeric($tid)) { $tid = "0"; }
+  if (!is_numeric($start)) { $start = "0"; }
+  if (!is_numeric($limit)) { $limit = "15"; }
+  
+  if ($type == 'blog') { 
+    $account = user_load(array('uid' => $uid, 'status' => 1));
+    $result = db_query_range("SELECT n.nid, n.title, n.created, u.name, u.uid FROM {node} n INNER JOIN {users} u ON n.uid = u.uid WHERE n.type = '$type' AND u.uid = %d AND n.status = 1 ORDER BY n.created DESC", $uid, $start, $limit);
+
+    // A link to this blog
+    $resources[] = array(
+      'property' => 'sioc:link',
+      'label' => $account->name ."'s Blog",
+      'resource' => url("blog/$uid", array('absolute' => TRUE))
+    );
+  }
+  elseif ($type == 'stories') {
+    $result = db_query_range("SELECT n.nid, n.title, n.created, u.name, u.uid FROM {node} n INNER JOIN {users} u ON n.uid = u.uid WHERE n.type = '$type' AND u.uid = %d AND n.status = 1 ORDER BY n.created DESC", $uid, $start, $limit);  
+    // A link to the stories
+    $resources[] = array(
+      'property' => 'sioc:link',
+      'label' => "SITE NAME Forum",
+      'resource' => url("", array('fragment' => "stories", 'absolute' => TRUE))
+    );
+
+  }
+  elseif ($type == 'forum') { 
+    $term = db_fetch_object(db_query('SELECT * FROM {term_data} WHERE tid = %d', $tid));
+
+    // A link to this forum
+    $resources[] = array(
+      'property' => 'sioc:link',
+      'label' => $term->name ." Forum",
+      'resource' => url("forum/$tid", array('absolute' => TRUE))
+    );
+
+    // The subject(s) of this forum
+    $resources[] = array(
+      'property' => 'sioc:topic',
+      'label' => $term->name,
+      'resource' => url("taxonomy/term/$term->tid", array('absolute' => TRUE))
+    );
+
+    // Find the children of this forum
+    // $childs = db_query('SELECT DISTINCT th.tid AS tid, th.parent AS parent, td.name AS name FROM {term_hierarchy} th, {term_data} td, {forum} f WHERE f.tid = th.parent AND td.tid = th.tid AND th.parent = %d', $tid);
+    $childs = taxonomy_get_tree(variable_get('forum_nav_vocabulary', ''), $tid);
+    if ($childs) {
+      foreach ($childs as $child) {
+        $resources[] = array(
+          'property' => 'sioc:parent_of',
+          'label' => $child->name,
+          'resource' => url("sioc/forum/".$child->tid, array('absolute' => TRUE)),
+          'class' => 'Forum',
+          'about' => url("forum/".$child->tid, array('absolute' => TRUE))
+        );
+      }
+    }
+
+    $result = db_query_range("SELECT n.nid, n.title, n.created, t.name, t.tid FROM {node} n INNER JOIN {forum} f ON n.nid = f.nid LEFT JOIN {term_data} t ON t.tid = f.tid WHERE n.type = '$type' AND t.tid = %d AND n.status = 1 ORDER BY n.created DESC", $tid, $start, $limit);
+  }
+
+  // $limit posts that this forum contains
+  $nodes = $result;
+
+  // If no nodes exist, get some default ones
+  if (!$nodes) {
+    $nodes = db_query_range('SELECT n.nid, n.title FROM {node} n WHERE n.promote = 1 AND n.status = 1 ORDER BY n.created DESC', $start, $limit);
+  }
+
+  $posts_counter = 0;
+
+  while ($node = db_fetch_object($nodes)) {
+    $posts_counter++;
+    if (node_access('view', node_load(array('nid' => $node->nid)))) {  
+      $resources[] = array(
+        'property' => 'sioc:container_of',
+        'label' => check_plain(strip_tags($node->title)),
+        'resource' => url("sioc/node/".$node->nid, array('absolute' => TRUE)),
+        'class' => 'Post',
+        'about' => url("node/".$node->nid, array('absolute' => TRUE))
+      );
+    }
+  }
+
+  if ($type == "blog") {
+    if ($posts_counter >= $limit) {
+      $resources[] = array(
+        'property' => 'rdfs:seeAlso',
+        'label' => "Posts ".($start+$limit)." to ".($start+2*$limit),
+        'resource' => url("sioc/blog/".$uid."/".($start+$limit)."/".$limit, array('absolute' => TRUE))
+      );
+    }
+
+    $output .= output_sioc_concept(
+      "sioc:Forum",
+      url("blog/".$uid, array('absolute' => TRUE)),
+      array(
+        'dc:title' => $account->name ."'s Blog",
+        'dc:description' => $account->name ."'s Blog at ".variable_get('site_name', 'drupal'),
+      ),
+      $resources
+    );
+  }
+  elseif ($type == "forum") {
+    if ($posts_counter >= $limit) {
+      $resources[] = array(
+        'property' => 'rdfs:seeAlso',
+        'label' => "Posts ".($start+$limit)." to ".($start+2*$limit),
+        'resource' => url("sioc/forum/".$tid."/".($start+$limit)."/".$limit, array('absolute' => TRUE))
+      );
+    }
+
+    $output .= output_sioc_concept(
+      "sioc:Forum",
+      url("forum/".$tid, array('absolute' => TRUE)),
+      array(
+        'dc:title' => $term->name." Forum",
+        'dc:description' => $term->name ." Forum at ".variable_get('site_name', 'drupal'),
+      ),
+      $resources,
+      $subject
+    );
+  }
+  elseif ($type == 'stories') {
+    $stories_counter = db_result(db_query('SELECT COUNT(*) as count from {node} where type=\'story\''));
+    if ($stories_counter >= $limit) {
+      $resources[] = array(
+        'property' => 'rdfs:seeAlso',
+        'label' => "Stories ".($start+$limit)." to ".($start+2*$limit),
+        'resource' => url("sioc/stories/".$uid."/".($start+$limit)."/".$limit, array('absolute' => TRUE))
+      );
+    }
+    $output .= output_sioc_concept(
+      "sioc:Forum",
+      url("".$uid, array('fragment' => "stories", 'absolute' => TRUE)),
+      array(
+      'dc:title' => "Blog title",
+      'dc:description' => "Stories at ".variable_get('site_name', 'drupal'),
+      ),
+      $resources
+    );
+    print $output;
+  }
+
+}
+
+/**
+ * Displays a SIOC export containing details about a post and its replies.
+ */
+function export_sioc_post($type, $nid = 0, $cid = 0, $start = 0, $limit = 15) {
+
+  $resources = array();
+  
+  if (!is_numeric($nid)) { $nid = "0"; }
+  if (!is_numeric($cid)) { $cid = "0"; }
+  if (!is_numeric($start)) { $start = "0"; }
+  if (!is_numeric($limit)) { $limit = "15"; }
+
+  $replies_counter = 0;
+
+  if ($type == "node" || $type == "story") {
+    //$node = db_fetch_object(db_query('SELECT * FROM {node} n WHERE nid = %d', $nid));
+    $node = node_load($nid);//db_fetch_object(db_query('SELECT * FROM {node_revisions} n WHERE nid = %d order by timestamp desc limit 1', $nid));
+    $node_filtered_content = check_markup($node->body, $node->format, FALSE);
+
+    $answers = db_query_range('SELECT * FROM {comments} c WHERE nid = %d AND LENGTH(thread) = 2 ORDER BY timestamp', $nid, $start, $limit);
+    $link = url("node/$nid", array('absolute' => TRUE));
+    $uid = $node->uid;
+    $resources[] = array(
+      'property' => 'sioc:link',
+      'label' => check_plain(strip_tags($node->title)),
+      'resource' => $link
+    );
+  }  
+  elseif ($type == "comment") {
+    $comment = db_fetch_object(db_query('SELECT * FROM {comments} WHERE cid = %d', $cid));
+    $thread = rtrim($comment->thread, '/');
+    // $answers = db_query_range('SELECT * FROM {comments} c WHERE nid = %d AND LOCATE("%s", thread) = 1 AND LENGTH(thread) = LENGTH("%s") + 3 ORDER BY timestamp', $comment->nid, $thread, $thread, $start, $limit);
+    $answers = db_query_range('SELECT * FROM {comments} c WHERE pid = %d ORDER BY timestamp', $comment->cid, $start, $limit);
+    $link = url("node/".$comment->nid."#comment-".$comment->cid, array('absolute' => TRUE));
+    $nid = $comment->nid;
+    $uid = $comment->uid;
+    $resources[] = array(
+      'property' => 'sioc:link',
+      'label' => check_plain(strip_tags($comment->subject)),
+      'resource' => $link
+    );
+  }    
+
+  // Get the subject(s) for this post (node or parent node of comments)
+  $term_nodes = db_query('SELECT tn.tid AS tid, td.name AS name FROM {term_node} tn, {term_data} td WHERE td.tid = tn.tid AND tn.nid = %d', $nid);
+  while ($term_node = db_fetch_object($term_nodes)) {
+    $resources[] = array(
+      'property' => 'sioc:topic',
+      'label' => $term_node->name,
+      'resource' => url("taxonomy/term/$term_node->tid", array('absolute' => TRUE))
+    );
+  }
+  if (module_exists('moat')) {
+    $uris = moat_get_uris($nid);
+    if ($uris) {
+      foreach ($uris as $uri) {
+        $resources[] = array(
+          'property' => 'sioc:topic',
+          'resource' => $uri,
+        );
+      }
+    }
+  }
+
+  // Get the creator of the post
+  $account = user_load(array('uid' => $uid, 'status' => 1));
+  $resources[] = array(
+    'property' => 'sioc:has_creator',
+    'resource' => url("sioc/user/$uid#user", array('absolute' => TRUE)),
+    'seeAlso' => url("sioc/user/$uid", array('absolute' => TRUE)),
+  );
+  if (module_exists('foaf')) {
+    $resources[] = array(
+      'property' => 'foaf:maker',
+      'resource' => url("foaf/$uid#_$uid", array('absolute' => TRUE)),
+      'seeAlso' => url("foaf/$uid", array('absolute' => TRUE)),
+    );
+  }
+
+  // The replies to this post
+  while ($answer = db_fetch_object($answers)) {
+    $replies_counter++;
+
+    $resources[] = array(
+      'property' => 'sioc:has_reply',
+      'label' => $answer->subject,
+      'resource' => url("sioc/comment/".$answer->cid, array('absolute' => TRUE)),
+      'class' => 'Post',
+      'about' => url("node/".$answer->nid."#comment-".$answer->cid, array('absolute' => TRUE))
+    );
+  }  
+
+  if ($type == "node" || $type == "story") {
+    if ($replies_counter >= $limit) {
+      $resources[] = array(
+        'property' => 'rdfs:seeAlso',
+        'label' => "Replies ".($start+$limit)." to ".($start+2*$limit),
+        'resource' => url("sioc/node/".$nid."/".($start+$limit)."/".$limit, array('absolute' => TRUE))
+      );
+    }
+
+    $w3c_dtf_date_created = preg_replace("/(\+|\-)([0-9]{2})([0-9]{2})/", "$1$2:$3", date("O", $node->created));
+    $date_created = date("Y-m-d", $node->created)."T".date("H:i:s", $node->created).$w3c_dtf_date_created;
+    $w3c_dtf_date_changed = preg_replace("/(\+|\-)([0-9]{2})([0-9]{2})/", "$1$2:$3", date("O", $node->changed));
+    $date_changed = date("Y-m-d", $node->changed)."T".date("H:i:s", $node->changed).$w3c_dtf_date_changed;
+    #print check_markup($node->body, 4);
+    $output .= output_sioc_concept(
+      "sioc:Post",
+      url("node/".$nid, array('absolute' => TRUE)),
+      array(
+        'dc:title' => check_plain(strip_tags($node->title)),
+        'sioc:content' => $node_filtered_content, //check_plain, strip_tags, check_filter
+        'dcterms:created' => $date_created,
+        'dcterms:modified' => $date_changed
+      ),
+      $resources
+    );
+  }
+  elseif ($type == "comment") {
+    if ($replies_counter >= $limit) {
+      $resources[] = array(
+        'property' => 'rdfs:seeAlso',
+        'label' => "Replies ".($start+$limit)." to ".($start+2*$limit),
+        'resource' => url("sioc/comment/".$cid."/".($start+$limit), array('absolute' => TRUE))
+      );
+    }
+
+    $w3c_dtf_date_created = preg_replace("/(\+|\-)([0-9]{2})([0-9]{2})/", "$1$2:$3", date("O", $comment->timestamp));
+    $date_created = date("Y-m-d", $comment->timestamp)."T".date("H:i:s", $comment->timestamp).$w3c_dtf_date_created;
+
+    $output .= output_sioc_concept(
+      "sioc:Post",
+      url("node/".$nid."#comment-".$cid, array('absolute' => TRUE)),
+      array(
+        'dc:title' => check_plain(strip_tags($comment->subject)),
+        'dc:description' => check_plain(strip_tags($comment->comment)),
+        'dcterms:created' => $date_created
+      ),
+      $resources
+    );
+  }
+}
+
+/**
+ * Displays a SIOC export containing details about a role.
+ */
+function export_sioc_role($rid = 0) {
+
+  if (!is_numeric($rid)) { $rid = "0"; }
+
+  $role = db_fetch_object(db_query("SELECT r.name AS name, p.perm AS perm FROM {users_roles} ur, {role} r, {permission} p WHERE ur.rid = %d AND ur.rid = r.rid AND r.rid = p.rid GROUP BY r.rid", $rid));
+
+  if (!$role->perm) { $role = db_fetch_object(db_query("SELECT r.name AS name, \"no permissions\" AS perm FROM {users_roles} ur, {role} r WHERE ur.rid = %d AND ur.rid = r.rid GROUP BY r.rid", $rid)); }
+
+  $output .= output_sioc_concept(
+    "sioc:Role",
+    url("sioc/role/".$rid, array('absolute' => TRUE)),
+    array(
+      'sioc:name' => check_plain(strip_tags($role->name)),
+      'dc:description' => check_plain(strip_tags($role->perm))
+    ),
+    array()
+  );
+}
+
+/**
+ * Displays a SIOC export containing details about the site.
+ */
+function export_sioc_site($start = 0, $limit = 15) {
+
+  $resources = array();
+
+  if (!is_numeric($start)) { $start = "0"; }
+  if (!is_numeric($limit)) { $limit = "15"; }
+  
+  $forums_counter = 0;
+  $blogs_counter = 0;
+  $stories_counter = db_result(db_query('SELECT COUNT(*) as count from {node} where type=\'story\''));
+  // $forums = db_query_range('SELECT td.tid AS tid, td.name AS name FROM {term_hierarchy} th, {term_data} td, {forum} f WHERE f.tid = td.tid AND th.tid = td.tid AND th.parent = 0 GROUP BY f.tid ORDER BY f.tid', $start, $limit);
+  $forums = db_query_range("SELECT td.tid AS tid, td.name AS name FROM {term_hierarchy} th, {term_data} td, {vocabulary_node_types} v WHERE v.vid = td.vid AND v.type = 'forum' AND th.tid = td.tid AND th.parent = 0 ORDER BY td.tid", $start, $limit);
+
+  while ($forum = db_fetch_object($forums)) {
+    $forums_counter++;
+
+    $resources[] = array(
+      'property' => 'sioc:host_of',
+      'label' => $forum->name." Forum",
+      'resource' => url("sioc/forum/".$forum->tid, array('absolute' => TRUE)),
+      'class' => 'Forum',
+      'about' => url("forum/".$forum->tid, array('absolute' => TRUE))
+    );
+  }
+  
+  $blogs = db_query_range("SELECT u.name AS name, u.uid AS uid FROM {users} u, {node} n WHERE n.type = 'blog' AND n.uid = u.uid GROUP BY u.uid ORDER BY u.uid", $start, $limit);
+
+  while ($blog = db_fetch_object($blogs)) {
+    $blogs_counter++;
+    $resources[] = array(
+      'property' => 'sioc:host_of',
+      'label' => $blog->name."'s Blog",
+      'resource' => url("sioc/blog/".$blog->uid, array('absolute' => TRUE)),
+      'class' => 'Forum',
+      'about' => url("blog/".$blog->uid, array('absolute' => TRUE))
+    );
+  }
+
+  $site = array(
+    'name'        => variable_get('site_name', 'drupal') .' - '. variable_get('site_slogan', ''),
+    'link'        => url("", array('absolute' => TRUE)),
+    'description' => variable_get('site_mission', '')
+  );
+
+  $resources[] = array(
+    'property' => 'sioc:link',
+    'label' => check_plain(strip_tags($site['name'])),
+    'resource' => check_plain(strip_tags($site['link']))
+  );
+
+  //add a forum for the stories
+  //if no forums and no blogs but there are stories
+  //this site must be a single-user blog
+  if ($stories_counter > 0) { // && blogs_counter==0 && forums_counter==0){
+    // should we create this container for stories even if there are blogs and forums?
+    $resources[] = array(
+       'property' => 'sioc:host_of',
+       'label' => "Stories at ".$site['name'],
+       'resource' => url("sioc/stories", array('absolute' => TRUE)),
+       'class' => 'Forum',
+       'about' => url("", array('fragment' => "stories", 'absolute' => TRUE))
+      );
+  }
+  if (($blogs_counter >= $limit) || ($forums_counter >= $limit)) {
+    $resources[] = array(
+      'property' => 'rdfs:seeAlso',
+      'label' => "Forums and/or Blogs ".($start+$limit)." to ".($start+2*$limit),
+      'resource' => url("sioc/site/".($start+$limit)."/".$limit, array('absolute' => TRUE))
+    );
+  }
+
+//  $output .= output_sioc_concept(
+  $output = output_sioc_concept(
+    "sioc:Site",
+    url("", array('absolute' => TRUE)),
+    array(
+      'dc:title' => check_plain(strip_tags($site['name'])),
+      'dc:description' => check_plain(strip_tags($site['description']))
+      ),
+    $resources
+  );
+  //print "CCC $stories_counter $forums_counter $blogs_counter";
+}
+
+/**
+ * Displays a SIOC export containing details about a user.
+ */
+function export_sioc_user($uid = 0) {
+  global $user;
+  
+  if ($uid) {
+    $account = user_load(array('uid' => $uid, 'status' => 1));
+  }
+  else {
+    $account = $user;
+  }
+
+  $link = url("user/".$account->uid, array('absolute' => TRUE));
+
+  $resources[] = array(
+    'property' => 'sioc:link',
+    'label' => $account->name,
+    'resource' => $link
+  );
+
+  $roles = db_query("SELECT r.name AS name, r.rid AS rid FROM {users_roles} ur, {role} r WHERE ur.uid = %d AND ur.rid = r.rid", $account->uid);
+  
+  while ($role = db_fetch_object($roles)) {
+
+    $resources[] = array(
+      'property' => 'sioc:has_function',
+      'label' => $role->name,
+      'resource' => url("sioc/role/".$role->rid, array('absolute' => TRUE)),
+      'class' => 'Role',
+      'about' => url("role/".$role->rid, array('absolute' => TRUE))
+    );
+  }
+
+//  $output .= output_sioc_concept(
+  $output = output_sioc_concept(
+    "sioc:User",
+    url("user/".$uid, array('absolute' => TRUE)),
+    array(
+      'sioc:name' => check_plain(strip_tags($account->name)),
+      'dc:description' => check_plain(strip_tags($account->signature)),
+      'sioc:email_sha1' => check_plain(strip_tags(sha1($account->email)))
+    ),
+    $resources
+  );
+}
+
+/**
+ * Output a SIOC concept.
+ *
+ * Arbitrary elements may be added using the $literals or $resources associative arrays.
+ * $resources is an array of arrays.  Each $resource has property, label and resource.
+ */
+function output_sioc_concept($concept_name, $html_url, $literals = array(), $resources = array()) {
+  $output = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
+  $output .= "<rdf:RDF\r\n";
+  $output .= "      xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\r\n";
+  $output .= "      xmlns:rdfs=\"http://www.w3.org/2000/01/rdf-schema#\"\r\n";
+  $output .= "      xmlns:sioc=\"http://rdfs.org/sioc/ns#\"\r\n";
+  $output .= "      xmlns:sioct=\"http://rdfs.org/sioc/terms#\"\r\n";
+  $output .= "      xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\r\n";
+  $output .= "      xmlns:dcterms=\"http://purl.org/dc/terms/\"\r\n";
+  $output .= "      xmlns:admin=\"http://webns.net/mvcb/\"\r\n";
+  $output .= "      xmlns:foaf=\"http://xmlns.com/foaf/0.1/\">\r\n";
+
+  $output .= "<foaf:Document rdf:about=''>\n";
+  $output .= "  <dc:title>SIOC profile for '".variable_get('site_name', 'drupal')."'</dc:title>\n";
+  $output .= "  <dc:description>A SIOC profile describes the structure and contents of a community site (e.g., weblog) in a machine processable form. For more information refer to the &lt;a href=&quot;http://rdfs.org/sioc&quot;&gt;SIOC project page&lt;/a&gt;</dc:description>\n";
+  if ($concept_name == 'sioc:User') $output .= "  <foaf:primaryTopic rdf:resource=\"#user\"/>\n";
+  else $output .= "  <foaf:primaryTopic rdf:resource=\"$html_url\"/>\n";
+  $output .= "  <admin:generatorAgent rdf:resource=\"http://drupal.org/project/sioc\"/>\n";
+  $output .= "</foaf:Document>\n";
+
+  $output .= "<$concept_name";
+  if ($concept_name == 'sioc:User') $output .= " rdf:ID=\"user\"";
+  else $output .= " rdf:about=\"$html_url\"";
+  $output .= ">\n";
+  foreach ($literals as $key => $value) {
+    if (substr($value, 0, 9) == '<![CDATA[') {
+      $output .= "  <". $key .">". $value ."</$key>\n";
+    }
+    else {
+      if ($value) {
+        $output .= "  <". $key .">". check_plain(strip_tags($value)) ."</$key>\n";
+      }
+    }
+  }
+  foreach ($resources as $resource) {
+    if (!isset($resource['class'])) {
+      $output .= "  <".$resource['property']." ";
+      $output .= "rdf:resource=\"".$resource['resource']."\" ";
+      if (isset($resource['label'])) $output .= "rdfs:label=\"".$resource['label']."\" ";
+      if (isset($resource['seeAlso'])) $output .= "rdfs:seeAlso=\"".$resource['seeAlso']."\" ";
+      $output .= "/>\n";
+    }
+    else {    
+      $output .= "  <".$resource['property'].">\n";
+      $output .= "    <sioc:".$resource['class']." rdf:about=\"".$resource['about']."\">\n";
+      $output .= "      <rdfs:label><![CDATA[".$resource['label']."]]></rdfs:label>\n";
+      $output .= "      <rdfs:seeAlso rdf:resource=\"".$resource['resource']."\" />\n";
+      $output .= "    </sioc:".$resource['class'].">\n";
+      $output .= "  </".$resource['property'].">\n";
+    }
+  }
+  $output .= "</$concept_name>\n";
+  $output .= "</rdf:RDF>\n";
+  drupal_set_header('Content-Type: application/rdf+xml; charset=utf-8');
+  print $output;
+}
+
+/**
+ * Add SIOC auto discovery link in the header
+ */
+function sioc_autodiscovery() {
+  if (arg(0)=='node' && is_numeric($id=arg(1))) $type = "node/$id";
+  else if (arg(0)=='comment' && is_numeric($id=arg(2))) $type = "node/$id";
+  else if (arg(0)=='user' && $id=arg(1)) $type = "user/$id";
+  else if (arg(0)=='blog' && $id=arg(1)) $type = "forum/$id";
+  else $type = 'site';
+  drupal_set_html_head('<link rel="media" type="application/rdf+xml" title="SIOC" href="'.url("sioc/$type", array('absolute' => TRUE)).'"/>');
+}
+
+/**
+ * Extract HTML A tags of type "application/rdf+xml"
+ * and reformat them as RDF autodiscovery links
+ */
+function extractLinks( $html ) {
+    $rdf = '';
+    preg_match_all('/<a\b([^>]+)>(.*?)<\/a>/ims', $html, $out, PREG_SET_ORDER);
+    foreach ($out as $val) {
+        if ( preg_match ( '/href\s*=\s*"([^"]*)"/ims', $val[1], $anchor ) ) {
+            if ( preg_match( '/type\s*=\s*"application\/rdf\+xml/i', $val[1]) ) {
+        preg_match( '/title\s*=\s*"([^"]*)"/ims', $val[1], $title );
+    // If type="application/rdf+xml":
+    //   create autodiscovery link in <HEAD> with same HREF and same TITLE
+                $rdf .= '<link rel="media" type="application/rdf+xml" title="' . $title[1] . '" href="' . trim($anchor[1]) . '"/>' . "\n";
+            }
+        }
+    }
+    return $rdf;
+}
+
+
+/**
+ * Extract and add DOAP autodiscovery link
+ */
+function doap_autodiscovery() {
+  if (arg(0)=='node' && is_numeric($id=arg(1))) $type = "node/$id";
+  else return;
+  
+  $node = db_fetch_object(db_query('SELECT DISTINCT body FROM {node} n, {node_revisions} r WHERE n.vid = r.vid AND n.nid = %d', $id));
+
+  if (($doap = extractLinks($node->body)) != '')
+    drupal_set_html_head($doap);
+}
+?>

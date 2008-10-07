@@ -1,0 +1,50 @@
+<?php
+// $Id: blockclone.install,v 1.2.2.1 2008/02/05 21:35:24 swentel Exp $
+
+/**
+ * Implementation of hook_schema().
+ */
+function blockclone_schema() {
+  $schema['blockclone'] = array(
+    'description' => t('Stores Cloned blocks'),
+    'fields' => array(
+      'blockclone_id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => t('Primary Key: Unique blockclone ID.'),
+      ),
+      'mod_module' => array(
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => t("The module from which the block originates; for example, 'user' for the Who's Online block, and 'block' for any custom blocks."),
+      ),
+      'mod_delta' => array(
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '0',
+        'description' => t('Unique ID for block within a module.'),
+      ),
+    ),
+    'primary key' => array('blockclone_id'),
+  );
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install()
+ */
+function blockclone_install() {
+  drupal_install_schema('blockclone');
+  drupal_set_message(t('Database table for Block Clone module has been installed.'));
+}
+
+/**
+ * Implementation of hook_uninstall()
+ */
+function blockclone_uninstall()  {
+  drupal_uninstall_schema('blockclone');
+  db_query("DELETE FROM {system} WHERE name = 'blockclone'");
+}

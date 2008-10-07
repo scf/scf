@@ -1,6 +1,6 @@
 ; $Id$
 name = Harvard IIC utility module
 description = Provides some utility functions.
-package = Harvard IIC
+package = SCF Custom
 version = VERSION
 core = 6.x

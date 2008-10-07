@@ -12,7 +12,8 @@
  * - $pubdate: 
  */
 ?>
-<div class="newsarticle-byline">
-  <div><?php if (!empty($author_name)): ?><?php print $author_name; ?>, <?php endif;?><?php print $media_source; ?></div>
-  <div><?php print $pubdate; ?></div>
+<div class="byline newsarticle">
+  <?php if (!empty($author_name)): ?><span class="name"><?php print $author_name; ?></span>,<?php endif;?>
+  <span class="source"><?php print $media_source ?> </span>
+  <span class="date"><?php print $pubdate ?></span>
 </div>

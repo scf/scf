@@ -1,0 +1,112 @@
+<?php
+/* $Id$ */
+
+/**
+*Define all menu paths in one central place. This makes it easier to change the paths without having to search the entire code.
+*/
+function _vocabindex_menu_paths($path)
+{
+	$paths=array(
+		'taxonomy'=>'admin/content/taxonomy',
+		'admin_main'=>'admin/content/vocabindex',
+		'admin_paths'=>'admin/content/vocabindex/paths',
+		'admin_settings'=>'admin/content/vocabindex/settings',
+	);
+	
+	return $paths[$path];
+}
+
+/**
+*Implementation of hook_perm()
+*/
+function vocabindex_perm()
+{
+	return array('manage vocabulary index pages', 'view vocabulary index pages');
+}
+
+/**
+*Implementation of hook_menu()
+*/
+function vocabindex_menu()
+{
+	$items[_vocabindex_menu_paths('admin_main')]=array(
+		'title'=>'Vocabulary index pages',
+		'description'=>'Create index pages for vocabularies.',
+		'access arguments'=>array('manage vocabulary index pages'),
+		'page callback'=>'vocabindex_page_admin_paths',
+		'file'=>'vocabindex.admin.inc',
+	);
+	
+	$items[_vocabindex_menu_paths('admin_paths')]=array(
+		'title'=>'Paths',
+		'access arguments'=>array('manage vocabulary index pages'),
+		'type'=>MENU_DEFAULT_LOCAL_TASK,
+		'file'=>'vocabindex.admin.inc',
+	);
+	
+	$items[_vocabindex_menu_paths('admin_settings')]=array(
+		'title'=>'Settings',
+		'description'=>'General settings.',
+		'access arguments'=>array('manage vocabulary index pages'),
+		'page callback'=>'drupal_get_form',
+		'page arguments'=>array('vocabindex_admin'),
+		'type'=>MENU_LOCAL_TASK,
+		'file'=>'vocabindex.admin.inc',
+	);
+	
+	//Prevent the DB request if the module doesn't exist anymore. Without this prevention this code would cause an error right after uninstalling the module.
+	if(module_exists('vocabindex'))
+	{
+		$result=db_query("SELECT vi.path, v.name, v.description FROM {vocabindex} vi LEFT JOIN	{vocabulary} v ON vi.vid=v.vid");
+		while($row=db_fetch_object($result))
+		{
+			//Menu callbacks for every vocabindex page
+			$items[$row->path]=array(
+				'title'=>$row->name,
+				'description'=>$row->description,
+				'access arguments'=>array('view vocabulary index pages'),
+				'page callback'=>'vocabindex_view_page',
+				'page arguments'=>array($row->path),
+				'type'=>MENU_SUGGESTED_ITEM,
+				'file'=>'vocabindex.view.inc',
+			);
+		}
+	}
+
+	return $items;
+}
+
+/**
+*Implementation of hook_theme()
+*/
+function vocabindex_theme()
+{
+	$functions['vocabindex_page']=array(
+		'template'=>'vocabindex_page',
+		'arguments'=>array(
+			'description'=>NULL,
+			'list'=>NULL,
+		),
+	);
+	
+	$functions['vocabindex_list']=array(
+		'template'=>'vocabindex_list',
+		'arguments'=>array(
+			'list_items'=>NULL,
+			'list_style'=>'threaded',
+		),
+	);
+	
+	$functions['vocabindex_list_item']=array(
+		'template'=>'vocabindex_list_item',
+		'arguments'=>array(
+			'url'=>NULL,
+			'name'=>NULL,
+			'description'=>NULL,
+			'zebra'=>NULL,
+			'children'=>NULL,
+		),
+	);
+	
+	return $functions;
+}

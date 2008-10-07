@@ -1,0 +1,5 @@
+; $Id: jtooltips.info,v 1.4 2007/11/20 09:48:04 psicomante Exp $
+name = jtooltips
+description =  Add tooltips to links using JQuery
+core = 6.x
+

@@ -1,0 +1,45 @@
+/* $Id: blackblue.css,v 1.1.2.3 2008/01/26 22:27:42 m3avrck Exp $ */
+
+#simplemenu {
+	background:#000;
+	color:#fff;
+	font:11px Verdana, Helvetica, sans-serif;
+	width:100%;
+	z-index:9999;
+	text-align:left;
+}
+#simplemenu a {
+	color:#fff;
+	text-decoration:none;
+	padding:3px 12px 5px 12px;
+	width:auto;
+}
+#simplemenu li {
+  background:transparent;
+}
+#simplemenu li.expanded > a {
+	background:url(arrow_right.gif) no-repeat 94%;
+	padding-right:18px;
+}
+#simplemenu li.root > a {
+	background:url(arrow_down.gif) no-repeat 94%;
+	padding-right:18px;
+}
+#simplemenu li:hover, #simplemenu li.sfHover,
+#simplemenu a:focus, #simplemenu a:hover, #simplemenu a:active {
+  background: #4c77b3;
+	color:#fff;
+}
+#simplemenu li ul {
+  border:1px solid #ccc;
+	background:#fafcff;
+}
+#simplemenu li ul a {
+	color:#4e4e4e; 
+	height:auto;
+}
+#simplemenu li ul li:hover, #simplemenu li ul li.sfHover,
+#simplemenu li ul a:focus, #simplemenu li ul a:hover, #simplemenu li ul a:active {
+  background-color:#cde;
+	color:#4e4e4e;
+}

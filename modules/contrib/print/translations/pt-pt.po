@@ -1,0 +1,376 @@
+# $Id: pt-pt.po,v 1.1.2.3 2008/05/13 00:12:57 jcnventura Exp $
+#
+# Portuguese (Portugal) translation of Drupal
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  print.module,v 1.15.2.5.2.26 2007/11/08 23:56:59 jcnventura
+#  print.info,v 1.1.2.2 2007/08/24 00:32:39 jcnventura
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2008-05-13 01:10+0200\n"
+"PO-Revision-Date: 2008-05-13 01:21+0100\n"
+"Last-Translator: \n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: print.admin.inc:27
+msgid "Logo URL"
+msgstr "URL do logótipo"
+
+#: print.admin.inc:31
+msgid "An alternative logo to display on the printer-friendly version. If left empty, the current theme's logo is used."
+msgstr "Um logótipo alternativo para ser mostrado na versão para imprimir. Em caso de omissão, é usado o logótipo do tema actual."
+
+#: print.admin.inc:36
+msgid "Stylesheet URL"
+msgstr "URL da folha de estilo (CSS)"
+
+#: print.admin.inc:40
+msgid "The URL to your custom print cascading stylesheet, if any. When none is specified, the default module CSS file is used."
+msgstr "O URL para a folha de estilo personalizada, caso existe. Em caso de omissão, a folha de estilo distribuída com este módulo é usada."
+
+#: print.admin.inc:45
+msgid "Printer-friendly URLs list"
+msgstr "Lista de URLs na versão para imprimir"
+
+#: print.admin.inc:47
+msgid "If set, a list of the destination URLs for the page links will be displayed at the bottom of the page."
+msgstr "Se activar esta opção, uma lista com os URL de destino das hiperligações existentes na página será mostrada no fundo da mesma."
+
+#: print.admin.inc:52
+msgid "Include comments in printer-friendly version"
+msgstr "Incluir comentários na versão para imprimir"
+
+#: print.admin.inc:54
+msgid "When this option is active, user comments are also included in the printer-friendly version. Requires the comment module."
+msgstr "Quando esta opção está activa, os comentários dos utilizadores serão incluídos na versão para imprimir. É necessário o módulo de comentários."
+
+#: print.admin.inc:59
+msgid "Open the printer-friendly version in a new window"
+msgstr "Abrir a versão para imprimir numa nova janela"
+
+#: print.admin.inc:60
+msgid "Disabled"
+msgstr "Inactiva"
+
+#: print.admin.inc:60
+msgid "Use HTML target (does not validate as XHTML Strict)"
+msgstr "Usar HTML target (não valida como XHTML Strict)"
+
+#: print.admin.inc:60
+msgid "Use Javascript (requires browser support)"
+msgstr "Usar Javascript (requer suporte pelo browser)"
+
+#: print.admin.inc:60
+msgid "Use Greybox Redux (requires the greybox module)"
+msgstr "Usar Greybox Redux (requer o módulo greybox)"
+
+#: print.admin.inc:60
+msgid "Use Thickbox (requires the thickbox module)"
+msgstr "Usar Thickbox (requer o módulo thickbox)"
+
+#: print.admin.inc:62
+msgid "Setting this option will make the printer-friendly version open in a new window/tab."
+msgstr "Activando esta opção irá fazer a versão para imprimir abrir numa nova janela ou separador."
+
+#: print.admin.inc:69
+#: print.pages.inc:172
+msgid "Source URL"
+msgstr "URL de origem"
+
+#: print.admin.inc:77
+msgid "Display source URL"
+msgstr "Mostrar URL de origem"
+
+#: print.admin.inc:79
+msgid "When this option is selected, the URL for the original page will be displayed at the bottom of the printer-friendly version."
+msgstr "Quando esta opção é escolhida, o URL da página original é mostrado na parte de baixo da versão para imprimir."
+
+#: print.admin.inc:84
+msgid "Add current time/date to the source URL"
+msgstr "Juntar hora e data actuais ao URL de origem"
+
+#: print.admin.inc:86
+msgid "Display the current date and time in the Source URL line."
+msgstr "Mostra a hora e data actuais na linha do URL de origem."
+
+#: print.admin.inc:91
+msgid "Force use of node ID in source URL"
+msgstr "Forçar uso do identificador numérico do nó no URL de origem"
+
+#: print.admin.inc:93
+msgid "Drupal will attempt to use the page's defined alias in case there is one. To force the use of the fixed URL, activate this option."
+msgstr "O Drupal irá tentar usar o nome alternativo da página, caso exista. Para forçar o uso de um URL fixo, active esta opção."
+
+#: print.admin.inc:109
+msgid "Printer-friendly page link"
+msgstr "Ligação à versão para imprimir na página"
+
+#: print.admin.inc:111
+#: print_pdf.admin.inc:26
+msgid "None (Disabled)"
+msgstr "Nenhuma (Inactiva)"
+
+#: print.admin.inc:111
+#: print_pdf.admin.inc:26
+msgid "Text only"
+msgstr "Apenas texto"
+
+#: print.admin.inc:111
+#: print_pdf.admin.inc:26
+msgid "Icon only"
+msgstr "Apenas ícone"
+
+#: print.admin.inc:111
+#: print_pdf.admin.inc:26
+msgid "Icon and Text"
+msgstr "Ícone e texto"
+
+#: print.admin.inc:112
+msgid "Enable or disable the printer-friendly page link for each node. Even if the link is disabled, you can still view the print version of a node by going to print/nid where nid is the numeric id of the node."
+msgstr "Activar ou desactivar a ligação à versão para imprimir nas páginas de conteúdo. Mesmo que a ligação esteja desactivada, é ainda possível visualizar a versão para imprimir entrando na página print/nid onde nid é o identificador númerico do nó."
+
+#: print.admin.inc:117
+#: print_pdf.admin.inc:32
+msgid "Show link in system (non-content) pages"
+msgstr "Mostrar ligação em páginas de sistema (que não são conteúdo)"
+
+#: print.admin.inc:119
+msgid "Setting this option will add a printer-friendly version page link on pages created by Drupal or the enabled modules."
+msgstr "Esta opção, ao ser activada, adiciona uma ligação à versão para impressão em paǵinas criadas pelo Drupal ou pelos módulos activos."
+
+#: print.admin.inc:124
+msgid "Take control of the book module printer-friendly link"
+msgstr "Assumir controle da ligação à versão para imprimir do módulo Livro"
+
+#: print.admin.inc:126
+msgid "Activate this to have the printer-friendly link in book nodes handled by this module. Requires the (core) book module."
+msgstr "Active isto para que a ligação à versão para imprimir em páginas de tipo livro seja tratada por este módulo. Requer o módulo (core) book."
+
+#: print.admin.inc:131
+msgid "Send to printer"
+msgstr "Enviar para a impressora"
+
+#: print.admin.inc:133
+msgid "Automatically calls the browser's print function when the printer-friendly version is displayed."
+msgstr "Chama automaticamente a função do navegador para enviar a versão para imprimir na impressora."
+
+#: print.admin.inc:140
+msgid "Robots META tags"
+msgstr "Etiquetas meta para Robots (motores de pesquisa)"
+
+#: print.admin.inc:148
+msgid "Add noindex"
+msgstr "Especificar noindex"
+
+#: print.admin.inc:150
+msgid "Instruct robots to not index printer-friendly pages. Recommended for good search engine karma."
+msgstr "Impede os robots de indexar as páginas de versão para imprimir. Recomendado para um bom karma com os motores de pesquisa."
+
+#: print.admin.inc:155
+msgid "Add nofollow"
+msgstr "Especificar nofollow"
+
+#: print.admin.inc:157
+msgid "Instruct robots to not follow outgoing links on printer-friendly pages."
+msgstr "Indica aos robots para não seguir as hiperligações de saída nas páginas de versão para imprimir."
+
+#: print.admin.inc:162
+msgid "Add noarchive"
+msgstr "Especificar noarchive"
+
+#: print.admin.inc:164
+msgid "Non-standard tag to instruct search engines to not show a \"Cached\" link for your printer-friendly pages. Recognized by Googlebot."
+msgstr "Etiqueta não-standard que indica aos motores de pesquisa que não se deve mostrar uma ligação para a versão \"em cache\" das páginas de versão para imprimir. Reconhecido pelo Googlebot."
+
+#: print.admin.inc:169
+msgid "Add nocache"
+msgstr "Especificar nocache"
+
+#: print.admin.inc:171
+msgid "Non-standard tag to instruct search engines to not show a \"Cached\" link for your printer-friendly pages"
+msgstr "Etiqueta não-standard que indica aos motores de pesquisa que não se deve mostrar uma ligação para a versão \"em cache\" das páginas de versão para imprimir."
+
+#: print.pages.inc:150
+msgid "Published on %site_name"
+msgstr "Publicado em %site_name"
+
+#: print.pages.inc:169
+msgid "retrieved on %date"
+msgstr "acedido em %date"
+
+#: print.pages.inc:182
+msgid "Anonymous"
+msgstr "Anónimo"
+
+#: print.pages.inc:183
+msgid "By %author"
+msgstr "Por %author"
+
+#: print.pages.inc:187
+msgid "Created %date"
+msgstr "Criado %date"
+
+#: print.pages.inc:217
+msgid "Links"
+msgstr "Ligações"
+
+#: print_pdf.admin.inc:24
+msgid "PDF version link"
+msgstr "Ligação à versão PDF"
+
+#: print_pdf.admin.inc:27
+msgid "Enable or disable the PDF version link for each node. Even if the link is disabled, you can still view the PDF version of a node by going to printpdf/nid where nid is the numeric id of the node."
+msgstr "Activar ou desactivar a ligação à versão PDF nas páginas de conteúdo. Mesmo que a ligação esteja desactivada, é ainda possível visualizar a versão PDF entrando na página printpdf/nid onde nid é o identificador númerico do nó."
+
+#: print_pdf.admin.inc:34
+msgid "Setting this option will add a PDF version page link on pages created by Drupal or the enabled modules."
+msgstr "Esta opção, ao ser activada, adiciona uma ligação à versão PDF em páginas criadas pelo Drupal ou pelos módulos activos."
+
+#: print_pdf.admin.inc:39
+msgid "Show link in book nodes"
+msgstr "Mostrar ligação em páginas de tipo livro"
+
+#: print_pdf.admin.inc:41
+msgid "Activate this to add a PDF version link in book nodes. Requires the (core) book module."
+msgstr "Active isto para que a ligação à versão PDF em páginas de tipo livro seja tratada por este módulo. Requer o módulo (core) book."
+
+#: print_pdf.admin.inc:49
+msgid "No PDF generation tool found! Please dowload a supported PHP PDF generation tool. Check this module's INSTALL.txt for more details."
+msgstr "Não foi encontrada uma ferramenta de criação de PDF. Por favor, descarregue uma das ferramentas PHP de criação de PDFs suportada. Veja o ficheiro INSTALL.txt deste módulo para mais detalhes."
+
+#: print_pdf.admin.inc:81
+msgid "PDF generation tool"
+msgstr "Ferramenta de criação de PDF"
+
+#: print_pdf.admin.inc:84
+msgid "This option selects the PDF generation tool being used by this module to create the PDF version."
+msgstr "Esta opção seleciona a ferramenta de criação de PDF usada por este módulo para criar a versão PDF."
+
+#: print.module:221
+msgid "Show printer-friendly version link"
+msgstr "Mostrar ligação para a versão para imprimir"
+
+#: print.module:223
+msgid "Displays the link to a printer-friendly version of the content. Further configuration is available on the !settings."
+msgstr "Mostra uma ligação para a versão para imprimir do conteúdo. Configuravel também em !settings"
+
+#: print.module:223;229
+#: print_pdf.module:136;142
+msgid "settings page"
+msgstr "página de configuração"
+
+#: print.module:227
+msgid "Show printer-friendly version link in individual comments"
+msgstr "Mostrar ligação para a versão para imprimir em cada comentário"
+
+#: print.module:229
+msgid "Displays the link to a printer-friendly version of the comment. Further configuration is available on the !settings."
+msgstr "Mostra uma ligação para a versão para imprimir do comentário. Configuravel também em !settings"
+
+#: print.module:296
+msgid "Printer-friendly version"
+msgstr "Versão para imprimir"
+
+#: print.module:298
+msgid "Display a printer-friendly version of this page."
+msgstr "Mostrar uma versão para imprimir desta página"
+
+#: print.module:64
+msgid "access print"
+msgstr "acesso a print"
+
+#: print.module:64
+msgid "administer print"
+msgstr "administrar print"
+
+#: print.module:88
+msgid "Printer-friendly"
+msgstr "Versão para imprimir"
+
+#: print.module:95
+#: print.info:0
+#: print_pdf.info:0
+msgid "Printer-friendly pages"
+msgstr "Versões para imprimir"
+
+#: print.module:96
+#: print.info:0
+msgid "Adds a printer-friendly version link to content and administrative pages."
+msgstr "Adiciona às páginas de conteúdo e administração uma ligação para a versão para imprimir"
+
+#: print.module:103
+msgid "Web page"
+msgstr "Página da Rede"
+
+#: print.module:108
+msgid "Settings"
+msgstr "Configuração"
+
+#: print.module:0
+msgid "print"
+msgstr "print"
+
+#: print_pdf.module:134
+msgid "Show PDF version link"
+msgstr "Mostrar ligação para a versão PDF"
+
+#: print_pdf.module:136
+msgid "Displays the link to a PDF version of the content. Further configuration is available on the !settings."
+msgstr "Mostra uma ligação para a versão PDF do conteúdo. Configurável também em !settings"
+
+#: print_pdf.module:140
+msgid "Show PDF version link in individual comments"
+msgstr "Mostrar ligação para a versão PDF em cada comentário"
+
+#: print_pdf.module:142
+msgid "Displays the link to a PDF version of the comment. Further configuration is available on the !settings."
+msgstr "Mostra uma ligação para a versão PDF do comentário. Configurável também em !settings"
+
+#: print_pdf.module:149
+#: print_pdf.info:0
+msgid "PDF version"
+msgstr "Versão PDF"
+
+#: print_pdf.module:151
+msgid "Display a PDF version of this page."
+msgstr "Mostrar uma versão PDF desta página"
+
+#: print_pdf.module:40
+msgid "Printer-friendly PDF"
+msgstr "Versão PDF"
+
+#: print_pdf.module:47
+msgid "PDF"
+msgstr "PDF"
+
+#: print_pdf.module:0
+msgid "print_pdf"
+msgstr "print_pdf"
+
+#: print.install:8
+msgid "Printer-friendly Page settings are available under !link"
+msgstr "Configurações da Versão para imprimir estão disponíveis em !link"
+
+#: print.info:0
+msgid "Printer-friendly pages (core)"
+msgstr "Versão para imprimir (principal)"
+
+#: print_pdf.info:0
+msgid "Adds the capability to export pages as PDF."
+msgstr "Adiciona a capacidade de exportar páginas como PDF."
+
+#~ msgid "Printer-friendly Pages"
+#~ msgstr "Versões para imprimir"
+#~ msgid "By"
+#~ msgstr "Por"
+#~ msgid "Printer-friendly pages as PDF"
+#~ msgstr "Versões PDF"
+#~ msgid "Enabled"
+#~ msgstr "Activa"
+

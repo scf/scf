@@ -1,0 +1,6 @@
+; $Id: devel_themer.info,v 1.3 2007/12/30 17:16:14 weitzman Exp $
+name = Theme developer
+description = Essential theme API information for theme developers
+package = Development
+dependencies[] = devel
+core = 6.x

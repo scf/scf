@@ -1,0 +1,248 @@
+<?php
+
+define('CALAIS_CONTENT_TYPE', 'TEXT/TXT');
+define('CALAIS_OUTPUT_FORMAT', 'xml/rdf');
+define('CALAIS_PARAMS_NS', 'c');
+
+function calais_perm() {
+  return array('use calais webservice');
+}
+
+function calais_menu() {
+  $items = array();
+
+  $items['admin/settings/calais'] = array(
+    'title' => t('Calais settings'),
+    'description' => t('Set Calais settings and API key'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('calais_admin'),
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+   );
+   
+   $items['calais/test'] = array(
+     'title' => t('Calais Test'),
+     'page callback' => 'calais_test_rdf',
+     'access arguments' => array('access content'),
+     'type' => MENU_CALLBACK,
+   );
+
+  return $items;
+}
+
+function calais_admin() {
+  $options = array('1' => t('Enabled'), '0' => t('Disabled'));
+  $form['calais_apikey'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Calais API Key'),
+    '#default_value' => variable_get('calais_apikey', null),
+    '#size' => 30,
+    '#description' => l(t("Apply for an API key"), 'http://developer.opencalais.com/'),
+  );
+  $form['calais_requestmethod'] = array(
+    '#type' => 'select',
+    '#title' => t('Calais API Request Method'),
+    '#default_value' => variable_get('calais_requestmethod', 'POST'),
+    '#options' => array(
+      'POST' => t('POST'),
+      'SOAP' => t('SOAP'),
+    ),
+    '#description' => t('Select your request method. PHP must be compiled with the <a href="http://php.net/soap" title="SOAP Extension Manual">SOAP extension</a> if you want to use the SOAP method.'),
+  );
+  $form['parameters'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Parameters'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['parameters']['calais_allowdistribution'] = array(
+    '#type' => 'radios',
+    '#title' => t('Allow Distribution'),
+    '#default_value' =>  variable_get('calais_allowdistribution', 1),
+    '#options' => $options,
+    '#description' => t('Indicates whether the extracted metadata can be distributed'),
+  );
+  $form['parameters']['calais_allowsearch'] = array(
+    '#type' => 'radios',
+    '#title' => t('Allow Search'),
+    '#default_value' =>  variable_get('calais_allowsearch', 1),
+    '#options' => $options,
+    '#description' => t('Indicates whether future searches can be performed on the extracted metadata'),
+  );
+
+  return system_settings_form($form);
+}
+
+function calais_form_alter(&$form, $form_state, $form_id) {
+  if (user_access('use calais webservice')) {
+    switch ($form_id) {
+      case 'taxonomy_form_vocabulary':
+        $form['calais'] = array(
+          '#type' => 'checkbox',
+          '#title' => t('Calais Semantic Tagging'),
+          '#description' => t('Utilizes the Calais semantic metadata to automatically generate terms for content.'),
+          '#weight' => -100,
+        );
+        break;
+    }
+  }
+  return $form;
+}
+
+// This page is purely for testing the entity parsing. You can test it by going to example.com/calais/test
+function calais_test_rdf() {		 
+  $rdf = "<?xml version=\"1.0\" encoding=\"utf-8\"?>
+  <string xmlns=\"http://clearforest.com/\"><!--Use of the Calais Web Service is governed by the Terms of Service located at http://www.opencalais.com. By using this service or the results of the service you agree to these terms of service.--><!--Relations: 
+
+  NaturalFeature: Pacific coast, Pacific Ocean, Andes mountains
+  Continent: South America
+  IndustryTerm: mining
+  Country: Republic of Peru, Ecuador, Brazil, Peru, Chile, Colombia, Bolivia--><rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\" xmlns:c=\"http://s.opencalais.com/1/pred/\"><rdf:Description c:allowDistribution=\"true\" c:allowSearch=\"true\" c:externalID=\"1\" c:id=\"http://id.opencalais.com/iFyeXU37-DUUqgvtP1F59Q\" rdf:about=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/sys/DocInfo\"/><c:document><![CDATA[<Document><Title>1208232585882-85FDAB4B-502881</Title><Date>2008-04-15</Date><Body>Peru, officially the Republic of Peru, is a country in western South America. It is bordered on the north by Ecuador and Colombia, on the east by Brazil, on the southeast by Bolivia, on the south by Chile, and on the west by the Pacific Ocean.
+
+  Peruvian territory was home to the Norte Chico civilization, one of the oldest in the world, and to the Inca Empire, the largest state in Pre-Columbian America. The Spanish Empire conquered the region in the 16th century and established a Viceroyalty, which included most of its South American colonies. After achieving independence in 1821, Peru has undergone periods of political unrest and fiscal crisis as well as periods of stability and economic upswing.
+
+  Peru is a representative democratic republic divided into 25 regions. Its geography varies from the arid plains of the Pacific coast to the peaks of the Andes mountains and the tropical forests of the Amazon Basin. It is a developing country with a medium Human Development Index score and a poverty level around 45%. Its main economic activities include agriculture, fishing, mining, and manufacturing of products such as textiles.
+
+  The Peruvian population, estimated at 28 million, is multiethnic, including Amerindians, Europeans, Africans and Asians. The main spoken language is Spanish, although a significant number of Peruvians speak Quechua and other native languages. This mixture of cultural traditions has resulted in a wide diversity of expressions in fields such as art, cuisine, literature, and music.</Body></Document>]]></c:document><c:submitter>admin</c:submitter></rdf:Description><rdf:Description c:contentType=\"TEXT/TXT\" c:emVer=\"UnifiedIM-DJ\" c:langIdVer=\"DefaultLangId\" c:language=\"English\" c:processingVer=\"CalaisJob01\" c:submitionDate=\"2008-04-15 00:09:45.882\" rdf:about=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744/meta\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/sys/DocInfoMeta\"/><c:docId rdf:resource=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744\"/><c:submitterCode>15f15585-9a3f-b493-050b-4ef4a7bb2aa4</c:submitterCode><c:signature>digestalg-1|v0GKbAcwlZJWmIzzotI5QmzCv+E=|dQWmmjUACaNH1xdfJh9EuPYOhC4Xx+fVx05egCmGg9a6LbClFfLNAg==</c:signature></rdf:Description><rdf:Description rdf:about=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744/lid/DefaultLangId\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/lid/DefaultLangId\"/><c:docId rdf:resource=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744\"/><c:lang rdf:resource=\"http://d.opencalais.com/lid/DefaultLangId/English\"/></rdf:Description><rdf:Description rdf:about=\"http://d.opencalais.com/genericHasher-1/4323fd40-f383-3268-841f-d58aa8e6921b\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/em/e/Continent\"/><c:name>South America</c:name></rdf:Description><rdf:Description rdf:about=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744/Instance/1\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/sys/InstanceInfo\"/><c:docId rdf:resource=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744\"/><c:subject rdf:resource=\"http://d.opencalais.com/genericHasher-1/4323fd40-f383-3268-841f-d58aa8e6921b\"/><!--Continent: South America--><c:detection>[the Republic of Peru, is a country in western ]South America[. It is bordered on the north by Ecuador and]</c:detection><c:offset>146</c:offset><c:length>13</c:length></rdf:Description><rdf:Description rdf:about=\"http://d.opencalais.com/genericHasher-1/f421cd6c-349f-35ed-a36e-e980f35ff7c2\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/em/e/Country\"/><c:name>Chile</c:name></rdf:Description><rdf:Description rdf:about=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744/Instance/2\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/sys/InstanceInfo\"/><c:docId rdf:resource=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744\"/><c:subject rdf:resource=\"http://d.opencalais.com/genericHasher-1/f421cd6c-349f-35ed-a36e-e980f35ff7c2\"/><!--Country: Chile--><c:detection>[on the southeast by Bolivia, on the south by ]Chile[, and on the west by the Pacific Ocean.
+
+  Peruvian]</c:detection><c:offset>282</c:offset><c:length>5</c:length></rdf:Description><rdf:Description rdf:about=\"http://d.opencalais.com/genericHasher-1/70fef6b9-73c2-3423-91d4-83d40bfe0e21\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/em/e/Country\"/><c:name>Ecuador</c:name></rdf:Description><rdf:Description rdf:about=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744/Instance/3\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/sys/InstanceInfo\"/><c:docId rdf:resource=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744\"/><c:subject rdf:resource=\"http://d.opencalais.com/genericHasher-1/70fef6b9-73c2-3423-91d4-83d40bfe0e21\"/><!--Country: Ecuador--><c:detection>[South America. It is bordered on the north by ]Ecuador[ and Colombia, on the east by Brazil, on the]</c:detection><c:offset>192</c:offset><c:length>7</c:length></rdf:Description><rdf:Description rdf:about=\"http://d.opencalais.com/genericHasher-1/06915d15-11ad-3995-9a0a-a4ce09fad7b9\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/em/e/Country\"/><c:name>Republic of Peru</c:name></rdf:Description><rdf:Description rdf:about=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744/Instance/4\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/sys/InstanceInfo\"/><c:docId rdf:resource=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744\"/><c:subject rdf:resource=\"http://d.opencalais.com/genericHasher-1/06915d15-11ad-3995-9a0a-a4ce09fad7b9\"/><!--Country: Republic of Peru--><c:detection>[&lt;Date&gt;2008-04-15&lt;/Date&gt;&lt;Body&gt;Peru, officially the ]Republic of Peru[, is a country in western South America. It is]</c:detection><c:offset>104</c:offset><c:length>16</c:length></rdf:Description><rdf:Description rdf:about=\"http://d.opencalais.com/genericHasher-1/7aef8a39-83e9-3006-a9ff-d6d310b71d0f\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/em/e/Country\"/><c:name>Colombia</c:name></rdf:Description><rdf:Description rdf:about=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744/Instance/5\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/sys/InstanceInfo\"/><c:docId rdf:resource=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744\"/><c:subject rdf:resource=\"http://d.opencalais.com/genericHasher-1/7aef8a39-83e9-3006-a9ff-d6d310b71d0f\"/><!--Country: Colombia--><c:detection>[It is bordered on the north by Ecuador and ]Colombia[, on the east by Brazil, on the southeast by]</c:detection><c:offset>204</c:offset><c:length>8</c:length></rdf:Description><rdf:Description rdf:about=\"http://d.opencalais.com/genericHasher-1/f7b6a62b-11f4-3414-ba7b-a283c5c80af1\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/em/e/IndustryTerm\"/><c:name>mining</c:name></rdf:Description><rdf:Description rdf:about=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744/Instance/6\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/sys/InstanceInfo\"/><c:docId rdf:resource=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744\"/><c:subject rdf:resource=\"http://d.opencalais.com/genericHasher-1/f7b6a62b-11f4-3414-ba7b-a283c5c80af1\"/><!--IndustryTerm: mining--><c:detection>[activities include agriculture, fishing, ]mining[, and manufacturing of products such as]</c:detection><c:offset>1167</c:offset><c:length>6</c:length></rdf:Description><rdf:Description rdf:about=\"http://d.opencalais.com/genericHasher-1/00e6c6a3-27c1-3878-8e89-70b5e509259a\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/em/e/Country\"/><c:name>Peru</c:name></rdf:Description><rdf:Description rdf:about=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744/Instance/7\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/sys/InstanceInfo\"/><c:docId rdf:resource=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744\"/><c:subject rdf:resource=\"http://d.opencalais.com/genericHasher-1/00e6c6a3-27c1-3878-8e89-70b5e509259a\"/><!--Country: Peru--><c:detection>[FDAB4B-502881&lt;/Title&gt;&lt;Date&gt;2008-04-15&lt;/Date&gt;&lt;Body&gt;]Peru[, officially the Republic of Peru, is a country]</c:detection><c:offset>83</c:offset><c:length>4</c:length></rdf:Description><rdf:Description rdf:about=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744/Instance/8\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/sys/InstanceInfo\"/><c:docId rdf:resource=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744\"/><c:subject rdf:resource=\"http://d.opencalais.com/genericHasher-1/00e6c6a3-27c1-3878-8e89-70b5e509259a\"/><!--Country: Peru--><c:detection>[colonies. After achieving independence in 1821, ]Peru[ has undergone periods of political unrest and]</c:detection><c:offset>670</c:offset><c:length>4</c:length></rdf:Description><rdf:Description rdf:about=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744/Instance/9\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/sys/InstanceInfo\"/><c:docId rdf:resource=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744\"/><c:subject rdf:resource=\"http://d.opencalais.com/genericHasher-1/00e6c6a3-27c1-3878-8e89-70b5e509259a\"/><!--Country: Peru--><c:detection>[as periods of stability and economic upswing.
+
+  ]Peru[ is a representative democratic republic divided]</c:detection><c:offset>790</c:offset><c:length>4</c:length></rdf:Description><rdf:Description rdf:about=\"http://d.opencalais.com/genericHasher-1/3d119b1f-6f76-3d40-874d-714503a9880b\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/em/e/NaturalFeature\"/><c:name>Pacific coast</c:name></rdf:Description><rdf:Description rdf:about=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744/Instance/10\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/sys/InstanceInfo\"/><c:docId rdf:resource=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744\"/><c:subject rdf:resource=\"http://d.opencalais.com/genericHasher-1/3d119b1f-6f76-3d40-874d-714503a9880b\"/><!--NaturalFeature: Pacific coast--><c:detection>[Its geography varies from the arid plains of ]the Pacific coast[ to the peaks of the Andes mountains and the]</c:detection><c:offset>905</c:offset><c:length>17</c:length></rdf:Description><rdf:Description rdf:about=\"http://d.opencalais.com/genericHasher-1/4a8b8290-e002-3369-9de3-4e58210d0cd9\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/em/e/Country\"/><c:name>Brazil</c:name></rdf:Description><rdf:Description rdf:about=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744/Instance/11\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/sys/InstanceInfo\"/><c:docId rdf:resource=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744\"/><c:subject rdf:resource=\"http://d.opencalais.com/genericHasher-1/4a8b8290-e002-3369-9de3-4e58210d0cd9\"/><!--Country: Brazil--><c:detection>[north by Ecuador and Colombia, on the east by ]Brazil[, on the southeast by Bolivia, on the south by]</c:detection><c:offset>229</c:offset><c:length>6</c:length></rdf:Description><rdf:Description rdf:about=\"http://d.opencalais.com/genericHasher-1/f6cb3d38-504e-3254-8e23-3f9d44d8dab4\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/em/e/NaturalFeature\"/><c:name>Andes mountains</c:name></rdf:Description><rdf:Description rdf:about=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744/Instance/12\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/sys/InstanceInfo\"/><c:docId rdf:resource=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744\"/><c:subject rdf:resource=\"http://d.opencalais.com/genericHasher-1/f6cb3d38-504e-3254-8e23-3f9d44d8dab4\"/><!--NaturalFeature: Andes mountains--><c:detection>[ arid plains of the Pacific coast to the peaks of ]the Andes mountains[ and the tropical forests of the Amazon Basin. It]</c:detection><c:offset>939</c:offset><c:length>19</c:length></rdf:Description><rdf:Description rdf:about=\"http://d.opencalais.com/genericHasher-1/b0b139ee-aacf-3419-80da-48f8674cb07b\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/em/e/Country\"/><c:name>Bolivia</c:name></rdf:Description><rdf:Description rdf:about=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744/Instance/13\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/sys/InstanceInfo\"/><c:docId rdf:resource=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744\"/><c:subject rdf:resource=\"http://d.opencalais.com/genericHasher-1/b0b139ee-aacf-3419-80da-48f8674cb07b\"/><!--Country: Bolivia--><c:detection>[on the east by Brazil, on the southeast by ]Bolivia[, on the south by Chile, and on the west by the]</c:detection><c:offset>257</c:offset><c:length>7</c:length></rdf:Description><rdf:Description rdf:about=\"http://d.opencalais.com/genericHasher-1/b7d4103b-9e2a-320e-86fd-a660c5fbde8a\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/em/e/NaturalFeature\"/><c:name>Pacific Ocean</c:name></rdf:Description><rdf:Description rdf:about=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744/Instance/14\"><rdf:type rdf:resource=\"http://s.opencalais.com/1/type/sys/InstanceInfo\"/><c:docId rdf:resource=\"http://d.opencalais.com/dochash-1/b455618e-07e2-37aa-b5da-6159fbf63744\"/><c:subject rdf:resource=\"http://d.opencalais.com/genericHasher-1/b7d4103b-9e2a-320e-86fd-a660c5fbde8a\"/><!--NaturalFeature: Pacific Ocean--><c:detection>[on the south by Chile, and on the west by ]the Pacific Ocean[.
+
+  Peruvian territory was home to the Norte Chico]</c:detection><c:offset>308</c:offset><c:length>17</c:length></rdf:Description></rdf:RDF></string>";
+
+  $entities = calais_get_entities($rdf);
+  foreach ($entities as $entity) {
+    $output .= $entity . '<br>';
+  }
+  return '<pre>' . $output . '</pre>';
+}
+
+// @TODO: needs to check permissions?
+function calais_get_rdf($node) {
+  $licenseID = variable_get('calais_apikey', false);
+  
+  // If license is not set, don't bother making request
+  if (!$licenseID) {
+    return false;
+  }
+  
+  $content = check_plain($node->body);
+  $directives = array(
+    'processingDirectives' => array(
+      'contentType' => CALAIS_CONTENT_TYPE,
+      'outputFormat' => CALAIS_OUTPUT_FORMAT,
+    ),
+    'userDirectives' => array(
+      'allowDistribution' => _calais_bool2string(variable_get('calais_allowdistribution', false)),
+      'allowSearch' => _calais_bool2string(variable_get('calais_allowsearch', false)),
+      'externalID' => $node->nid,
+      'submitter' => $node->name,
+    ),
+  );
+  // Maybe grab cck types as externalMetadata?
+  $paramsXML = calais_get_parameters($directives);
+  $method = variable_get('calais_method', 'POST');
+  return _calais_get_rdf($content, $paramsXML, $licenseID, $method);
+}
+
+function _calais_get_rdf($content, $paramsXML, $licenseID, $method = null) {
+  switch (strtoupper($method)) {
+    case 'SOAP':
+      ini_set("soap.wsdl_cache_enabled", "0");
+      try {
+        $client = new SoapClient("http://api.opencalais.com/enlighten/?wsdl");
+
+        $enlighten = new stdClass;
+        $enlighten->licenseID = $licenseID;
+        $enlighten->content = check_plain($content);
+        $enlighten->paramsXML = $paramsXML;
+
+        $result = $client->Enlighten($enlighten);    
+        return $result->EnlightenResult;
+      }
+      catch (SoapFault $fault) {
+        // @TODO: Check this syntax
+        drupal_set_message(t(trigger_error("SOAP Fault: (faultcode: {$fault->faultcode}, faultstring: {$fault->faultstring})", E_USER_ERROR)), 'error');
+        return false;
+      }
+      break;
+    case 'POST':
+    default:
+      $data = 'licenseID=' . $licenseID . '&content=' . urlencode($content) . '&paramsXML=' . urlencode($paramsXML);
+      return drupal_http_request('http://api.opencalais.com/enlighten/calais.asmx/Enlighten', array(), 'POST', $data);
+      break;
+  }
+  return false;
+}
+
+// add documentation for directives array structure
+function calais_get_parameters($directives = array()) {
+  $xml = new XMLWriter(); // requires PHP 5.1.2+
+  $xml->openMemory();
+  $xml->setIndent(FALSE);
+  $xml->startDocument('1.0', 'utf-8');
+  $xml->startElementNS(CALAIS_PARAMS_NS, 'params', 'http://s.opencalais.com/1/pred/');
+    foreach ($directives as $directive => $values) {
+      $xml->startElement(CALAIS_PARAMS_NS . ':' . $directive);
+      foreach ($values as $key => $value) {
+        $xml->writeAttribute(CALAIS_PARAMS_NS . ':' . $key, $value);
+      }
+      $xml->endElement();
+    }
+    $xml->endElement();
+  $xml->endElement();
+  return $xml->outputMemory();
+}
+
+function calais_get_entities($rdf) {
+  $entities = array();
+	$entity_types = calais_get_entity_types();
+	
+  $parser = ARC2::getRDFXMLParser();
+  $parser->parse(null, $rdf);
+  $items = rdf_select($parser->getSimpleIndex(), true, true, true);
+  
+  for ($i = 0, $count = count($items); $i<$count; $i++) {
+    $tokens = explode('/', $items[$i][2]);
+    if (isset($entity_types[end($tokens)])) {
+      $i++;
+      $entities[] = $items[$i][2];
+    }
+  }
+  return $entities;
+}
+
+function calais_get_entity_types() {
+  return array(
+	  'Anniversary' => 'Anniversary',
+		'City' => 'City',
+		'Company' => 'Company',
+		'Continent' => 'Continent',
+		'Country' => 'Country',
+		'Currency' => 'Currency',
+		'EmailAddress' => 'Email Address',
+		'Facility' => 'Facility',
+		'FaxNumber' => 'Fax Number',
+		'Holiday' => 'Holiday',
+		'IndustryTerm' => 'Industry Term',
+		'NaturalDisaster' => 'Natural Disaster',
+		'NaturalFeature' => 'Natural Feature',
+		'Organization' => 'Organization',
+		'Person' => 'Person',
+		'PhoneNumber' => 'Phone Number',
+		'ProvinceOrState' => 'Province or State',
+		'Region' => 'Region',
+		'Technology' => 'Technology',
+		'URL' => 'URL',
+	);
+}
+
+function _calais_bool2string($bool) {
+  if ($bool) {
+    return 'true';
+  }
+  else {
+    return 'false';
+  }
+}

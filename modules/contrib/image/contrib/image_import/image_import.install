@@ -1,0 +1,11 @@
+<?php
+// $Id: image_import.install,v 1.4 2007/07/18 17:04:37 drewish Exp $
+
+function image_import_uninstall() {
+  variable_del('image_import_path');
+}
+
+function image_import_update_1() {
+  variable_del('image_import_extensions');
+  return array();
+}

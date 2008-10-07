@@ -1,0 +1,167 @@
+<?php
+// ; $Id: ajax_pic_preview.module,v 1.1.2.1 2008/04/25 08:11:29 mmilano Exp $
+
+/**
+ * @file
+ * This module uses JQuery and the AJAX File Upload Jquery plugin(logan) to
+ * present a preview of a user's new picture as soon as they select one.
+ * Uploads will be sent through the same validation process and errors will be
+ * reported immediately after selection has been made.
+ */
+
+/**
+ * Implementation of hook_menu
+ */
+function ajax_pic_preview_menu() {
+  $items['js/ajax_pic_preview_upload'] = array(
+    'page callback' => 'ajax_pic_preview_upload',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['js/ajax_pic_preview.js'] = array(
+    'page callback' => 'ajax_pic_preview_js',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_form_alter
+ */
+function ajax_pic_preview_form_alter($form, $form_state, $form_id) {
+  // ad js files to the form
+  switch ($form_id) {
+    case 'user_profile_form':
+      drupal_add_js(drupal_get_path('module', 'ajax_pic_preview') .'/ajaxfileupload.js');
+      drupal_add_js('js/ajax_pic_preview.js', 'module', 'footer', TRUE, FALSE);
+      break;
+  }
+}
+
+/**
+ * Menu callback for /js/ajax_pic_preview_upload
+ * This function processes the upload request and prints JSON to the screen.
+ */
+function ajax_pic_preview_upload() {
+  global $user;
+  $response = array();
+  $response['error'] = '';
+  $response['msg'] = '';
+  // use same validators used in the user module
+  $validators = array(
+    'file_validate_is_image' => array(),
+    'file_validate_image_resolution' => array(variable_get('user_picture_dimensions', '85x85')),
+    'file_validate_size' => array(variable_get('user_picture_file_size', '30') * 1024),
+  );
+  // set files var with the validators
+  if ($file = file_save_upload('picture_upload', $validators)) {
+    // get image info
+    $info = image_get_info($file->filepath);
+    // named the file with the session id and extension from the image info
+    $destination = variable_get('user_picture_path', 'pictures') .'/tmp/'. session_id() .'.'. $info['extension'];
+    // copy the file to the pictures/tmp directory
+    if (file_copy($file, $destination, FILE_EXISTS_REPLACE)) {
+      $response['img'] = base_path() . file_directory_path() .'/'. $destination .'?'. md5(rand(0, 9999));
+    }
+    else {
+      form_set_error(0, 'Could not upload file.');
+    }
+  }
+  // set error messages and clear the error queue
+  $errors = drupal_get_messages('error', TRUE);
+  $response['error'] = key_exists('error', $errors)?'<br />'. implode("<br />", $errors['error']):'';
+  // set the status message and clear the status queue
+  $messages = drupal_get_messages('status', TRUE);
+  $response['msg'] = key_exists('status', $messages)?'<br />'. implode("<br />", $messages['status']):'';
+  // print JSON response
+  print drupal_to_js($response);
+}
+
+/**
+ * Implementation of hook_cron
+ */
+function ajax_pic_preview_cron() {
+  // set path
+  $path = file_directory_path() .'/'. variable_get('user_picture_path', 'pictures') .'/tmp/';
+  // read pictures/tmp directory
+  $handle = opendir($path);
+  // loop through files and delete where the session doesn't currently exist
+  while (false !== ($file = readdir($handle))) {
+    // continue if the directory is current or down one
+    if ($file == '.' || $file == '..') {
+      continue;
+    }
+    // set the session id
+    $sessionid = substr($file, 0, strpos($file, '.'));
+    // lookup session id
+    $result = db_query("SELECT count(*) FROM {sessions} WHERE sid='%s'", $sessionid);
+    // set the number of results found
+    $count = db_result($result);
+    // remove file if session no longer exists
+    if ($count == 0) {
+      file_delete($path . $file);
+    }
+  }
+  // close directory
+  closedir($handle);
+}
+
+/**
+ * Menu callback for /js/ajax_pic_preview.js
+ * This needs to be in the module vs a JS file because we need the path variable
+ */
+function ajax_pic_preview_js() {
+  $base_path = base_path();
+  
+  $clean_urls = variable_get('clean_url', false);
+  $ajax_url = $clean_urls ? $base_path .'js/ajax_pic_preview_upload':'?q=js/ajax_pic_preview_upload';
+  $throbber_path = $base_path .'misc/throbber.gif';
+
+  $output =<<<EOF
+
+function ajaxFileUpload() {
+  $("#loading")
+  .ajaxStart(function(){
+    $(this).show();
+	})
+  .ajaxComplete(function(){
+    $(this).hide();
+	});
+
+	$.ajaxFileUpload({
+    url:'{$ajax_url}',
+    secureuri:false,
+    fileElementId:'edit-picture-upload',
+    dataType: 'json',
+    success: function (data, status){
+    		if (typeof(data.error) != 'undefined') {
+    			if (data.error != '') {
+    				$('#edit-picture-message').html(data.error);
+    				$('#edit-picture-upload').change(ajaxFileUpload);
+    			} else {
+    				$('#edit-picture-message').html('* Your picture will not be saved until you click Save.');
+    				$('#img-picture').attr('src', data.img);
+    				$('#edit-picture-upload').change(ajaxFileUpload);
+    			}
+  			}
+		  },
+		error: function (data, status, e)
+		{
+			//alert(e);
+		}
+	});
+
+	return false;
+}
+
+$(document).ready(function() {
+  $('.picture a img').attr('id', 'img-picture');
+  $('label[for="edit-picture-upload"]').append('<span id="edit-picture-message" class="form-required"></span>');
+  $('#edit-picture-upload').change(ajaxFileUpload).after('<span id="loading" style="display:none"><img src="{$throbber_path}" /></span>');
+});
+EOF;
+
+  print $output;
+}

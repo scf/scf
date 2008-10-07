@@ -1,0 +1,11 @@
+; $Id: pngfix.info,v 1.2.6.1 2008/01/21 13:50:17 robloach Exp $
+name = PNG Fix
+description = "Includes a fix to correctly handle PNG transparency in Windows IE 5.5 & 6."
+core = 6.x
+
+; Information added by drupal.org packaging script on 2008-04-07
+version = "6.x-1.0"
+core = "6.x"
+project = "pngfix"
+datestamp = "1207600817"
+

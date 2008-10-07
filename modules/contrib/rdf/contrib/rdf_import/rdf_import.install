@@ -1,0 +1,35 @@
+<?php
+// $Id: rdf_import.install,v 1.1 2008/02/11 21:54:40 arto Exp $
+/**
+ * rdf_import.install - RDF Import installation/uninstallation.
+ *
+ * @author Arto Bendiken <http://bendiken.net/>
+ * @copyright Copyright (c) 2007-2008 Arto Bendiken. All rights reserved.
+ * @license GPL <http://creativecommons.org/licenses/GPL/2.0/>
+ * @package rdf.module
+ * @subpackage rdf_import.module
+ */
+
+//////////////////////////////////////////////////////////////////////////////
+// Core API hooks
+
+/**
+ * Implementation of hook_requirements().
+ */
+function rdf_import_requirements($phase) {
+  $requirements = array();
+  $t = get_t(); // Ensure translations don't break at install time
+
+  if ($phase == 'install') {
+    if (!class_exists('ARC2')) {
+      $requirements['arc2'] = array(
+        'title' => '',
+        'value' => '',
+        'description' => $t('The ARC2 library is not installed. See the <a href="@status-report">status report</a> for information on how to install this library.', array('@status-report' => url('admin/reports/status'))),
+        'severity' => REQUIREMENT_ERROR,
+      );
+    }
+  }
+
+  return $requirements;
+}

@@ -1,0 +1,7 @@
+; $Id: rdf_export.info,v 1.1 2008/02/11 21:54:18 arto Exp $
+name = RDF Export
+description = Exports Drupal data in the RDF/XML, TriX, Turtle and N-Triples formats.
+package = RDF
+dependencies[] = rdf
+core = 6.x
+php = 5.2

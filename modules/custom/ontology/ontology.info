@@ -3,6 +3,6 @@ name = Ontology Functionality
 description = Functionality and web services for the Ontology Viewer
 dependencies[] = taxonomy
 dependencies[] = taxonomy_extra
-package = Harvard IIC
+package = SCF Custom
 version = VERSION
 core = 6.x

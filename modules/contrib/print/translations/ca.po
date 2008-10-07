@@ -1,0 +1,378 @@
+# $Id: ca.po,v 1.1.2.3 2008/05/13 00:12:55 jcnventura Exp $
+#
+# Catalan translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  print.module,v 1.15.2.5.2.26 2007/11/08 23:56:59 jcnventura
+#  print.info,v 1.1.2.2 2007/08/24 00:32:39 jcnventura
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2008-05-13 01:10+0200\n"
+"PO-Revision-Date: 2008-05-13 01:16+0100\n"
+"Last-Translator: \n"
+"Language-Team: Catala\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: print.admin.inc:27
+msgid "Logo URL"
+msgstr ""
+
+#: print.admin.inc:31
+msgid "An alternative logo to display on the printer-friendly version. If left empty, the current theme's logo is used."
+msgstr ""
+
+#: print.admin.inc:36
+msgid "Stylesheet URL"
+msgstr "URL de l'estil (CSS)"
+
+#: print.admin.inc:40
+msgid "The URL to your custom print cascading stylesheet, if any. When none is specified, the default module CSS file is used."
+msgstr ""
+
+#: print.admin.inc:45
+msgid "Printer-friendly URLs list"
+msgstr ""
+
+#: print.admin.inc:47
+msgid "If set, a list of the destination URLs for the page links will be displayed at the bottom of the page."
+msgstr ""
+
+#: print.admin.inc:52
+msgid "Include comments in printer-friendly version"
+msgstr ""
+
+#: print.admin.inc:54
+msgid "When this option is active, user comments are also included in the printer-friendly version. Requires the comment module."
+msgstr ""
+
+#: print.admin.inc:59
+msgid "Open the printer-friendly version in a new window"
+msgstr ""
+
+#: print.admin.inc:60
+msgid "Disabled"
+msgstr "Desactivat"
+
+#: print.admin.inc:60
+msgid "Use HTML target (does not validate as XHTML Strict)"
+msgstr ""
+
+#: print.admin.inc:60
+msgid "Use Javascript (requires browser support)"
+msgstr ""
+
+#: print.admin.inc:60
+msgid "Use Greybox Redux (requires the greybox module)"
+msgstr ""
+
+#: print.admin.inc:60
+msgid "Use Thickbox (requires the thickbox module)"
+msgstr ""
+
+#: print.admin.inc:62
+msgid "Setting this option will make the printer-friendly version open in a new window/tab."
+msgstr ""
+
+#: print.admin.inc:69
+#: print.pages.inc:172
+msgid "Source URL"
+msgstr ""
+
+#: print.admin.inc:77
+msgid "Display source URL"
+msgstr ""
+
+#: print.admin.inc:79
+msgid "When this option is selected, the URL for the original page will be displayed at the bottom of the printer-friendly version."
+msgstr ""
+
+#: print.admin.inc:84
+msgid "Add current time/date to the source URL"
+msgstr ""
+
+#: print.admin.inc:86
+msgid "Display the current date and time in the Source URL line."
+msgstr ""
+
+#: print.admin.inc:91
+msgid "Force use of node ID in source URL"
+msgstr ""
+
+#: print.admin.inc:93
+msgid "Drupal will attempt to use the page's defined alias in case there is one. To force the use of the fixed URL, activate this option."
+msgstr ""
+
+#: print.admin.inc:109
+msgid "Printer-friendly page link"
+msgstr "Enllaç a la versió per a imprimir"
+
+#: print.admin.inc:111
+#: print_pdf.admin.inc:26
+msgid "None (Disabled)"
+msgstr ""
+
+#: print.admin.inc:111
+#: print_pdf.admin.inc:26
+msgid "Text only"
+msgstr ""
+
+#: print.admin.inc:111
+#: print_pdf.admin.inc:26
+msgid "Icon only"
+msgstr ""
+
+#: print.admin.inc:111
+#: print_pdf.admin.inc:26
+msgid "Icon and Text"
+msgstr ""
+
+#: print.admin.inc:112
+msgid "Enable or disable the printer-friendly page link for each node. Even if the link is disabled, you can still view the print version of a node by going to print/nid where nid is the numeric id of the node."
+msgstr "Activar o desactivar l'enllaç a la versió per a imprimir de cada node. Encara que l'enllaç estigui desactivat, es pot veure la versió per a imprimir d'un node visitant l'adreça 'print/nid', on nid es l'identificador del node."
+
+#: print.admin.inc:117
+#: print_pdf.admin.inc:32
+msgid "Show link in system (non-content) pages"
+msgstr ""
+
+#: print.admin.inc:119
+msgid "Setting this option will add a printer-friendly version page link on pages created by Drupal or the enabled modules."
+msgstr ""
+
+#: print.admin.inc:124
+msgid "Take control of the book module printer-friendly link"
+msgstr ""
+
+#: print.admin.inc:126
+msgid "Activate this to have the printer-friendly link in book nodes handled by this module. Requires the (core) book module."
+msgstr ""
+
+#: print.admin.inc:131
+msgid "Send to printer"
+msgstr ""
+
+#: print.admin.inc:133
+msgid "Automatically calls the browser's print function when the printer-friendly version is displayed."
+msgstr ""
+
+#: print.admin.inc:140
+msgid "Robots META tags"
+msgstr ""
+
+#: print.admin.inc:148
+msgid "Add noindex"
+msgstr ""
+
+#: print.admin.inc:150
+msgid "Instruct robots to not index printer-friendly pages. Recommended for good search engine karma."
+msgstr ""
+
+#: print.admin.inc:155
+msgid "Add nofollow"
+msgstr ""
+
+#: print.admin.inc:157
+msgid "Instruct robots to not follow outgoing links on printer-friendly pages."
+msgstr ""
+
+#: print.admin.inc:162
+msgid "Add noarchive"
+msgstr ""
+
+#: print.admin.inc:164
+msgid "Non-standard tag to instruct search engines to not show a \"Cached\" link for your printer-friendly pages. Recognized by Googlebot."
+msgstr ""
+
+#: print.admin.inc:169
+msgid "Add nocache"
+msgstr ""
+
+#: print.admin.inc:171
+msgid "Non-standard tag to instruct search engines to not show a \"Cached\" link for your printer-friendly pages"
+msgstr ""
+
+#: print.pages.inc:150
+#, fuzzy
+msgid "Published on %site_name"
+msgstr "Publicat el %site_name"
+
+#: print.pages.inc:169
+msgid "retrieved on %date"
+msgstr ""
+
+#: print.pages.inc:182
+msgid "Anonymous"
+msgstr ""
+
+#: print.pages.inc:183
+#, fuzzy
+msgid "By %author"
+msgstr "Per %author"
+
+#: print.pages.inc:187
+#, fuzzy
+msgid "Created %date"
+msgstr "Creat %date"
+
+#: print.pages.inc:217
+#, fuzzy
+msgid "Links"
+msgstr "Enllaços"
+
+#: print_pdf.admin.inc:24
+msgid "PDF version link"
+msgstr ""
+
+#: print_pdf.admin.inc:27
+msgid "Enable or disable the PDF version link for each node. Even if the link is disabled, you can still view the PDF version of a node by going to printpdf/nid where nid is the numeric id of the node."
+msgstr ""
+
+#: print_pdf.admin.inc:34
+msgid "Setting this option will add a PDF version page link on pages created by Drupal or the enabled modules."
+msgstr ""
+
+#: print_pdf.admin.inc:39
+msgid "Show link in book nodes"
+msgstr ""
+
+#: print_pdf.admin.inc:41
+msgid "Activate this to add a PDF version link in book nodes. Requires the (core) book module."
+msgstr ""
+
+#: print_pdf.admin.inc:49
+msgid "No PDF generation tool found! Please dowload a supported PHP PDF generation tool. Check this module's INSTALL.txt for more details."
+msgstr ""
+
+#: print_pdf.admin.inc:81
+msgid "PDF generation tool"
+msgstr ""
+
+#: print_pdf.admin.inc:84
+msgid "This option selects the PDF generation tool being used by this module to create the PDF version."
+msgstr ""
+
+#: print.module:221
+msgid "Show printer-friendly version link"
+msgstr ""
+
+#: print.module:223
+msgid "Displays the link to a printer-friendly version of the content. Further configuration is available on the !settings."
+msgstr ""
+
+#: print.module:223;229
+#: print_pdf.module:136;142
+msgid "settings page"
+msgstr ""
+
+#: print.module:227
+msgid "Show printer-friendly version link in individual comments"
+msgstr ""
+
+#: print.module:229
+msgid "Displays the link to a printer-friendly version of the comment. Further configuration is available on the !settings."
+msgstr ""
+
+#: print.module:296
+msgid "Printer-friendly version"
+msgstr "Versió per a imprimir"
+
+#: print.module:298
+msgid "Display a printer-friendly version of this page."
+msgstr "Visualitzar versió per a imprimir d'aquesta pàgina."
+
+#: print.module:64
+msgid "access print"
+msgstr ""
+
+#: print.module:64
+msgid "administer print"
+msgstr ""
+
+#: print.module:88
+msgid "Printer-friendly"
+msgstr "Versió per a imprimir"
+
+#: print.module:95
+#: print.info:0
+#: print_pdf.info:0
+msgid "Printer-friendly pages"
+msgstr ""
+
+#: print.module:96
+#: print.info:0
+msgid "Adds a printer-friendly version link to content and administrative pages."
+msgstr ""
+
+#: print.module:103
+msgid "Web page"
+msgstr ""
+
+#: print.module:108
+msgid "Settings"
+msgstr ""
+
+#: print.module:0
+msgid "print"
+msgstr "print"
+
+#: print_pdf.module:134
+msgid "Show PDF version link"
+msgstr ""
+
+#: print_pdf.module:136
+msgid "Displays the link to a PDF version of the content. Further configuration is available on the !settings."
+msgstr ""
+
+#: print_pdf.module:140
+msgid "Show PDF version link in individual comments"
+msgstr ""
+
+#: print_pdf.module:142
+msgid "Displays the link to a PDF version of the comment. Further configuration is available on the !settings."
+msgstr ""
+
+#: print_pdf.module:149
+#: print_pdf.info:0
+msgid "PDF version"
+msgstr ""
+
+#: print_pdf.module:151
+msgid "Display a PDF version of this page."
+msgstr "Visualitzar versió PDF d'aquesta pàgina."
+
+#: print_pdf.module:40
+msgid "Printer-friendly PDF"
+msgstr "Versió PDF"
+
+#: print_pdf.module:47
+msgid "PDF"
+msgstr ""
+
+#: print_pdf.module:0
+msgid "print_pdf"
+msgstr "print_pdf"
+
+#: print.install:8
+msgid "Printer-friendly Page settings are available under !link"
+msgstr ""
+
+#: print.info:0
+msgid "Printer-friendly pages (core)"
+msgstr ""
+
+#: print_pdf.info:0
+msgid "Adds the capability to export pages as PDF."
+msgstr ""
+
+#~ msgid "By"
+#~ msgstr "per"
+#~ msgid "Printer-friendly pages as PDF"
+#~ msgstr "Enllaç a la versió PDF"
+#~ msgid "Enabled"
+#~ msgstr "Activat"
+

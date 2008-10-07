@@ -1,0 +1,67 @@
+# $Id: jtooltips.ja.po,v 1.1 2007/11/21 15:26:25 psicomante Exp $
+# -----------------------------------------------------------------------------
+# Japanese translation of Drupal (jtooltips.module)
+#
+# Copyright (c) 2006-2007  Drupal Japan  ( http://drupal.jp/ )  /
+#                          Drupal Nippon ( http://drupon.org/ ) /
+#                          Takafumi      ( jp.drupal@imagine **reverse order**)
+#
+# Generated from file:
+#  jtooltips.module,v 1.2 2007/04/06 14:00:57 psicomante
+#  jtooltips.info,v 1.1 2007/04/05 09:54:48 psicomante
+#
+# -----------------------------------------------------------------------------
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2007-04-07 02:07+0900\n"
+"Last-Translator: Takafumi <jp.drupal@imagine **reverse order**>\n"
+"Language-Team: Drupal Japan / Drupal Nippon\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+
+#: jtooltips.module:39
+msgid "JQuery tooltips"
+msgstr "JQueryツールチップ"
+
+#: jtooltips.module:40
+msgid "Show Jquery link tooltips"
+msgstr "JQueryを使用したリンクツールチップを表示します。"
+
+#: jtooltips.module:58
+msgid "Tooltip type you can select"
+msgstr "ツールチップタイプの選択"
+
+#: jtooltips.module:61
+msgid "Use jQuery Tooltip"
+msgstr "jQueryツールチップを使用"
+
+#: jtooltips.module:62
+msgid "Use sweetTitles"
+msgstr "Sweet Titlesを使用"
+
+#: jtooltips.module:64
+msgid "jQuery Tooltip: builded around jQuery, more versatile, but not supports fading <br/> sweetTitles: uses a internal engine and supports fading. "
+msgstr "jQueryツールチップ： jQueryを使用し、より多目的に利用できますが、フェーディングをサポートしていません。<br />Sweet Titles： 内蔵エンジンを使用し、フェーディングをサポートします。"
+
+#: jtooltips.module:69
+msgid "Javascript to initialize hovertips"
+msgstr "ツールチップの初期化用Javascript"
+
+#: jtooltips.module:70
+msgid "The script here will be included in every page."
+msgstr "ツールチップを初期化するためのスクリプトを記入してください。 このスクリプトは、すべてのページに含められます。"
+
+#: jtooltips.module:19
+msgid "access jTooltips"
+msgstr "jTooltipsへのアクセス"
+
+#: jtooltips.module:0 jtooltips.info:0;0
+msgid "jtooltips"
+msgstr "jtooltips"
+
+#: jtooltips.info:0
+msgid "Tooltips with JQuery"
+msgstr "JQueryを利用したツールチップを表示します。"
+

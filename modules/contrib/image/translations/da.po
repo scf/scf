@@ -1,0 +1,289 @@
+# Danish translation of Drupal (image.module)
+# Copyright 2005-2007 Morten Wulff <wulff@ratatosk.net>
+msgid ""
+msgstr ""
+"Project-Id-Version: Danish translation of Drupal (image.module) $Id: da.po,v 1.1 2008/04/14 17:52:44 hass Exp $\n"
+"POT-Creation-Date: 2005-05-16 17:12-0300\n"
+"PO-Revision-Date: 2007-12-07 13:34+0100\n"
+"Last-Translator: Morten Wulff <wulff@ratatosk.net>\n"
+"Language-Team: Danish <l10nh@drupaldanmark.dk>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-Language: Danish\n"
+"X-Poedit-Country: DENMARK\n"
+
+#: image.imagemagick.inc:19
+msgid "ImageMagick Binary"
+msgstr "ImageMagick program"
+
+#: image.imagemagick.inc:21
+msgid "ImageMagick is a standalone program used to manipulate images. To use it, it must be installed on your server and you need to know where it is located. If you are unsure of the exact path consult your ISP or server administrator."
+msgstr "ImageMagick er et separat program, der bruges til at manupulere billeder. Det skal være installeret på din server, for at du kan bruge det. Hvis du ikke kender den præcise sti til programmet, skal du kontakte din udbyder eller serverens administrator."
+
+#: image.imagemagick.inc:25
+msgid "Path to the \"convert\" binary"
+msgstr "Sti til programmet \"convert\""
+
+#: image.imagemagick.inc:28
+msgid "Specify the complete path to the ImageMagic <kbd>convert</kbd> binary. For example: <kbd>/usr/bin/convert</kbd> or <kbd>C:\\Program Files\\ImageMagick-6.3.4-Q16\\convert.exe</kbd>"
+msgstr "Angiv den fulde sti til ImageMagick-programmet <kbd>convert</kbd>. F.eks. <kbd>/usr/bin/convert</kbd> eller <kbd>C:\\Programmer\\ImageMagick-6.3.4-Q16\\convert.exe</kbd>"
+
+#: image.imagemagick.inc:32
+msgid "Display debugging information"
+msgstr "Hvis debug-information"
+
+#: image.imagemagick.inc:34
+msgid "Checking this option will display the ImageMagick commands and ouput to users with the <em>administer site configuration</em> permission."
+msgstr "Vis ImageMagick kommandoer og output til brugere med tilladelsen <em>administrer indstillinger</em>."
+
+#: image.imagemagick.inc:60
+msgid "No file %file could be found. PHP's <a href='!open-basedir'>open_basedir</a> security resriction is set to %open-basedir, which may be interfearing with the attempts to locate ImageMagick."
+msgstr "Kan ikke finde filen %file. PHP's <a href='!open-basedir'>open_basedir</a> sikkerhedsindstilling er sat til %open-basedir, hvilket kan gøre det umuligt at finde ImageMagick."
+
+#: image.imagemagick.inc:63
+msgid "The specified ImageMagic path %file does not exist."
+msgstr "Stien %file til ImageMagick findes ikke."
+
+#: image.imagemagick.inc:141
+msgid "ImageMagick could not be found. The admin will need to set the path on the <a href='@image-toolkit-settings'>image toolkit page</a>."
+msgstr "Kan ikke finde ImageMagick. Administrator skal angive placeringen under <a href='@image-toolkit-settings'>billedværktøjer</a>."
+
+#: image.imagemagick.inc:171
+msgid "ImageMagick command: @command"
+msgstr "ImageMagick kommando: @command"
+
+#: image.imagemagick.inc:172
+msgid "ImageMagick output: @output"
+msgstr "ImageMagick output: @output"
+
+#: image.imagemagick.inc:176
+msgid "ImageMagick reported an error: %error"
+msgstr "ImageMagick fejl: %error"
+
+#: image.info:0
+#: ;0 image.module:42
+#: ;261;273;531 views.inc:14
+msgid "Image"
+msgstr "Billede"
+
+#: image.info:0
+msgid "Allows uploading, resizing and viewing of images."
+msgstr "Gør det muligt at overføre og vise billeder."
+
+#: image.install:53
+#: image.module:973
+msgid "Original"
+msgstr "Original"
+
+#: image.install:128
+msgid ""
+"The original image size was missing so no changes were made. See this <a href='!link'>image module issue</a> for more information. Include the following:<br /><pre>@old_sizes\n"
+"</pre>"
+msgstr "Kan ikke finde den originale billedstørrelser, så der er ikke foretaget nogen ændringer. Se denne <a href='!link'>fejlrapport</a> for yderligere information. Inkluder følgende information: <br /><pre>@old_sizes</pre>"
+
+#: image.install:135
+#: image.module:975
+msgid "Preview"
+msgstr "Eksempel"
+
+#: image.install:138
+#: image.module:481
+#: ;974
+msgid "Thumbnail"
+msgstr "Miniature"
+
+#: image.module:22
+msgid "The image module is used to create and administer images for your site. Each image is stored as a post, with thumbnails of the original generated automatically. There are two default thumbnail sizes, thumbnail and preview. The thumbnail size is shown as the preview for image posts and when browsing image galleries. The preview is the default size when first displaying an image node."
+msgstr "Billedmodulet bruges til at oprette og administrere billeder på dit site. Hvert billede gemmes som et indholdselement og miniaturebilleder oprettes automatisk. Der er to standardstørrelser for miniaturebilleder: miniature og eksempel. Miniature vises når man bladrer i billedgallerier og eksempel bruges når et billedeelement vises."
+
+#: image.module:23
+msgid ""
+"Image administration allows the image directory and the image sizes to be set.</p><p>\n"
+"Image galleries are used to organize and display images in galleries.   The list tab allows users to edit existing image gallery names, descriptions, parents and relative position, known as a weight.  The add galleries tab allows you to create a new image gallery defining name, description, parent and weight."
+msgstr ""
+"I billedadministrationen billedernes placering og standardstørrelser defineres.</p><p>\n"
+"Billedgallerier bruges til at organisere og vise billeder i gallerier. På fanebladet 'vis' er det muligt at redigere navne på gallerier, beskrivelser og placering. På fanebladet 'tilføj galleri' kan du oprette et nyt galleri."
+
+#: image.module:25
+msgid ""
+"<p>You can</p>\n"
+"<ul>\n"
+"<li>view image handling messages in <a href=\"!admin-settings\">administer &gt;&gt; settings</a>.</li>\n"
+"<li>configure image sizes and file directories at <a href=\"!admin-settings-image\">administer &gt;&gt; settings &gt;&gt; image</a>.</li>\n"
+"<li>use the <a href=\"!external-http-drupal-org-project-img_assist\">image assist module</a> to upload and insert images into posts.</li>\n"
+msgstr ""
+"<p>Du kan</p>\n"
+"<ul>\n"
+"<li>se billedhåndteringsbeskeder på <a href=\"!admin-settings\">administrer &gt;&gt; indstillinger</a>.</li>\n"
+"<li>konfigurere billedstørrelser og mapper på <a href=\"!admin-settings-image\">administrer &gt;&gt; indstillinger &gt;&gt; billede</a>.</li>\n"
+"<li>bruge <a href=\"!external-http-drupal-org-project-img_assist\">image_assist modulet</a> til at overføre og indsætte billeder i indhold.</li>\n"
+
+#: image.module:31
+msgid "For more information please read the configuration and customization handbook <a href=\"!image\">Image page</a>."
+msgstr "Læs håndbogens afsnit om <a href=\"!image\">billedmodulet</a> for yderligere information."
+
+#: image.module:44
+msgid "An image (with thumbnail). This is ideal for publishing photographs or screenshots."
+msgstr "Et billede (med miniature). Ideelt til offentliggørelse af fotografier eller skærmbilleder."
+
+#: image.module:90
+msgid "File paths"
+msgstr "Stier"
+
+#: image.module:94
+msgid "Default image path"
+msgstr "Standard billedsti"
+
+#: image.module:96
+msgid "Subdirectory in the directory \"%dir\" where pictures will be stored. Do not include trailing slash."
+msgstr "Undermappe i mappen \"%dir\" hvor billederne gemmes."
+
+#: image.module:101
+msgid "Maximum upload size"
+msgstr "Maksimal størrelse af overførsel"
+
+#: image.module:103
+msgid "KB"
+msgstr "KB"
+
+#: image.module:105
+msgid "Maximum file size for image uploads. When a maximum image dimensions is specified for original images the size is checked after resizing. "
+msgstr "Maksimal filstørrelse for billedoverførsler. Hvis du har angivet maksimale dimensioner på billedet tjekkes størrelsen efter billedet er blevet skaleret."
+
+#: image.module:110
+msgid "Image sizes"
+msgstr "Billedstørrelser"
+
+#: image.module:113
+msgid "The dimensions on the \"Original\" image will be used to resize the images when they are first uploaded. If both dimensions are specified the image will be resized to fit with in that size. If only one dimension is specified the image will be resized to exactly that dimension with the other determined by the image aspect ratio."
+msgstr "Dimensionerne for \"Original\" bruges til at skalere billeder når de overføres. Hvis begge dimensioner er angivet skaleres billedet for at passe indenfor den givne størrelse. Hvis der kun angives én dimension skaleres billedet til den angivne dimension mens den anden dimension bestemmes af forholdet mellem billedets højde og bredde."
+
+#: image.module:118
+msgid "Hidden"
+msgstr "Skjult"
+
+#: image.module:119
+msgid "Same window"
+msgstr "Samme vindue"
+
+#: image.module:120
+msgid "New window"
+msgstr "Nyt vindue"
+
+#: image.module:176
+msgid "Must specify a width or height."
+msgstr "Skal angive højde og bredde."
+
+#: image.module:229
+msgid "Changes to the images sizes mean that the derivative images will need to be regenerated."
+msgstr "Ændres billedstørrelse skal alle afledte billeder genopbygges."
+
+#: image.module:237
+msgid "Label"
+msgstr "Etiket"
+
+#: image.module:237
+msgid "Width"
+msgstr "Bredde"
+
+#: image.module:237
+msgid "Height"
+msgstr "Højde"
+
+#: image.module:237
+msgid "Link"
+msgstr "Link"
+
+#: image.module:266
+#: ;640;0
+msgid "image"
+msgstr "billede"
+
+#: image.module:278
+msgid "Image module settings."
+msgstr "Indstillinger"
+
+#: image.module:304
+msgid "Rebuild image thumbnails"
+msgstr "Genopbyg miniaturebilleder"
+
+#: image.module:316
+msgid "Rebuilding %node-title's resized images."
+msgstr "Genopbygger %node-title's billeder."
+
+#: image.module:334
+msgid "Uploaded file is not a valid image. Only JPG, PNG and GIF files are allowed."
+msgstr "Den uploadede fil er ikke et gyldigt billede. Kun JPG, PNG og GIF filer er tilladt."
+
+#: image.module:352
+msgid "The original image was resized to fit within the maximum allowed resolution of %width x %height pixels."
+msgstr "Det originale billede er blevet skaleret for at kunne passe til den maksimalt tilladte størrelse på %width x %height pixels."
+
+#: image.module:358
+msgid "The image you uploaded was too big. You are only allowed upload files less than %max_size but your file was %file_size."
+msgstr "Det overførte billeder er for stort. Du kan højst overføre billeder på %max_size, men din fil er %file_size."
+
+#: image.module:453
+#: ;462
+msgid "Latest image"
+msgstr "Seneste billede"
+
+#: image.module:454
+#: ;467
+msgid "Random image"
+msgstr "Tilfældigt billede"
+
+#: image.module:533
+msgid "Click \"Browse...\" to select an image to upload."
+msgstr "Klik på \"Gennemse...\" for at overføre et billede."
+
+#: image.module:551
+msgid "You must upload an image."
+msgstr "Du skal uploade et billede."
+
+#: image.module:640
+msgid "Derivative images were regenerated for %title."
+msgstr "Afledte billede genopbygget ffor %title."
+
+#: image.module:640
+msgid "view"
+msgstr "vis"
+
+#: image.module:714
+msgid "The derivative images for <a href=\"!link\">%title</a> have been regenerated."
+msgstr "Afledte billeder for <a href=\"!link\">%title</a> genopbygget."
+
+#: image.module:858
+msgid "No image toolkit is currently enabled. Without one the image module will not be able to resize your images. You can select one from the <a href=\"!link\">image toolkit settings page</a>."
+msgstr "Ingen billedværktøjskasse aktiveret. Uden en værktøjskasse kan modulet ikke skalere billederne. Du kan vælge en værktøjskasse under <a href=\"!link\">indstillinger for billedværktøjskasse</a>."
+
+#: image.module:922
+msgid "Unable to create scaled %label image"
+msgstr "Kan ikke oprette skaleret billede %label"
+
+#: image.module:53
+msgid "create images"
+msgstr "opret billeder"
+
+#: image.module:53
+msgid "view original images"
+msgstr "vis originale billeder"
+
+#: image.module:53
+msgid "edit own images"
+msgstr "rediger egne billeder"
+
+#: image.module:53
+msgid "edit images"
+msgstr "rediger billeder"
+
+#: views.inc:12
+msgid "Image: Display Image"
+msgstr "Image: Vis billede"
+
+#: views.inc:15
+msgid "Image with link"
+msgstr "Billede med link"
+

@@ -1,0 +1,35 @@
+// $Id: INSTALL.txt,v 1.2 2008/02/12 23:10:48 arto Exp $
+
+NOTE: This is experimental software meant for advanced users; assume nothing
+works, and you may be pleasantly surprised. And when it breaks, you get to
+keep both pieces.
+
+REQUIREMENTS
+------------
+This module requires Drupal 6.x and PHP 5.2.x (or newer).
+
+INSTALLATION
+------------
+
+  1. Copy all the module files into a subdirectory called modules/rdf/
+     under your Drupal installation directory.
+
+  2. Go to Administer >> Site building >> Modules and enable the RDF API
+     and RDF DB modules.
+
+  3. Go to Administer >> Site configuration >> RDF settings to review and
+     change the configuration options to your liking.
+
+  4. Optionally, you may wish to install the ARC2 library in order to enable
+     support for more RDF formats and for SPARQL queries. To install,
+     download the latest version of the library from:
+
+       <http://arc.semsol.org/download>
+
+     ...and unzip it to modules/rdf/vendor/arc2/ under the Drupal directory.
+
+  5. Also, if you have installed ARC2, you may wish to enable the
+     bundled RDF Export and RDF Import modules. To do this, go back to
+     Administer >> Site building >> Modules.
+
+  6. (See README.txt for information on submitting bug reports.)

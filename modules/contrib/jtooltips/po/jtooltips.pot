@@ -1,0 +1,67 @@
+# $Id: jtooltips.pot,v 1.2 2007/11/21 15:26:25 psicomante Exp $
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from file: jtooltips.module,v 1.1.2.3 2007/05/16 15:34:41 psicomante
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2007-06-23 09:36+0200\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: jtooltips.module:31
+msgid "Display a tooltip over links, themable with CSS <br /><p>You can use <a href=\"http://bassistance.de/jquery-plugins/jquery-plugin-tooltip/\">Jquery tooltips</a> or <a href=\"http://bassistance.de/jquery-plugins/jquery-plugin-tooltip/\">Sweettitles</a>. <br />Jquery Tooltips: uses Jquery framework, supports configuration script but not supports fading in/out <br />Sweettitles: uses an internal library, supports fading, less customizable</p>"
+msgstr ""
+
+#: jtooltips.module:46
+msgid "JQuery tooltips"
+msgstr ""
+
+#: jtooltips.module:47
+msgid "Show tooltips over links and other components. it supports Jquery tooltips and sweettitles"
+msgstr ""
+
+#: jtooltips.module:85
+msgid "jTooltips Configuration"
+msgstr ""
+
+#: jtooltips.module:89
+msgid "Tooltip type you can select"
+msgstr ""
+
+#: jtooltips.module:92
+msgid "Use jQuery Tooltip"
+msgstr ""
+
+#: jtooltips.module:93
+msgid "Use sweetTitles"
+msgstr ""
+
+#: jtooltips.module:95
+msgid "jQuery Tooltip: builded around jQuery, more versatile, but not supports fading <br/> sweetTitles: uses a internal engine and supports fading. "
+msgstr ""
+
+#: jtooltips.module:100
+msgid "Javascript to initialize jquery tooltips"
+msgstr ""
+
+#: jtooltips.module:101
+msgid "The script here will be included in every page."
+msgstr ""
+
+#: jtooltips.module:20
+msgid "access jTooltips"
+msgstr ""
+
+#: jtooltips.module:0
+msgid "jtooltips"
+msgstr ""
+

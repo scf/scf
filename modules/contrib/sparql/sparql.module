@@ -1,0 +1,210 @@
+<?php
+// $Id: sparql.module,v 1.2 2008/04/28 13:59:49 arto Exp $
+/**
+ * sparql.module - Enables the use of SPARQL queries with the RDF API.
+ *
+ * @author Arto Bendiken <http://bendiken.net/>
+ * @copyright Copyright (c) 2007-2008 Arto Bendiken. All rights reserved.
+ * @license GPL <http://creativecommons.org/licenses/GPL/2.0/>
+ * @package sparql.module
+ */
+
+//////////////////////////////////////////////////////////////////////////////
+// Core API hooks
+
+/**
+ * Implementation of hook_init().
+ */
+function sparql_init() {
+  require_once drupal_get_path('module', 'sparql') . '/sparql.inc';
+
+  // Add a SPARQL autodiscovery link to the front page's <head> tag
+  if (SPARQL_ENDPOINT && drupal_is_front_page()) {
+    drupal_add_link(array('rel' => 'sparql', 'href' => url('sparql', array('absolute' => TRUE))));
+  }
+}
+
+/**
+ * Implementation of hook_help().
+ */
+function sparql_help($path, $arg = NULL) {
+  switch ($path) {
+    case 'admin/settings/sparql':
+      return '<p>' . t('') . '</p>'; // TODO
+  }
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function sparql_perm() {
+  return array(
+    'access SPARQL endpoint',
+  );
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function sparql_menu() {
+  return array(
+    'sparql' => array(
+      'title' => 'SPARQL query',
+      'description' => '',
+      'access arguments' => array('access SPARQL endpoint'),
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('sparql_endpoint'),
+      'file' => 'sparql.pages.inc',
+    ),
+    'sparql/query' => array(
+      'title' => 'Query',
+      'type' => MENU_DEFAULT_LOCAL_TASK,
+    ),
+     // Administer >> Site configuration >> SPARQL settings
+    'admin/settings/sparql' => array(
+      'title' => 'SPARQL settings',
+      'description' => 'Settings for the SPARQL API.',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('sparql_admin_settings'),
+      'file' => 'sparql.admin.inc',
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_theme()
+ */
+function sparql_theme() {
+  return array(
+    'sparql_endpoint' => array(
+      'arguments' => array('form' => NULL),
+      'file' => 'sparql.pages.inc',
+    ),
+    'sparql_results' => array(
+      'arguments' => array('result' => NULL),
+      'file' => 'sparql.pages.inc',
+    ),
+  );
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// Node API hooks
+
+/**
+ * Implementation of hook_node_info().
+ */
+function sparql_node_info() {
+  return array(
+    'sparql' => array(
+      'module'      => 'sparql_node',
+      'name'        => t('SPARQL query'),
+      'description' => t('...'),
+      'title_label' => t('Title'),
+      'has_title'   => TRUE,
+      'body_label'  => t('Description'),
+      'has_body'    => FALSE,
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_form().
+ */
+function sparql_node_form(&$node, $form_state) {
+  // TODO: This node_form() craziness here is needed because when
+  // drupal_retrieve_form('file_node_form') is performed, it will
+  // incorrectly ignore callback information defined in hook_forms() and
+  // call this function directly. We need to either rename our Node API
+  // prefix in hook_node_info(), or else submit a core patch.
+  if (is_array($node)) {
+    return node_form($node, $form_state);
+  }
+
+  $form = array();
+  $type = node_get_types('type', $node);
+
+  if ($type->has_title) {
+    $form['title'] = array('#type' => 'textfield', '#title' => check_plain($type->title_label), '#required' => TRUE, '#default_value' => $node->title, '#weight' => -5);
+  }
+
+  if ($type->has_body) {
+    $form['body_field'] = node_body_field($node, $type->body_label, $type->min_word_count);
+    $form['body_field']['body']['#rows'] = 3;
+  }
+
+  $form['sparql_query'] = array('#type' => 'textarea', '#title' => t('Query'), '#default_value' => @$node->sparql_query, '#required' => TRUE, '#rows' => 15);
+  $form['sparql_endpoint'] = array('#type' => 'textfield', '#title' => t('Endpoint URL'), '#default_value' => @$node->sparql_endpoint, '#required' => FALSE);
+
+  return $form;
+}
+
+/**
+ * Implementation of hook_view().
+ */
+function sparql_node_view($node, $teaser = FALSE, $page = FALSE) {
+  $node = node_prepare($node, $teaser);
+
+  if (!$teaser && !empty($node->sparql_query)) {
+    $node->content['sparql_results'] = array('#value' => theme('sparql_results', sparql_node_result($node)), '#weight' => 10);
+  }
+
+  return $node;
+}
+
+/**
+ * Implementation of hook_load().
+ */
+function sparql_node_load($node) {
+  return (object)array(
+    'sparql_query'    => variable_get('sparql_node_' . $node->nid . '_query', ''),
+    'sparql_endpoint' => variable_get('sparql_node_' . $node->nid . '_endpoint', ''),
+  );
+}
+
+/**
+ * Implementation of hook_validate().
+ */
+function sparql_node_validate(&$node) {
+  if (!sparql_parse($node->sparql_query, NULL, $errors)) {
+    foreach ($errors as $error) {
+      form_set_error('sparql_query', $error);
+    }
+  }
+}
+
+/**
+ * Implementation of hook_insert().
+ */
+function sparql_node_insert($node) {
+  sparql_node_update($node);
+}
+
+/**
+ * Implementation of hook_update().
+ */
+function sparql_node_update($node) {
+  variable_set('sparql_node_' . $node->nid . '_query', $node->sparql_query);
+  variable_set('sparql_node_' . $node->nid . '_endpoint', $node->sparql_endpoint);
+  cache_clear_all('sparql:' . $node->nid, 'cache');
+}
+
+function sparql_node_result($node) {
+  $result = ($result = cache_get('sparql:' . $node->nid, 'cache')) ? $result->data : FALSE;
+  if (!$result) {
+    $result = sparql_query($node->sparql_query, array('endpoint' => $node->sparql_endpoint));
+    cache_set('sparql:' . $node->nid, $result, 'cache', CACHE_PERMANENT);
+  }
+  return $result;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// RDF API hooks
+
+/**
+ * Implementation of hook_rdf_namespaces().
+ */
+function sparql_rdf_namespaces() {
+  return array(
+    'rs' => 'http://www.w3.org/2005/sparql-results#',
+  );
+}

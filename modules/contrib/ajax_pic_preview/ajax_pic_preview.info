@@ -1,0 +1,4 @@
+; $Id: ajax_pic_preview.info,v 1.1 2007/11/18 09:39:31 mmilano Exp $
+name = "AJAX Picture Preview"
+description = "Presents a user with a preview of their picture upon selecting a file"
+core = 6.x

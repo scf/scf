@@ -424,9 +424,10 @@ function association_ajax_handler_add($nid, $type) {
   
   association_add($nid, $node->nid, 0, TRUE);
   // generate the HTML here
-  // TO-DO - integrate this with the main theme somehow?
+  // @TODO override a theme function here for SCF-specefic images
+  // also replace link with l() but related_content should replace whole module
   print drupal_to_js(array('data' => '<li><a href="/node/'.$node->nid.'" rel="tag">'.$value.'</a>' .
-  '&nbsp;<input type="image" title="Remove term" src="/sites/all/themes/scf_base/images/icon-x.gif" onclick="$.post(\'/association/ajax/delete/'.$nid.'/'.$node->nid.'\', {}, function() { $(\'a[href$=/node/'.$node->nid.']\').parent().hide(\'slow\'); });" />'
+  '&nbsp;<input type="image" title="Remove term" src="' . drupal_get_path('module', 'scf') . '/images/icon-x.gif" onclick="$.post(\'/association/ajax/delete/'.$nid.'/'.$node->nid.'\', {}, function() { $(\'a[href$=/node/'.$node->nid.']\').parent().hide(\'slow\'); });" />'
   .'</li>'));
   exit;  
 }

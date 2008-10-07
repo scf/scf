@@ -1,0 +1,7 @@
+; $Id: sparql.info,v 1.2 2008/04/28 13:59:49 arto Exp $
+name = SPARQL API
+description = Enables the use of SPARQL queries with the RDF API.
+package = RDF
+dependencies[] = rdf
+core = 6.x
+php = 5.2

@@ -104,7 +104,7 @@ function ontology_theme() {
 	return array(
 		'taxonomy_term_page' => array(
 			'arguments' => array('tids' => array(), 'result' => NULL),
-			'function' => 'ontology_theme_taxonomy_term_page'
+			'function' => 'ontology_theme_taxonomy_term_page',
 		)
 	);
 }
@@ -112,8 +112,16 @@ function ontology_theme() {
 function ontology_theme_taxonomy_term_page($tids, $result) {
 	$output = '';
 	if (count($tids) == 1) {
-		$tid = $tids[0];
-		$output = '<a href="/sites/all/files/graphbrowser/main.html#' . $tid . '" class="pubnode-graph" target="_blank">View in GO Tree</a>';
+		$tid = $tids[0];		
+		$output = l(t('View in GO Tree'), 
+		drupal_get_path('module','graphbrowser') . '/main.html',
+		array(
+		  'attributes' => array(
+        'class' => 'pubnode-graph',
+        'target' => '_blank',
+      ),
+    'fragment' => $tid,
+    ));
 	}
 	$output .= theme_taxonomy_term_page($tids, $result);
 	return $output;
@@ -287,8 +295,7 @@ function ontology_get_descendants($term_id) {
 function _ontology_to_graphviz($graph, $has_labels) {
 	module_load_include('php', 'ontology', 'cssparser');
 	$cssparser = new CSSParser();
-	$module_path = drupal_get_path('module', 'ontology');
-	$css_path = preg_replace('/modules.*$/', 'files', $module_path) . '/graphbrowser/';
+	$css_path = drupal_get_path('module', 'graphbrowser') . '/';
 	$cssparser->Parse($css_path . 'graph.css');
 	
 	$unflatten = 0;
@@ -718,13 +725,11 @@ function _ontology_get_occurrences($nid, $terms_to_check) {
 	$term_stem_counts = array();
 	foreach ($terms_to_check as $term) {
 		$term_pieces = explode(' ', $term->name);
-		$term_stem_counts[$term->tid] = 0; //count($term_pieces);
+		$term_stem_counts[$term->tid] = count($term_pieces);
 		
 		foreach ($term_pieces as $piece) {
 			if (_ontology_is_stopword($piece))
 				continue;
-				
-			$term_stem_counts[$term->tid]++;
 			
 			$piece = PorterStemmer::Stem($piece);
 				
@@ -808,7 +813,7 @@ function ontology_suggest_form(&$form_state, $vocab_id, $node_id) {
 	$form = array(
 		'description' => array(
 			'#type' => 'markup',
-			'#value' => 'Here is the list of GO terms that StemBook has suggested for the chapter <a href="/node/' . $node_id . '">' . $node->title . '</a>.  Use this form to select terms from this list.'
+			'#value' => t('Here is the list of <accronym title="Gene Ontology">GO</accronym> terms that SCF has suggested for the chapter') . l($node->title, '/node/' . $node_id) . '.  ' . t('Use this form to select terms from this list.'),
 		)
 	);
 
@@ -843,7 +848,15 @@ function ontology_suggest_form(&$form_state, $vocab_id, $node_id) {
 		
 		$form[$id] = array(
 			'#type' => 'checkbox',
-			'#title' => $name . ' (' . $occurrence_string . ') &nbsp;&nbsp;<a href="/sites/all/files/graphbrowser/main.html#' . $id . '/' . $node_id . '" target="graph"><img src="/sites/all/themes/scf_base/images/icon-graph.gif" border="0" title="View in GO Tree"/></a>',
+			'#title' => $name . ' (' . $occurrence_string . ') &nbsp;&nbsp; ' . l('<img src="' . drupal_get_path('module', 'scf') . '/images/icon-graph.gif" border="0" title="' . t('View in GO Tree') . '" />',
+      drupal_get_path('module', 'graphbrowser') . '/main.html',
+      array(
+        'fragment' => $id . '/' . $node_id,
+        'html' => TRUE;
+        'attributes' => array(
+          'target' => '_blank',
+        ),
+      )),
 		);
 		
 		if ($selected) {
@@ -907,5 +920,3 @@ function ontology_suggest_form_submit($form, &$form_state) {
 	taxonomy_node_save($node, $term_list);
 	drupal_set_message('The terms you selected have been added.');
 }
-
-?>

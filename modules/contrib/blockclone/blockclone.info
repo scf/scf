@@ -1,0 +1,6 @@
+; $Id: blockclone.info,v 1.2.2.1 2008/02/05 21:35:24 swentel Exp $
+name = Block Clone
+description = Clones blocks so you can use them in several regions or on different places within a region.
+package = Other
+core = 6.x
+version = 6.x-dev

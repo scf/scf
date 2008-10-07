@@ -1,0 +1,5 @@
+; $Id: sioc.info,v 1.1.8.1 2008/02/08 14:01:22 scor Exp $
+name = SIOC
+description = "Allows export of SIOC meta-data from your site."
+
+core = "6.x"

@@ -1,0 +1,54 @@
+<?php
+// $Id: sparql.install,v 1.2 2008/04/28 13:59:49 arto Exp $
+/**
+ * sparql.install - SPARQL API installation/uninstallation.
+ *
+ * @author Arto Bendiken <http://bendiken.net/>
+ * @copyright Copyright (c) 2007-2008 Arto Bendiken. All rights reserved.
+ * @license GPL <http://creativecommons.org/licenses/GPL/2.0/>
+ * @package sparql.module
+ */
+
+//////////////////////////////////////////////////////////////////////////////
+// Core API hooks
+
+/**
+ * Implementation of hook_enable().
+ */
+function sparql_enable() {
+  drupal_set_message(t('SPARQL API successfully installed. Please review the available <a href="@settings">configuration settings</a>.', array('@settings' => url('admin/settings/sparql'))));
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function sparql_install() {}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function sparql_uninstall() {
+  db_query("DELETE FROM {variable} WHERE name LIKE 'sparql_%'");
+  cache_clear_all('variables', 'cache');
+}
+
+/**
+ * Implementation of hook_requirements().
+ */
+function sparql_requirements($phase) {
+  $requirements = array();
+  $t = get_t(); // Ensure translations don't break at install time
+
+  if ($phase == 'install') {
+    if (!class_exists('ARC2')) {
+      $requirements['arc2'] = array(
+        'title' => '',
+        'value' => '',
+        'description' => $t('The ARC2 library is not installed. See the <a href="@status-report">status report</a> for information on how to install this library.', array('@status-report' => url('admin/reports/status'))),
+        'severity' => REQUIREMENT_ERROR,
+      );
+    }
+  }
+
+  return $requirements;
+}

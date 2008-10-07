@@ -1,0 +1,5 @@
+; $Id: content_profile.info,v 1.1.2.1 2008/02/01 16:00:24 fago Exp $
+name = "Content Profile"
+description = "Use content types for user profiles."
+package = "Content Profile"
+core = 6.x

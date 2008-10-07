@@ -1,0 +1,122 @@
+<?php
+// $Id: jtooltips.module,v 1.7 2007/11/20 09:48:04 psicomante Exp $
+
+/**
+ * @file
+ * Configurable javascript tooltips over jQuery/SweetTitles
+ *
+ * Adds a tooltip (by default over <a> tags), built over jQuery or SweetTitles. The code is configurable is using jQuery Tooltips.
+ * @author Psicomante - psicomante(AT)katapekkia(.)net
+ * @author Tooltips - http://bassistance.de/jquery-plugins/jquery-plugin-tooltip/
+ * @author Sweettitles - http://www.dustindiaz.com/sweet-titles-finalized
+ */
+
+define('JQUERY_TOOLTIP', 1);
+define('SWEETTITLES_TOOLTIP', 0);
+
+/**
+  * Adds CSS and JS to the top of pages.
+  */
+function jtooltips_init() {
+  if (arg(0) != 'admin' && arg(0) != 'img_assist' && arg(1) != 'add' && arg(2) != 'edit') {
+    $jtooltips_path = drupal_get_path('module', 'jtooltips');
+
+    if (variable_get('jtooltips_jstiptype', JQUERY_TOOLTIP)) {
+      drupal_add_css($jtooltips_path .'/jtooltips.css');
+      drupal_add_js($jtooltips_path .'/js/jquery.tooltip.pack.js');
+      drupal_add_js(_jtooltips_get_javascript(), 'inline', 'footer');
+    }
+    else {
+      drupal_add_css($jtooltips_path .'/sweettitles.css');
+      drupal_add_js($jtooltips_path .'/js/addEvent.js');
+      drupal_add_js($jtooltips_path .'/js/sweettitles.js');
+    }
+  }
+}
+
+/**
+ * Menu hook for the module. If may_cache, returns an array of menu_items, otherwise return the right css and js added to the header.
+ * @params $may_cache A boolean indicating whether cacheable menu items should be returned.
+ * @return An array of menu items.
+ */
+
+function jtooltips_menu() {
+  $items = array();
+  $items['admin/settings/jtooltips'] = array (
+    'title' => 'JQuery tooltips',
+    'description' => 'Show tooltips over links and other components. it supports Jquery tooltips and sweettitles',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('jtooltips_admin_settings'),
+    'access callback' => 'user_access',
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+/**
+  * Admin menu. Callback function called by jtooltips_menu
+  * @returns An array of form items, presented in the classic hook_form.
+  */
+
+function jtooltips_admin_settings(){
+  $form = array();
+
+  $form['jtooltips_form'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => false,
+    '#collapsed' => false,
+    '#title' => t('jTooltips configuration')
+  );
+
+  $options = array(JQUERY_TOOLTIP => t('jQuery Tooltip'));
+  $jtooltips_path = drupal_get_path('module', 'jtooltips') .'/js/';
+  if (file_exists($jtooltips_path .'addEvent.js') && file_exists($jtooltips_path .'sweettitles.js')) {
+    $options += array(SWEETTITLES_TOOLTIP => t('sweetTitles'));
+  }
+  unset($jtooltips_path);
+
+  $form['jtooltips_form']['jtooltips_jstiptype'] = array(
+    '#type' => 'radios',
+    '#title' => t('Tooltip type'),
+    '#default_value' => variable_get('jtooltips_jstiptype', 1),
+    '#options' => $options,
+    '#description' => t('jQuery Tooltip: builded around jQuery, more versatile, but does not support fading<br />sweetTitles: uses a internal engine and supports fading')
+  );
+  if (variable_get('jtooltips_jstiptype', JQUERY_TOOLTIP)) {
+    $form['jtooltips_form']['advanced'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Advanced jQuery tooltip configuration'),
+      '#collapsible' => true,
+      '#collapsed' => true
+    );
+    $form['jtooltips_form']['advanced']['jtooltips_javascript'] = array(
+      '#type' => 'textarea',
+      '#title' => t('Javascript to initialize jquery tooltips'),
+      '#description' => t('The script here will be included in every page, except admin pages and add and edit nodes pages.'),
+      '#default_value' => _jtooltips_get_javascript(),
+    );
+  }
+  return system_settings_form($form);
+}
+
+/**
+ * Saves and retrieves the javascript to inclue in the header in cachabel pages.
+ * @returns value of variable_get of jtooltips_javscript.
+ */
+function _jtooltips_get_javascript() {
+  $default =<<<END
+if (Drupal.jsEnabled) {
+  $(document).ready(function () {
+  	$('a').Tooltip({
+  		delay: 0,
+  		track: true,
+  		showURL: false,
+  		showBody: "; "
+  	});
+  }); 
+}  
+END;
+  return variable_get('jtooltips_javascript', $default);
+}

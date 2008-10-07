@@ -34,18 +34,20 @@ if (!empty($terms) || $has_addlink) {
   </div>
   <script>
   	<?php /* HACK (MAG, 5/28/2008): drupal wraps the textfield in a div, which bumps it down an extra line.
-  	Changing the div property to inline removes this */ ?>
+  	Changing the div property to inline removes this */
+  	$imgpth = drupal_get_path('module', 'scf') . '/images/';
+  	?>
   	$('#taxonomy-extra-text-<?=$vid ?>-wrapper').css('display', 'inline');
   	/*$('#taxonomy-extra-termlist-<?=$vid ?> li a').mouseover(function() {
-      $('input', this.parentNode).attr('src', '/sites/all/themes/scf_base/images/icon-x-hover.gif');
+      $('input', this.parentNode).attr('src', '<?php print $imgpth ?>icon-x-hover.gif');
     }).mouseout(function() {
-      $('input', this.parentNode).attr('src', '/sites/all/themes/scf_base/images/icon-x.gif');
+      $('input', this.parentNode).attr('src', '<?php print $imgpth ?>icon-x.gif');
     });
    
     $('#taxonomy-extra-termlist-<?=$vid ?> li input').mouseover(function() {
-      this.src = '/sites/all/themes/scf_base/images/icon-x-hover.gif';
+      this.src = '<?php print $imgpth ?>icon-x-hover.gif';
     }).mouseout(function() {
-      this.src = '/sites/all/themes/scf_base/images/icon-x.gif';
+      this.src = '<?php print $imgpth ?>icon-x.gif';
     });*/
   </script>
 <?php } ?>

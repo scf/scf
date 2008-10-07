@@ -1,0 +1,12 @@
+<?php
+// $Id: popups.install,v 1.4 2008/03/06 20:32:50 starbow Exp $
+
+/**
+ * Implementation of hook_install().
+ *
+ * Ensures private_upload runs after theme 
+ * Expiremental - go last.
+ */
+function popups_install() {
+  db_query("UPDATE {system} SET weight = %d WHERE name = 'popups'", 9999);
+}

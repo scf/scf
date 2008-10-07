@@ -1,0 +1,49 @@
+ul.galleries {
+  list-style-type : none;
+  margin : 0;
+  padding : 0;
+}
+
+ul.galleries li {
+  position : relative;
+  background : #eeeeee;
+  border : 1px #cccccc solid;
+  margin : 1em 0;
+  padding : 1em;
+}
+
+ul.galleries li img {
+  float : left;
+  position : relative;
+  padding-right : 4px;
+  margin-right : 4px;
+}
+
+ul.galleries li .count,
+ul.galleries li .last {
+  clear : left;
+  margin : 0;
+  padding : 0;
+  font-style : italic;
+}
+
+ul.galleries h3 {
+  margin : 0;
+  padding : 0;
+}
+
+ul.images {
+  list-style-type : none;
+  margin : 0;
+  padding : 0;
+}
+
+ul.images h3 { 
+  font-size:1em;
+}
+
+ul.images li {
+  float : left;
+  margin : 1em;
+  background: transparent;
+}

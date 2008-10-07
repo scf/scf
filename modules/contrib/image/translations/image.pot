@@ -1,0 +1,344 @@
+# $Id: image.pot,v 1.2 2008/04/14 18:20:46 hass Exp $
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  image.admin.inc,v 1.1 2008/02/04 00:34:22 drewish
+#  image.imagemagick.inc,v 1.22 2008/04/14 05:15:36 drewish
+#  image.info,v 1.5 2008/01/06 22:15:24 drewish
+#  image.module,v 1.269 2008/04/13 23:55:25 drewish
+#  image.install,v 1.15 2008/01/06 22:15:24 drewish
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2008-04-14 20:15+0200\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: image.admin.inc:18
+msgid "Image file settings"
+msgstr ""
+
+#: image.admin.inc:22
+msgid "Default image path"
+msgstr ""
+
+#: image.admin.inc:24
+msgid "Subdirectory in the directory \"%dir\" where pictures will be stored. Do not include trailing slash."
+msgstr ""
+
+#: image.admin.inc:29
+msgid "Maximum upload size"
+msgstr ""
+
+#: image.admin.inc:31
+msgid "KB"
+msgstr ""
+
+#: image.admin.inc:33
+msgid "Maximum file size for image uploads. When a maximum image dimensions is specified for original images the size is checked after resizing. "
+msgstr ""
+
+#: image.admin.inc:38
+msgid "Image sizes"
+msgstr ""
+
+#: image.admin.inc:41
+msgid "The <em>Scale image</em> operation resizes images so that they fit with in the given dimensions. If only one dimension is specified the other dimension will be computed based on the image's aspect ratio. The <em>Scale and crop image</em> operation resizes images to be exactly the given dimensions. If only one dimension is specified the image will not be cropped, making this is equivalent to <em>Scale image</em>."
+msgstr ""
+
+#: image.admin.inc:42
+msgid "Note: 'Original' dimensions will only be used to resize images when they are first uploaded. Existing originals will not be modified."
+msgstr ""
+
+#: image.admin.inc:47
+msgid "Hidden"
+msgstr ""
+
+#: image.admin.inc:48
+msgid "Same window"
+msgstr ""
+
+#: image.admin.inc:49
+msgid "New window"
+msgstr ""
+
+#: image.admin.inc:82
+msgid "Scale image"
+msgstr ""
+
+#: image.admin.inc:82
+msgid "Scale and crop image"
+msgstr ""
+
+#: image.admin.inc:114
+msgid "You must specify width, height or both dimensions."
+msgstr ""
+
+#: image.admin.inc:167
+msgid "Changes to the images sizes mean that the derivative images will need to be regenerated."
+msgstr ""
+
+#: image.admin.inc:173
+msgid "Label"
+msgstr ""
+
+#: image.admin.inc:173
+msgid "Operation"
+msgstr ""
+
+#: image.admin.inc:173
+msgid "Width"
+msgstr ""
+
+#: image.admin.inc:173
+msgid "Height"
+msgstr ""
+
+#: image.admin.inc:173
+msgid "Link"
+msgstr ""
+
+#: image.imagemagick.inc:19
+msgid "ImageMagick Binary"
+msgstr ""
+
+#: image.imagemagick.inc:21
+msgid "ImageMagick is a standalone program used to manipulate images. To use it, it must be installed on your server and you need to know where it is located. If you are unsure of the exact path consult your ISP or server administrator."
+msgstr ""
+
+#: image.imagemagick.inc:25
+msgid "Path to the \"convert\" binary"
+msgstr ""
+
+#: image.imagemagick.inc:28
+msgid "Specify the complete path to the ImageMagic <kbd>convert</kbd> binary. For example: <kbd>/usr/bin/convert</kbd> or <kbd>C:\\Program Files\\ImageMagick-6.3.4-Q16\\convert.exe</kbd>"
+msgstr ""
+
+#: image.imagemagick.inc:32
+msgid "Display debugging information"
+msgstr ""
+
+#: image.imagemagick.inc:34
+msgid "Checking this option will display the ImageMagick commands and ouput to users with the <em>administer site configuration</em> permission."
+msgstr ""
+
+#: image.imagemagick.inc:60
+msgid "No file %file could be found. PHP's <a href='!open-basedir'>open_basedir</a> security resriction is set to %open-basedir, which may be interfering with the attempts to locate ImageMagick."
+msgstr ""
+
+#: image.imagemagick.inc:63
+msgid "The specified ImageMagic path %file does not exist."
+msgstr ""
+
+#: image.imagemagick.inc:141
+msgid "ImageMagick could not be found. The admin will need to set the path on the <a href='@image-toolkit-settings'>image toolkit page</a>."
+msgstr ""
+
+#: image.imagemagick.inc:171
+msgid "ImageMagick command: @command"
+msgstr ""
+
+#: image.imagemagick.inc:172
+msgid "ImageMagick output: @output"
+msgstr ""
+
+#: image.imagemagick.inc:176
+msgid "ImageMagick reported an error: %error"
+msgstr ""
+
+#: image.info:0;0 image.module:73;387;120
+msgid "Image"
+msgstr ""
+
+#: image.info:0
+msgid "Allows uploading, resizing and viewing of images."
+msgstr ""
+
+#: image.install:9
+msgid "Stores image files information."
+msgstr ""
+
+#: image.install:12
+msgid "Primary Key: The {node}.nid of the image node."
+msgstr ""
+
+#: image.install:18
+msgid "Index: The {files}.fid of the image file."
+msgstr ""
+
+#: image.install:24
+msgid "Primary Key: The {files}.filename of the image file.  For image module this indicates the file size."
+msgstr ""
+
+#: image.install:64
+msgid "The %toolkit-name toolkit is installed"
+msgstr ""
+
+#: image.install:70
+msgid "Not installed"
+msgstr ""
+
+#: image.install:72 image.module:731
+msgid "No image toolkit is currently enabled. Without one the image module will not be able to resize your images. You can select one from the <a href=\"!link\">image toolkit settings page</a>."
+msgstr ""
+
+#: image.install:75
+msgid "Image toolkit"
+msgstr ""
+
+#: image.install:83
+msgid "Missing directory"
+msgstr ""
+
+#: image.install:85
+msgid "The image module's image directory %image-dir is missing."
+msgstr ""
+
+#: image.install:90
+msgid "Missing temp directory"
+msgstr ""
+
+#: image.install:92
+msgid "The image module's temp directory %temp-dir is missing."
+msgstr ""
+
+#: image.install:97
+msgid "Exists (%path)"
+msgstr ""
+
+#: image.install:101
+msgid "Image module directories"
+msgstr ""
+
+#: image.install:114 image.module:867
+msgid "Original"
+msgstr ""
+
+#: image.install:189
+msgid "The original image size was missing so no changes were made. See this <a href='!link'>image module issue</a> for more information. Include the following:<br /><pre>@old_sizes\n</pre>"
+msgstr ""
+
+#: image.install:196 image.module:869
+msgid "Preview"
+msgstr ""
+
+#: image.install:199 image.module:334;868
+msgid "Thumbnail"
+msgstr ""
+
+#: image.module:22
+msgid "The image module is used to create and administer images for your site. Each image is stored as a post, with thumbnails of the original generated automatically. There are two default thumbnail sizes, thumbnail and preview. The thumbnail size is shown as the preview for image posts and when browsing image galleries. The preview is the default size when first displaying an image node."
+msgstr ""
+
+#: image.module:23
+msgid "Image administration allows the image directory and the image sizes to be set.</p><p>\nImage galleries are used to organize and display images in galleries.   The list tab allows users to edit existing image gallery names, descriptions, parents and relative position, known as a weight.  The add galleries tab allows you to create a new image gallery defining name, description, parent and weight."
+msgstr ""
+
+#: image.module:25
+msgid "<p>You can</p>\n<ul>\n<li>view image handling messages in <a href=\"!admin-settings\">administer &gt;&gt; settings</a>.</li>\n<li>configure image sizes and file directories at <a href=\"!admin-settings-image\">administer &gt;&gt; settings &gt;&gt; image</a>.</li>\n<li>use the <a href=\"!external-http-drupal-org-project-img_assist\">image assist module</a> to upload and insert images into posts.</li>\n"
+msgstr ""
+
+#: image.module:31
+msgid "For more information please read the configuration and customization handbook <a href=\"!image\">Image page</a>."
+msgstr ""
+
+#: image.module:75
+msgid "An image (with thumbnail). This is ideal for publishing photographs or screenshots."
+msgstr ""
+
+#: image.module:151
+msgid "Rebuild image thumbnails"
+msgstr ""
+
+#: image.module:200
+msgid "The original image was resized to fit within the maximum allowed resolution of %width x %height pixels."
+msgstr ""
+
+#: image.module:206
+msgid "The image you uploaded was too big. You are only allowed upload files less than %max_size but your file was %file_size."
+msgstr ""
+
+#: image.module:308;317
+msgid "Latest image"
+msgstr ""
+
+#: image.module:309;322
+msgid "Random image"
+msgstr ""
+
+#: image.module:379
+msgid "Rebuild derivative images."
+msgstr ""
+
+#: image.module:381
+msgid "Check this to rebuild the derivative images for this node."
+msgstr ""
+
+#: image.module:389
+msgid "Click \"Browse...\" to select an image to upload."
+msgstr ""
+
+#: image.module:402
+msgid "You must upload an image."
+msgstr ""
+
+#: image.module:475
+msgid "%title's has an unneeded %key derivative images. The derivatives will be rebuilt to remove it."
+msgstr ""
+
+#: image.module:485
+msgid "%title's %key derivative image %filepath was missing. The derivatives will be rebuilt to regenerate it."
+msgstr ""
+
+#: image.module:489
+msgid "%title's %key derivative image had a timestamp (%filetime) that predates the last changes to the image size settings (%vartime). The derivatives will be rebuilt to regenerate it."
+msgstr ""
+
+#: image.module:497
+msgid "view"
+msgstr ""
+
+#: image.module:574
+msgid "The derivative images for <a href=\"!link\">%title</a> have been regenerated."
+msgstr ""
+
+#: image.module:814
+msgid "Unable to create scaled %label image"
+msgstr ""
+
+#: image.module:497;114;0
+msgid "image"
+msgstr ""
+
+#: image.module:497
+msgid "Derivative images were regenerated for %title."
+msgstr ""
+
+#: image.module:84
+msgid "create images"
+msgstr ""
+
+#: image.module:84
+msgid "view original images"
+msgstr ""
+
+#: image.module:84
+msgid "edit own images"
+msgstr ""
+
+#: image.module:84
+msgid "edit images"
+msgstr ""
+
+#: image.module:121
+msgid "Image module settings."
+msgstr ""
+

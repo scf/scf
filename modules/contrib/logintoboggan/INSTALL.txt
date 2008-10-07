@@ -1,0 +1,40 @@
+$Id: INSTALL.txt,v 1.2 2008/03/09 01:18:45 thehunmonkgroup Exp $
+
+*******************************************************
+    INSTALL.txt for logintoboggan.module for Drupal
+*******************************************************
+
+INSTALLATION:
+
+Place entire loggintoboggan module folder into
+  (a) your sites/all/modules directory
+  (b) your sites/[my site]/modules directory.
+
+Enable the module at 
+Administer -> Site building - > Modules
+
+Configure loggintoboggan settings at 
+Administer -> User management -> LoginToboggan.
+
+The module changes the functionality of the login block 
+AND provides a new 'LoginToboggan logged in block' 
+
+Configure each block at
+Administer -> Site building -> Blocks
+as follows...
+
+1. Configure the 'User login' block for LoginToboggan functionality:
+
+Change title if required; using <none> can make for a very neat login system,
+when combined with the javascript functionality: clicking upon "Login/register"
+reveals the login form in neat sliding fashion. To select this functionality,
+select 'Collapsible form' under "Block type".  Selecting 'Link' under "Block
+type" sends user to a login form, returning them to original page after
+successful login.
+
+2. Configure 'LoginToboggan logged in block' 
+
+Tip: by leaving the title blank, the 'LoginToboggan logged in block' is slim
+and neat.
+
+Done!

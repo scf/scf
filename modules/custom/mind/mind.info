@@ -2,6 +2,6 @@
 name = MIND
 description = Misc code for MIND site
 core = 6.x
-package = Harvard IIC
+package = SCF Custom
 dependencies[] = views
 dependencies[] = content

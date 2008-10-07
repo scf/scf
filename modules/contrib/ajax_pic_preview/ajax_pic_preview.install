@@ -1,0 +1,21 @@
+<?php
+// ; $Id: ajax_pic_preview.install,v 1.1.2.1 2008/04/25 08:11:28 mmilano Exp $
+
+/**
+ * Implementation of hook_install
+ */
+function ajax_pic_preview_install() {
+
+  $path = file_directory_path() .'/'. variable_get('user_picture_path', 'pictures');
+  file_check_directory($path, FILE_CREATE_DIRECTORY);
+  $path = $path .'/tmp';
+  file_check_directory($path, FILE_CREATE_DIRECTORY);
+
+}
+
+/**
+ * Implementation of hook_uninstall
+ */
+function ajax_pic_preview_uninstall() {
+
+}

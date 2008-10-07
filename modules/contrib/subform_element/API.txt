@@ -1,0 +1,126 @@
+Subform Element Developer Documentation
+----------------------------------------
+by Wolfgang Ziegler, nuppla@zites.net
+
+This module provides a new form element, that can be used by other modules.
+This form element allows you to reuse existing forms inside your form!
+
+So you can build forms that reuse existing forms while you extend them with further form items.
+Note that form reusing means not only reusing the visual representation, but also the 
+validation and submit logic.
+
+
+How to use the subform element?
+-------------------------------
+All one needs to do, is to create a new form element with the help of a creator function.
+It just needs the form_id, the array of arguments and the form state as arguments.
+
+Let's show a short usage example.
+
+function subform_element_test_form(&$form_state, $node) {
+
+  //this will present a full working node edit form
+  $form['subform'] = subform_element_create($node->type .'_node_form', array($node), $form_state);
+
+  //now we can find the subform's form array in $form['subform']['#form']
+  //if you want to alter the subform, alter $form['subform']['#form']
+
+  return $form;
+}
+
+So this will create a fully working node form for you, but only if node.pages.inc has been included.
+You have to include it outside of your form constructor function, e.g. you can use the menu system with
+an item like this:
+
+  $items['test_example'] = array(
+    'title' => t('Subform Element Test Form'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('subform_element_test_form'),
+    'access callback' => TRUE,
+    'file' => 'node.pages.inc',
+    'file path' => drupal_get_path('module', 'node'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+As you can see in this example, you have to make sure, that all necessary includes for you subform are
+loaded! Then you have to take care about proper access checks yourself, don't forget them!
+
+Notes about how subforms are treated
+------------------------------------
+  * When the subform is submitted, the wrapper form will be submitted and vice versa.
+  * When the subform is returns a redirect destination, it will be used as default redirect
+    target for the wrapper form. So if the wrapper form specifies a new redirect target, this
+    one is used instead.
+
+
+Attribute Reference
+--------------------
+#id: The form_id of the form to include
+#arguments (optional): An array of arguments that shall be passed to the forms function
+#data_separation (optional): Defaults to TRUE. Prevents conflicts by separating the data in $_POST.
+#share_button_handler (optional): Defaults to FALSE. Allows subforms to make use of external button handlers.
+
+Best one passes the attributes to the subform_element_create function. Here is its function
+signature:
+
+function subform_element_create($id, $arguments = array(), &$form_state, $data_separation = TRUE, $share_button_handler = FALSE)
+
+
+#data_separation
+-----------------
+Without data separation the values of each form will be transmitted as usual in the
+$_POST array. So if both forms use a field with the same name, e.g. 'title' both will
+end up in $_POST['title'], so obviously the latter title will overwrite the first one.
+
+To prevent this #data_separation can be set to TRUE (this is default!). If this is activated,
+the subform element will prefix the elements name so that the data ends up in e.g.
+$_POST[$subform_id]['title'], where $subform_id is the id of your subform. So the data
+is separated and you can safely combine forms with overlapping element names.
+
+Deactivate #data_separation only if you are sure that there are no overlapping element
+names. This has only the benefit of reducing a bit complexity of the subform element,
+but nothing you need to worry about. So if you are not sure, just stay with the default
+value.
+
+Note that #data_separation applies to all form elements except from files. Due to the
+way file uploads work in drupal, there is no #data_separation possible. So one has to
+avoid element name collisions for file uploads!
+
+
+#share_button_handler
+---------------------
+Since drupal 6.x it's possible to specify validation and submit handlers for buttons, which
+get executed if the according button has been pressed. If such handlers are present in a
+subform, they will be invoked as usual, however other possible subforms and the wrapper form
+get submitted with their main submit handler.
+
+If one uses several equal subforms, it might be useful to share the executed handler between
+the subforms. If you want to do so, just activate the share_button_handler option for all subforms
+you want to use the handler collectively. A subform with this option activated, will just grab the
+validation and submit handlers of the clicked button.
+
+E.g. have a look at the included subform example module, which shows a page with several node
+forms. Share_button_handler is activated for all the subforms, so if you press "Preview" or "Save"
+in one form, the action will be taken in all others to. In contrast if you deactivate the option
+for all subforms, the action will only be taken in the button's form.
+
+Limitations
+-----------
+ * #data_separation doesn't apply to files. Have a look at the #data_separation explanation 
+   for more on this
+ * #data_separation does work for the actual data, but not for set errors. E.g. if two forms
+   use an element 'title' and one sets an error on it, both elements will be marked red.
+
+
+Upgrade from 5.x to 6.x
+------------------------
+Like the formAPI the subform element has also be improved for 6.x. The most notable changes are:
+
+  * You must use subform_element_create() to create a subform element now.
+  * You need not manually invoke  subform_element_submit() any more. This works now automatically.
+  * There is now basic multistep form support.
+  * After creating the subform element you can find the subform's $form array now in $element['#form'],
+    what allows one to directly modify the subform now
+  * As the need for the options #subform_after_build and #extra_form is now gone, they are not
+    supported any more! Instead directly modify your subform by modifying $element['#form'].
+

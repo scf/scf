@@ -1,0 +1,46 @@
+# $Id: pngfix.pot,v 1.1.2.1 2008/04/07 20:33:14 robloach Exp $
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  pngfix.admin.inc,v 1.1.2.3 2008/02/06 17:02:25 robloach
+#  pngfix.module,v 1.2.2.5.2.1.2.2 2008/02/06 17:02:25 robloach
+#  pngfix.info,v 1.2.6.1 2008/01/21 13:50:17 robloach
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2008-04-06 21:26+0200\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: pngfix.admin.inc:16
+msgid "CSS Classes"
+msgstr ""
+
+#: pngfix.admin.inc:18
+msgid "Comma seperated list of CSS classes to apply the PNG Fix to (use <a href=\"@jqueryselector\">jQuery Selectors</a>).  The CSS class must be for the element that surrounds the image, and not for the image itself.  In the case of <code>&lt;div class=\"pngfix\"&gt;&lt;img ... /&gt;&lt;/div&gt;</code>, use .pngfix to apply the PNG Fix to the image."
+msgstr ""
+
+#: pngfix.module:12 pngfix.info:0
+msgid "Includes a fix to correctly handle PNG transparency in Windows IE 5.5 & 6."
+msgstr ""
+
+#: pngfix.module:37 pngfix.info:0
+msgid "PNG Fix"
+msgstr ""
+
+#: pngfix.module:38
+msgid "Configure how the PNG Fix operates."
+msgstr ""
+
+#: pngfix.module:0
+msgid "pngfix"
+msgstr ""
+

@@ -1,0 +1,28 @@
+<?php
+// $Id: image_gallery.install,v 1.7 2008/04/10 18:08:54 drewish Exp $
+
+function image_gallery_install() {
+  // Nothing to do.
+}
+
+function image_gallery_uninstall() {
+  if ($vid = variable_get('image_gallery_nav_vocabulary', FALSE)) {
+    taxonomy_del_vocabulary($vid);
+  }
+
+  variable_del('image_images_per_page');
+  variable_del('image_gallery_nav_vocabulary');
+  variable_del('image_gallery_node_info');
+  variable_del('image_gallery_sort_order');
+}
+
+function image_gallery_update_1() {
+  $ret = array();
+  if ($vid = variable_get('image_nav_vocabulary', '')) {
+    $ret[] = update_sql("UPDATE {vocabulary} SET module='image_gallery' WHERE vid=". (int) $vid);
+  }
+  else {
+    $ret[] = update_sql("UPDATE {vocabulary} SET module='image_gallery' WHERE module='image'");
+  }
+  return $ret;
+}

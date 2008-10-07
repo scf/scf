@@ -1,0 +1,25 @@
+22 January 2008
+----------------
+Drupal-5 branch
+Fixed module_exist -> module_exists
+Exporting MOAT data if MOAT module is available
+Content-type fixed
+
+22 May 2007
+------------
+Added support for single-user blogs that use the story module
+Added sioc:content export
+Updated $node->body issue to work with database changes introduced in  4.7
+Removed auto-generated sioc menu item
+
+20 Decembre 2005
+----------------
+
+Fixed bug in relative URLs
+Added ability to set queries LIMIT
+Added sioc:content_encoded for sioc:Post
+
+13 June 2005
+------------
+
+First version for CVS.

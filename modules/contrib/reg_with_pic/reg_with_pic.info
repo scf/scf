@@ -1,0 +1,4 @@
+; $Id: reg_with_pic.info,v 1.1 2007/11/15 22:31:30 mmilano Exp $
+name = "Reg With Pic"
+description = "Allows user to upload picture from the registration form."
+core = 6.x

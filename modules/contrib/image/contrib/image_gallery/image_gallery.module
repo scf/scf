@@ -1,0 +1,466 @@
+<?php
+// $Id: image_gallery.module,v 1.26 2008/04/10 18:08:54 drewish Exp $
+
+define('IMAGE_GALLERY_SORT_CREATE_DESC', 0);
+define('IMAGE_GALLERY_SORT_CREATE_ASC', 1);
+define('IMAGE_GALLERY_SORT_FILENAME', 2);
+define('IMAGE_GALLERY_SORT_TITLE', 3);
+
+function image_gallery_help($path, $arg) {
+  switch ($path) {
+    case 'admin/image':
+      return '<p>'. t('Image galleries can be used to organize and present groups of images. Galleries may be nested. To add a new gallery click the "add gallery" tab.') .'</p>';
+  }
+}
+
+function image_gallery_perm() {
+  return array('administer images');
+}
+
+function image_gallery_menu() {
+  $items = array();
+
+  $items['image'] = array(
+    'title' => 'Image galleries',
+    'access arguments' => array('access content'),
+    'type' => MENU_SUGGESTED_ITEM,
+    'page callback' => 'image_gallery_page',
+  );
+  $items['admin/content/image'] = array(
+    'title' => 'Image galleries',
+    'access arguments' => array('administer images'),
+    'page callback' => 'image_gallery_admin',
+    'description' => 'Create and manage image galleries.',
+  );
+  $items['admin/content/image/list'] = array(
+    'title' => 'List',
+    'access arguments' => array('administer images'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+  $items['admin/content/image/add'] = array(
+    'title' => 'Add gallery',
+    'access arguments' => array('administer images'),
+    'page callback' => 'image_gallery_admin_edit',
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items['admin/content/image/edit/%'] = array(
+    'title' => 'Edit image gallery',
+    'page callback' => 'image_gallery_admin_edit',
+    'page arguments' => array(4),
+    'access arguments' => array('administer images'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/settings/image_gallery'] = array(
+    'title' => 'Image gallery',
+    'access arguments' => array('administer site configuration'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('image_gallery_admin_settings'),
+    'description' => 'Configure appearance of image galleries.',
+  );
+
+  return $items;
+}
+
+function image_gallery_admin_settings() {
+  _image_check_settings();
+
+  $form['gallery'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Gallery settings'),
+  );
+  $form['gallery']['image_images_per_page'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Images per page'),
+    '#default_value' => variable_get('image_images_per_page', 6),
+    '#size' => 3,
+    '#description' => t('Sets the number of images to be displayed in a gallery page.'),
+  );
+  $form['gallery']['image_gallery_node_info'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Display node info'),
+    '#default_value' => variable_get('image_gallery_node_info', 0),
+    '#description' => t("Checking this will display the \"Posted by\" node information on the gallery pages."),
+  );
+  $form['gallery']['image_gallery_sort_order'] = array(
+    '#type' => 'radios',
+    '#title' => t('Image display sort order'),
+    '#default_value' => variable_get('image_gallery_sort_order', IMAGE_GALLERY_SORT_CREATE_DESC),
+    '#options' => array(
+      IMAGE_GALLERY_SORT_CREATE_DESC => t('Create date, newest first'),
+      IMAGE_GALLERY_SORT_CREATE_ASC  => t('Create date, oldest first'),
+      IMAGE_GALLERY_SORT_FILENAME    => t('File name'),
+      IMAGE_GALLERY_SORT_TITLE       => t('Image title'),
+    ),
+  );
+
+  return system_settings_form($form);
+}
+
+/**
+ * Implementation of hook_taxonomy. If our vocabulary gets deleted, delete our
+ * variable pointing to it.
+ */
+function image_gallery_taxonomy($op, $type, $array) {
+  if ($op == 'delete' && $type == 'vocabulary') {
+    $vid = variable_get('image_gallery_nav_vocabulary', '');
+    if ($vid == $array['vid']) {
+      variable_set('image_gallery_nav_vocabulary', '');
+    }
+  }
+}
+
+function image_gallery_term_path($term) {
+  return 'image/tid/'. $term->tid;
+}
+
+function image_gallery_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
+  switch ($op) {
+    case 'view':
+      if ($page && !$teaser && $node->type == 'image') {
+        $vid = _image_gallery_get_vid();
+        $terms = taxonomy_node_get_terms_by_vocabulary($node, $vid);
+        $term = array_pop($terms);
+        if ($term) {
+          $vocabulary = taxonomy_vocabulary_load($vid);
+          // Breadcrumb navigation
+          $breadcrumb = array();
+          $breadcrumb[] = l(t('Home'), NULL);
+          $breadcrumb[] = l($vocabulary->name, 'image');
+          if ($parents = taxonomy_get_parents_all($term->tid)) {
+            $parents = array_reverse($parents);
+            foreach ($parents as $parent) {
+              $breadcrumb[] = l($parent->name, 'image/tid/'. $parent->tid);
+            }
+          }
+          drupal_set_breadcrumb($breadcrumb);
+        }
+      }
+      break;
+  }
+}
+
+/**
+ * Image gallery callback, displays an image gallery
+ */
+function image_gallery_page($type = NULL, $tid = 0) {
+  $galleries = taxonomy_get_tree(_image_gallery_get_vid(), $tid, -1, 1);
+  for ($i=0; $i < count($galleries); $i++) {
+    $galleries[$i]->count = taxonomy_term_count_nodes($galleries[$i]->tid, 'image');
+    $tree = taxonomy_get_tree(_image_gallery_get_vid(), $galleries[$i]->tid, -1);
+    $descendant_tids = array_merge(array($galleries[$i]->tid), array_map('_taxonomy_get_tid_from_term', $tree));
+    // The values of $descendant_tids should be safe for raw inclusion in the
+    // SQL since they're all loaded from integer fields in the database.
+    $sql = 'SELECT n.nid FROM {node} n INNER JOIN {term_node} tn ON n.nid = tn.nid WHERE tn.tid IN ('. implode(',', $descendant_tids) .') AND n.status = 1 ORDER BY n.sticky DESC, n.created DESC';
+    if ($nid = db_result(db_query(db_rewrite_sql($sql)))) {
+      $galleries[$i]->latest = node_load(array('nid' => $nid));
+    }
+  }
+
+  $images = array();
+  if ($tid) {
+    // Allow images to be sorted in a useful order.
+    $query = "SELECT n.nid FROM {term_node} t INNER JOIN {node} n ON t.nid = n.nid WHERE n.status = 1 AND n.type = 'image' AND t.tid = %d ";
+    $count_query = "SELECT COUNT(DISTINCT(n.nid)) FROM {term_node} t INNER JOIN {node} n ON t.nid = n.nid WHERE n.status = 1 AND n.type = 'image' AND t.tid = %d ";
+    $args = array($tid);
+    switch (variable_get('image_gallery_sort_order', IMAGE_GALLERY_SORT_CREATE_DESC)) {
+      case IMAGE_GALLERY_SORT_CREATE_DESC:
+        $query .= 'ORDER BY n.sticky DESC, n.created DESC';
+        break;
+
+      case IMAGE_GALLERY_SORT_CREATE_ASC:
+        $query .= 'ORDER BY n.sticky DESC, n.created ASC';
+        break;
+
+      case IMAGE_GALLERY_SORT_FILENAME:
+        $query = "SELECT n.nid FROM {term_node} t INNER JOIN {node} n ON t.nid = n.nid
+          INNER JOIN {image} i ON n.nid = i.nid INNER JOIN {files} f ON i.fid = f.fid
+          WHERE n.status = 1 AND n.type = 'image' AND t.tid = %d AND f.filename = '%s'
+          ORDER BY n.sticky DESC, f.filepath";
+        $args[] = IMAGE_ORIGINAL;
+        break;
+
+      case IMAGE_GALLERY_SORT_TITLE:
+        $query .= 'ORDER BY n.sticky DESC, n.title ASC';
+        break;
+    }
+    $result = pager_query(db_rewrite_sql($query), variable_get('image_images_per_page', 6), 0, db_rewrite_sql($count_query), $args);
+    while ($node = db_fetch_object($result)) {
+      $images[] = node_load(array('nid' => $node->nid));
+    }
+
+    $gallery = taxonomy_get_term($tid);
+    $parents = taxonomy_get_parents($tid);
+
+    $breadcrumb = array();
+    $breadcrumb[] = l(t('Home'), NULL);
+    $breadcrumb[] = l(t('Image galleries'), 'image');
+    foreach ($parents as $parent) {
+      // Add parents to breadcrumb navigation
+      $breadcrumb[] = l($parent->name, 'image/tid/'. $parent->tid);
+    }
+    drupal_set_breadcrumb($breadcrumb);
+    drupal_set_title($gallery->name);
+  }
+
+  $content = theme('image_gallery', $galleries, $images);
+  return $content;
+}
+
+function image_gallery_admin() {
+  _image_check_settings();
+
+  $tree = taxonomy_get_tree(_image_gallery_get_vid());
+  if ($tree) {
+    $header = array(t('Name'), t('Operations'));
+    foreach ($tree as $term) {
+      $rows[] = array(str_repeat(' -- ', $term->depth) .' '. l($term->name, "image/tid/$term->tid"), l(t('edit gallery'), "admin/content/image/edit/$term->tid"));
+    }
+    return theme('table', $header, $rows);
+  }
+  else {
+    return t('No galleries available');
+  }
+}
+
+function image_gallery_admin_edit($tid = NULL) {
+  if ((isset($_POST['op']) && $_POST['op'] == t('Delete')) || isset($_POST['confirm'])) {
+    return drupal_get_form('image_gallery_confirm_delete_form', $tid);
+  }
+
+  if (is_numeric($tid)) {
+    $edit = (array) taxonomy_get_term($tid);
+  }
+  else {
+    $edit = array(
+      'name' => '',
+      'description' => '',
+      'vid' => _image_gallery_get_vid(),
+      'tid' => null,
+      'weight' => 0,
+    );
+  }
+  return drupal_get_form('image_gallery_admin_form', $edit);
+}
+
+function image_gallery_admin_form(&$form_state, $edit = array()) {
+  $form['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Gallery name'),
+    '#default_value' => $edit['name'],
+    '#size' => 60,
+    '#maxlength' =>  64,
+    '#description' => t('The name is used to identify the gallery.'),
+    '#required' => TRUE,
+  );
+  $form['description'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Description'),
+    '#default_value' => $edit['description'],
+    '#cols' => 60,
+    '#rows' => 5,
+    '#description' => t('The description can be used to provide more information about the image gallery.'),
+  );
+  $form['parent']['#tree'] = TRUE;
+  $form['parent'][0] = _image_gallery_parent_select($edit['tid'], t('Parent'), 'forum');
+  $form['weight'] = array(
+    '#type' => 'weight',
+    '#title' => t('Weight'),
+    '#default_value' => $edit['weight'],
+    '#delta' => 10,
+    '#description' => t('When listing galleries, those with with light (small) weights get listed before containers with heavier (larger) weights. Galleries with equal weights are sorted alphabetically.'),
+  );
+  $form['vid'] = array(
+    '#type' => 'hidden',
+    '#value' => _image_gallery_get_vid(),
+  );
+  $form['submit' ] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+  );
+  if ($edit['tid']) {
+    $form['delete'] = array(
+      '#type' => 'submit',
+      '#value' => t('Delete'),
+    );
+    $form['tid'] = array(
+      '#type' => 'hidden',
+      '#value' => $edit['tid'],
+    );
+  }
+  $form['#submit'][] = 'image_gallery_admin_submit';
+  $form['#theme'][] = 'image_gallery_admin';
+  return $form;
+}
+
+function image_gallery_admin_submit($form, &$form_state) {
+  $status = taxonomy_save_term($form_state['values']);
+  switch ($status) {
+    case SAVED_NEW:
+      drupal_set_message(t('Created new gallery %term.', array('%term' => $form_state['values']['name'])));
+      break;
+    case SAVED_UPDATED:
+      drupal_set_message(t('The gallery %term has been updated.', array('%term' => $form_state['values']['name'])));
+      break;
+    case SAVED_DELETED:
+      drupal_set_message(t('The gallery %term has been deleted.', array('%term' => $form_state['values']['name'])));
+      break;
+  }
+  return 'admin/content/image';
+}
+
+function image_gallery_confirm_delete_form(&$form_state, $tid) {
+  $term = taxonomy_get_term($tid);
+
+  $form['tid'] = array('#type' => 'value', '#value' => $tid);
+  $form['name'] = array('#type' => 'value', '#value' => $term->name);
+
+  return confirm_form($form, t('Are you sure you want to delete the image gallery %name?', array('%name' => $term->name)), 'admin/content/image', t('Deleting an image gallery will delete all sub-galleries. This action cannot be undone.'), t('Delete'), t('Cancel'));
+}
+
+function image_gallery_confirm_delete_form_submit($form, &$form_state) {
+  taxonomy_del_term($form_state['values']['tid']);
+  drupal_set_message(t('The image gallery %term and all sub-galleries have been deleted.', array('%term' => $form_state['values']['name'])));
+  $form_state['redirect'] = 'admin/content/image';
+}
+
+
+function _image_gallery_parent_select($tid, $title) {
+  $parents = taxonomy_get_parents($tid);
+  if ($parents) {
+    $parent = array_shift($parents);
+    $parent = $parent->tid;
+  }
+  else {
+    $parent = 0;
+  }
+
+  $children = taxonomy_get_tree(_image_gallery_get_vid(), $tid);
+
+  // A term can't be the child of itself, nor of its children.
+  foreach ($children as $child) {
+    $exclude[] = $child->tid;
+  }
+  $exclude[] = $tid;
+
+  $tree = taxonomy_get_tree(_image_gallery_get_vid());
+  $options[0] = '<'. t('root') .'>';
+  if ($tree) {
+    foreach ($tree as $term) {
+      if (!in_array($term->tid, $exclude)) {
+        $options[$term->tid] = str_repeat(' -- ', $term->depth) .' '. $term->name;
+      }
+    }
+  }
+
+  return array(
+    '#type' => 'select',
+    '#title' => $title,
+    '#default_value' => $parent,
+    '#options' => $options,
+    '#description' => t('Image galleries may be nested below other galleries.'),
+    '#required' => TRUE
+  );
+}
+
+/**
+ * Implementation of hook_theme() registry.
+ **/
+function image_gallery_theme() {
+  return array(
+    'image_gallery' => array(
+      'arguments' => array('galleries' => NULL, 'images' => NULL),
+    ),
+    'image_gallery_img' => array(
+      'arguments' => array('image' => NULL, 'size' => NULL),
+    ),
+  );
+}
+
+/**
+ * Theme a gallery page
+ */
+function theme_image_gallery($galleries, $images) {
+  drupal_add_css(drupal_get_path('module', 'image_gallery') .'/image_gallery.css');
+
+  $size = image_get_sizes(IMAGE_THUMBNAIL);
+
+  $content = '';
+  if (count($galleries)) {
+    $content .= '<ul class="galleries">';
+    foreach ($galleries as $gallery) {
+      $content .= '<li class="clear-block">';
+      if ($gallery->count) {
+        $content .= l(image_display($gallery->latest, IMAGE_THUMBNAIL), 'image/tid/'. $gallery->tid, array('html' => TRUE));
+      }
+      $content .= "<h3>". l($gallery->name, 'image/tid/'. $gallery->tid) ."</h3>\n";
+      $content .= '<div class="description">'. check_markup($gallery->description) ."</div>\n";
+      $content .= '<p class="count">'. format_plural($gallery->count, 'There is 1 image in this gallery', 'There are @count images in this gallery') ."</p>\n";
+      if ($gallery->latest->changed) {
+        $content .= '<p class="last">'. t('Last updated: %date', array('%date' => format_date($gallery->latest->changed))) ."</p>\n";
+      }
+      $content .= "</li>\n";
+    }
+    $content .= "</ul>\n";
+  }
+
+  if (!empty($images)) {
+    $content .= '<ul class="images">';
+    foreach ($images as $image) {
+      $content .= theme('image_gallery_img', $image, $size);
+    }
+    $content .= "</ul>\n";
+  }
+
+  if ($pager = theme('pager', NULL, variable_get('image_images_per_page', 6), 0)) {
+    $content .= $pager;
+  }
+
+  if (count($images) + count($galleries) == 0) {
+      $content .= '<p class="count">'. format_plural(0, 'There is 1 image in this gallery', 'There are @count images in this gallery') ."</p>\n";
+  }
+
+  return $content;
+}
+
+function theme_image_gallery_img($image, $size) {
+  $width = $size['width'];
+  // We'll add height to keep thumbnails lined up.
+  $height = $size['height'] + 75;
+
+  $content = '<li';
+  if ($image->sticky) {
+    $content .= ' class="sticky"';
+  }
+  $content .= " style='height : {$height}px; width : {$width}px;'>\n";
+  $content .= l(image_display($image, IMAGE_THUMBNAIL), 'node/'. $image->nid, array('html' => TRUE));
+  $content .= '<h3>'. l($image->title, 'node/'. $image->nid) .'</h3>';
+  if (variable_get('image_gallery_node_info', 0)) {
+    $content .= '<div class="author">'. t('Posted by: !name', array('!name' => theme('username', $image))) ."</div>\n";
+    if ($image->created > 0) {
+      $content .= '<div class="date">'. format_date($image->created) ."</div>\n";
+    }
+  }
+  $content .= "</li>\n";
+
+  return $content;
+}
+
+/**
+ * Returns (and possibly creates) a new vocabulary for Image galleries.
+ */
+function _image_gallery_get_vid() {
+  $vid = variable_get('image_gallery_nav_vocabulary', '');
+  if (empty($vid) || is_null(taxonomy_vocabulary_load($vid))) {
+    // Check to see if an image gallery vocabulary exists
+    $vid = db_result(db_query("SELECT vid FROM {vocabulary} WHERE module='image_gallery'"));
+    if (!$vid) {
+      $vocabulary = array('name' => t('Image Galleries'), 'multiple' => '0', 'required' => '0', 'hierarchy' => '1', 'relations' => '0', 'module' => 'image_gallery', 'nodes' => array('image' => 1));
+      taxonomy_save_vocabulary($vocabulary);
+      $vid = $vocabulary['vid'];
+    }
+    variable_set('image_gallery_nav_vocabulary', $vid);
+  }
+
+  return $vid;
+}

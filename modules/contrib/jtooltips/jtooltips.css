@@ -1,0 +1,34 @@
+/* $Id: jtooltips.css,v 1.3 2007/11/20 09:48:04 psicomante Exp $ */
+
+
+/**
+ * Class generates the tooltip style properties.
+ */
+#tooltip {
+	background-color: #636363;
+	border: 1px solid #888888;
+	color: #99CC33;
+	padding: 4px;
+	-moz-border-radius-bottomleft: 7px;
+	-moz-border-radius-bottomright: 7px;
+	-moz-border-radius-topleft: 0;
+	-moz-border-radius-topright: 7px;
+	opacity: .85;
+	max-width: 20em;
+	font: Trebuchet MS, Verdana, Arial, sans-serif;
+}
+/**
+ * Text inside the tooltip.
+ */
+ 
+#tooltip h3 {
+	font-size: 0.8em;
+    margin: 0;
+	padding: 0 3px;
+	text-align: left !important;
+}
+#tooltip p {
+	font-size: 0.6em;
+	margin: 5px 0 0 5px;
+	text-align: left;
+}

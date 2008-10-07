@@ -1,0 +1,5 @@
+; $Id: views.info,v 1.7 2007/08/12 06:52:14 merlinofchaos Exp $
+name = Views
+description = Create customized lists and queries from your database.
+package = Views
+core = 6.x

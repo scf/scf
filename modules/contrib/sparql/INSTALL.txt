@@ -1,0 +1,30 @@
+// $Id: INSTALL.txt,v 1.1 2008/04/28 13:59:49 arto Exp $
+
+NOTE: This is experimental software meant for advanced users; assume nothing
+works, and you may be pleasantly surprised. And when it breaks, you get to
+keep both pieces.
+
+REQUIREMENTS
+------------
+This module requires Drupal 6.x and PHP 5.2.x (or newer), and the following
+modules:
+
+  * RDF API (http://drupal.org/project/rdf) with the ARC2 library
+
+INSTALLATION
+------------
+
+  1. Go to [Administer >> Reports >> Status report] to make sure you've
+     successfully installed the ARC2 library as instructed in the
+     INSTALL.txt file for the RDF API module.
+
+  2. Copy all the module files into a subdirectory called modules/sparql/
+     under your Drupal installation directory.
+
+  3. Go to [Administer >> Site building >> Modules] and enable the SPARQL
+     API module.
+
+  4. Go to [Administer >> Site configuration >> SPARQL settings] to review
+     and change the configuration options to your liking.
+
+  5. (See README.txt for information on submitting bug reports.)

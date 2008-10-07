@@ -1,6 +1,6 @@
 ; $Id$
 name = Associations
 description = Provides a means of associating two nodes with a timestamp and weight
-package = Harvard IIC
+package = SCF Custom
 version = VERSION
 core = 6.x

@@ -1,0 +1,21 @@
+Requirements:
+-------------
+
+This module requires forums and / or blogs to be enabled.
+
+Installation:
+-------------
+
+1. Copy the sioc.module to the Drupal modules/ directory.
+
+2. Turn the module on in the admin interface (administration > settings >
+   modules).
+
+Authors
+-------
+John Breslin (cloud@eircom.net)
+
+Contributors
+------------
+Robert Douglass (www.robshouse.net)
+Alexandre Passant (www.apassant.net)

@@ -1,0 +1,47 @@
+<?php
+// ; $Id: reg_with_pic.module,v 1.1 2007/11/15 22:31:30 mmilano Exp $
+
+/**
+ * @file This module allows a user picture to be uploaded at registration time.
+ */
+
+/**
+ * Implementation of hook_user()
+ */
+function reg_with_pic_user($op, &$edit, &$user, $category=null) {
+  if (variable_get('user_pictures', 0)) {
+    switch ($op) {
+      case 'register':
+
+        // setup picture upload in registration form
+        $form['#attributes']['enctype'] = 'multipart/form-data';
+        $form['picture'] = array('#type' => 'fieldset', '#title' => t('Picture'), '#weight' => 1);
+        $form['picture']['picture_upload_register'] = array('#type' => 'file', '#title' => t('Upload picture'), '#description' => t('<br>Your virtual face or picture. Maximum dimensions are %dimensions and the maximum size is %size kB.', array('%dimensions' => variable_get('user_picture_dimensions', '85x85'), '%size' => variable_get('user_picture_file_size', '30'))) .' '. variable_get('user_picture_guidelines', ''));
+
+        return $form;
+        break;
+
+      case 'validate':
+        // validate uploaded picture, taken from user module
+        $validators = array(
+          'file_validate_is_image' => array(),
+          'file_validate_image_resolution' => array(variable_get('user_picture_dimensions', '85x85')),
+          'file_validate_size' => array(variable_get('user_picture_file_size', '30') * 1024),
+        );
+
+        $file = file_save_upload('picture_upload_register', $validators);
+        break;
+
+      case 'insert':
+        // file repopulates from uploadcache
+        $file = file_save_upload('picture_upload_register');
+        $info = image_get_info($file->filepath);
+        // save picture to correct path and update the row in the user table
+        $destination = variable_get('user_picture_path', 'pictures') .'/picture-'. $user->uid .'.'. $info['extension'];
+        if (file_copy($file, $destination, FILE_EXISTS_REPLACE)) {
+          db_query("UPDATE {users} SET picture='%s' WHERE uid=%d", $file->filepath, $user->uid);
+        }
+        break;
+    }
+  }
+}

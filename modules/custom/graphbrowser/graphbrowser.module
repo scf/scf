@@ -1,0 +1,11 @@
+<?php
+
+// $Id: graphbrowser.module $
+
+/**
+ * @file
+ * Graphbrowser module
+ */
+
+// currently just a stub file 
+// so that drupal_get_path('module', 'graphbrowser') will work

@@ -1,0 +1,26 @@
+<?php
+// $Id: print.install,v 1.1.4.4 2008/05/13 00:12:55 jcnventura Exp $
+
+/**
+ * Implementation of hook_install().
+ */
+function print_install() {
+  drupal_set_message(t("Printer-friendly Page settings are available under !link",
+    array( '!link' => l('Administer > Site configuration > Printer-friendly Pages ',  'admin/settings/print' ) )
+  ));
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function print_uninstall() {
+  variable_del('print_settings');
+  variable_del('print_display_comment');
+  variable_del('print_sourceurl_settings');
+  variable_del('print_html_settings');
+  variable_del('print_robot_settings');
+  $settings = db_query("SELECT name FROM {variable} WHERE name LIKE 'print\_display\_%'");
+  while ($variable = db_fetch_object($settings)) {
+    variable_del($variable->name);
+  }
+}

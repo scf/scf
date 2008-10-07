@@ -1,0 +1,11 @@
+.dev-query, .dev-timer, .dev-memory-usage {
+  padding-top: 2em;
+}
+
+.devel-obj-output .field {
+  color: red;
+}
+
+.devel-obj-output dd {
+  display: block;
+}

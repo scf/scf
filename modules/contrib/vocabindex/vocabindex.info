@@ -1,0 +1,5 @@
+; $Id$
+name = Vocabulary Index
+description = "This module provides index pages for vocabularies. On these pages the terms within a specific vocabulary are listed rather than the nodes."
+core = 6.x
+dependencies[] = taxonomy

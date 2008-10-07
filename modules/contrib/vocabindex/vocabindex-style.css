@@ -1,0 +1,49 @@
+/**
+*General stuff
+*/
+.vocabindex-desc
+{
+	color:#555;
+}
+.vocabindex-list a
+{
+	display:block;
+}
+.vocabindex-list a span
+{
+	color:#888;
+	display:block;
+	font-size:.9em;
+	line-height:.9em;
+}
+
+/**
+*Flat lists
+*/
+ul.vocabindex-list.flat, ul.vocabindex-list.flat-toplevel
+{
+	border-top:1px solid #ddd;
+}
+ul.vocabindex-list.flat li, ul.vocabindex-list.flat-toplevel li
+{
+	background-image:none;
+	border-bottom:1px solid #ddd;
+	margin:0;
+	padding:0;
+}
+.vocabindex-list.flat a, .vocabindex-list.flat-toplevel a
+{
+	padding:3px 0;
+}
+.vocabindex-list.flat a:hover, .vocabindex-list.flat-toplevel a:hover
+{
+	text-decoration:none;
+}
+ul.vocabindex-list.flat li.parent, ul.vocabindex-list.flat-toplevel li.parent
+{
+	border:0;
+}
+.vocabindex-list.flat .even a, .vocabindex-list.flat-toplevel .even a
+{
+	background-color:#fafafa;
+}

@@ -1,0 +1,6 @@
+; $Id: rdf.info,v 1.3 2008/02/10 23:01:15 arto Exp $
+name = RDF API
+description = Enables the use of Resource Description Framework (RDF) metadata.
+package = RDF
+core = 6.x
+php = 5.2

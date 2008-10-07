@@ -1,0 +1,81 @@
+@CHARSET "UTF-8";
+/* -------------------------------------------------------------- 
+
+  @file layout.css
+  Basic layout elements
+
+-------------------------------------------------------------- */
+  
+/* Dimensions and positioning
+-------------------------------------------------------------- */
+
+#site-slogan {
+  position: relative;
+  top: -20px;
+}
+
+div.more-link {
+  margin-right: 5em;
+}
+
+#header, 
+#nav, 
+#body_, 
+#footer               { 
+  margin: 0 auto; 
+	max-width: 1200px; 
+	min-width: 800px; 
+	overflow: hidden; 
+	position: relative; }
+
+#header               { height: 5em; }
+
+#mission              { position: relative; }
+
+.sidebar,
+#main_wrapper         { float: left; }
+
+body.no-sidebars .sidebar                 { display: none; }
+body.no-sidebars #main_wrapper            { width: 100%; }
+
+body.one-sidebar .sidebar                 { width: 38%; }
+
+body.two-sidebars .sidebar                { display: block; width: 33%; }
+body.two-sidebars #main_wrapper           { width: 33%; }
+
+body.sidebar-right #sidebar_left_wrapper  { display: none; }
+body.sidebar-right #sidebar_right_wrapper { display: block; }
+body.sidebar-left #sidebar_left_wrapper   { display: block; }
+body.sidebar-left #sidebar_right_wrapper  { display: none; }
+body.sidebar-right #main_wrapper,
+body.sidebar-left #main_wrapper           { float: left; width: 62%; }
+
+body.admin-build-block .sidebar			  { width: 10%; }
+body.admin-build-block #main_wrapper	  { width: 80%; }
+
+#footer               { height: 6em; }
+  
+/* Negative space
+-------------------------------------------------------------- */
+
+body                  { margin: 0; }
+#header, 
+#nav_primary, 
+#sidebar_left, 
+#main, 
+#sidebar_right, 
+#footer               { padding: 10px; }
+
+.sidebar,
+#main_wrapper         { margin-top: 10px; }
+
+#body_                { padding-bottom: 1em; }
+
+/* Misc
+-------------------------------------------------------------- */
+
+body.simplemenu-enabled #simplemenu   { position: fixed; }
+body.simplemenu-enabled #page_wrapper { padding-top: 1.6em; }
+
+body.front #breadcrumb                { display: none; }
+

@@ -1,0 +1,167 @@
+# $Id: nl.po,v 1.1.2.1 2008/02/03 16:41:00 xano Exp $
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  vocabindex.admin.inc: n/a
+#  vocabindex.view.inc: n/a
+#  vocabindex.module: n/a
+#  vocabindex.install: n/a
+#  vocabindex.info: n/a
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2008-02-03 17:21+0100\n"
+"PO-Revision-Date: 2008-02-03 17:32+0100\n"
+"Last-Translator: Bart Feenstra\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: vocabindex.admin.inc:9
+msgid "Terms order"
+msgstr "Termvolgorde"
+
+#: vocabindex.admin.inc:10
+msgid "Select the order in which the terms should be displayed."
+msgstr "Kies in welke volgorde de termen weergegeven moeten worden."
+
+#: vocabindex.admin.inc:13
+msgid "By weight"
+msgstr "Op gewicht"
+
+#: vocabindex.admin.inc:14
+msgid "By name"
+msgstr "Op naam"
+
+#: vocabindex.admin.inc:20
+msgid "List style"
+msgstr "Lijstweergave"
+
+#: vocabindex.admin.inc:21
+msgid "Select the display style for the terms lists."
+msgstr "Kies het uiterlijk van de termlijsten"
+
+#: vocabindex.admin.inc:24
+msgid "Threaded"
+msgstr "Vertakt"
+
+#: vocabindex.admin.inc:25
+msgid "Flat"
+msgstr "Plat"
+
+#: vocabindex.admin.inc:26
+msgid "Flat (top-level terms only)"
+msgstr "Plat (Alleen bovenste termen)"
+
+#: vocabindex.admin.inc:32
+msgid "Use default stylesheet"
+msgstr "Gebruik standaard stylesheet"
+
+#: vocabindex.admin.inc:33
+msgid "Uncheck if you don't want to use the default Vocabindex stylesheet."
+msgstr "Uitvinken als u de standaard Vocabindex stylesheet niet wil gebruiken."
+
+#: vocabindex.admin.inc:48
+msgid "Paths may only contain alphanumeric characters and dashes. For best SEO results, use dashes as word separators. Paths will automatically be converted to lowercase."
+msgstr "Paden mogen alleen alfanumerieke tekens en streepjes bevatten. Voor de beste SEO resultaten kunt u het beste streepjes als scheidingstekens gebruiken. Paden worden automatisch omgezet naar kleine letters."
+
+#: vocabindex.admin.inc:53
+msgid "There are no vocabularies to create index pages for. You can create vocabularies at <a href=\"!link\">the Taxonomy page</a>."
+msgstr "Er zijn geen vocabulaires om indexpagina's voor te maken. U kunt vocabulaires maken op de <a href=\"!link\">the Taxonomiepagina</a>"
+
+#: vocabindex.admin.inc:65
+msgid "Currently located at <a href=\"!url\">/!relative_url</a>"
+msgstr "Momenteel op <a href=\"!url\">/!relative_url</a>"
+
+#: vocabindex.admin.inc:69
+msgid "There is currently no index page set for this vocabulary."
+msgstr "Er is momenteel geen indexpagina ingesteld voor deze vocabulaire."
+
+#: vocabindex.admin.inc:74
+msgid "Path for %title index page"
+msgstr "Pad voor %title indexpagina"
+
+#: vocabindex.admin.inc:83
+msgid "Save"
+msgstr "Opslaan"
+
+#: vocabindex.admin.inc:98
+msgid "Paths may only contain alphanumeric characters and dashes."
+msgstr "Paden mogen alleen alfanumerieke tekens en streepjes bevatten."
+
+#: vocabindex.admin.inc:106
+msgid "Path already exists."
+msgstr "Het pad bestaat al."
+
+#: vocabindex.admin.inc:128
+msgid "The paths have been updated."
+msgstr "De paden zijn bijgewerkt."
+
+#: vocabindex.view.inc:52
+msgid "There are no categories to display."
+msgstr "Er zijn geen categoriën om weer te geven."
+
+#: vocabindex.module:24
+msgid "manage vocabulary index pages"
+msgstr "beheer indexpagina's voor vocabulaires"
+
+#: vocabindex.module:24
+msgid "view vocabulary index pages"
+msgstr "bekijk indexpagina's voor vocabulaires"
+
+#: vocabindex.module:33
+msgid "Vocabulary index pages"
+msgstr "Indexpagina's voor vocabulaires"
+
+#: vocabindex.module:34
+msgid "Create index pages for vocabularies."
+msgstr "Maak indexpagina's voor vocabulaires."
+
+#: vocabindex.module:41
+msgid "Paths"
+msgstr "Paden"
+
+#: vocabindex.module:47
+msgid "Settings"
+msgstr "Instellingen"
+
+#: vocabindex.module:48
+msgid "General settings."
+msgstr "Algemene instellingen."
+
+#: vocabindex.module:0
+msgid "vocabindex"
+msgstr "vocabindex"
+
+#: vocabindex.install:5
+msgid "The table in which the aliases for vocabulary index pages are stored."
+msgstr "De tabel waarin de aliassen voor indexpagina's van vocabulaires worden opgeslagen."
+
+#: vocabindex.install:8
+msgid "The primary identifier for a vocabulary index page."
+msgstr "De primaire indentificeerder voor een indexpagina van vocabulaires."
+
+#: vocabindex.install:13
+msgid "The alias for a vocabulary index page."
+msgstr "De alias voor een indexpagina van een vocabulaire."
+
+#: vocabindex.install:29
+msgid "Vocabulary Index has been succesfully installed. Please proceed to <a href=\"!link\">the settings page</a> to get started."
+msgstr "Vocabulary Index is geïnstalleerd. Ga alstublieft verder naar <a href=\"!link\">de instellingen</a> om aan de slag te gaan."
+
+#: vocabindex.install:36
+msgid "Vocabulary Index has been succesfully uninstalled. We hope you enjoyed the ride!"
+msgstr "Vocabulary Index is gedeïnstalleerd. We hopen dat u van de rit heeft genoten!"
+
+#: vocabindex.info:0
+msgid "Vocabulary Index"
+msgstr "Vocabulary Index"
+
+#: vocabindex.info:0
+msgid "This module provides index pages for vocabularies. On these pages the terms within a specific vocabulary are listed rather than the nodes."
+msgstr "Deze module zorgt voor indexpagina's voor vocabulaires. Op deze pagina's worden de termen binnen een specifieke vocabulaire weergegeven in plaats van de nodes."
+

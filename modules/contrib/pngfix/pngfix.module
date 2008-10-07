@@ -1,0 +1,45 @@
+<?php
+// $Id: pngfix.module,v 1.2.2.5.2.1.2.2 2008/02/06 17:02:25 robloach Exp $
+
+/**
+* Implementation of hook_help
+*/
+function pngfix_help($path = '', $arg = NULL) {
+  $output = '';
+  switch ($path) {
+    case 'admin/help#pngfix':
+    case 'admin/settings/pngfix':
+      $output = '<p>'.  t("Includes a fix to correctly handle PNG transparency in Windows IE 5.5 & 6."). '</p>';
+      break;
+  }
+  return $output;
+} // function pngfix_help
+
+/**
+ * Implementation of hook_init
+ */ 
+function pngfix_init() {
+  $pngfixclasses = variable_get('pngfix_css_classes', '');
+  if (!empty($pngfixclasses)) {
+    $jquerypngfixjs = drupal_get_path('module', 'pngfix') .'/jquery.pngFix.js';
+    drupal_add_js($jquerypngfixjs, 'module');
+    $js = "$(document).ready(function(){ $('$pngfixclasses').pngFix(); });";
+    drupal_add_js($js, 'inline');
+  }
+} // function pngfix_init
+
+/**
+ * Implementation of hook_menu
+ */ 
+function pngfix_menu() {
+  $items = array();
+  $items['admin/settings/pngfix'] = array(
+    'title' => 'PNG Fix',
+    'description' => 'Configure how the PNG Fix operates.',
+    'access arguments' => array('administer site configuration'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('pngfix_admin'),
+    'file' => 'pngfix.admin.inc',
+  );
+  return $items;
+} // function pngfix_menu

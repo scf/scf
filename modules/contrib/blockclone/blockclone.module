@@ -1,0 +1,142 @@
+<?php
+// $Id: blockclone.module,v 1.2.2.3 2008/04/19 14:51:53 swentel Exp $
+
+/**
+ * @file
+ * Adds a new operation called 'clone' to blocks. Can be used to display blocks in 
+ * different regions or with a different weight in the same regions on different pages.
+ * 
+ * @version this is the Drupal 6.x version
+ *
+ * @author Kristof De Jaeger | http://realize.be
+ * 
+ * @todo: implement blockcache
+ */
+
+/**
+ * Implementation of hook_menu() 
+ */
+function blockclone_menu() {
+  $items['admin/build/block/blockclone_add'] = array(
+    'title' => t('Block Clone add'),
+    'description' => t('Callback to clone a block'),
+    'page callback' => 'blockclone_createclone',
+    'access arguments' => array('administer blocks'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/build/block/blockclone_delete'] = array(
+    'title' => t('Block Clone remove'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('blockclone_delete_clone'),
+    'access arguments' => array('administer blocks'),
+    'type' => MENU_CALLBACK,
+  );  
+  return $items;
+}
+
+/**
+ * Implementation of hook_form_alter()
+ * 
+ * We check on form_id 'block_admin_display' to add an extra operation
+ * called 'clone' or 'remove clone', so the user can clone this block. 
+ */
+function blockclone_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'block_admin_display_form') {
+   while (list($key,$val) = each($form)){   
+      if (is_array($val) && array_key_exists('module', $val)) {
+        // append clone link
+        if ($val['module']['#value'] != 'blockclone') {
+          $form[$key]['configure']['#value'] .= ' '.t('<a href="!clone_link">clone</a>',
+            array('!clone_link' => url('admin/build/block/blockclone_add/'.$form[$key]['module']['#value'].'/'.$form[$key]['delta']['#value'])));
+        }
+        // append remove link
+        else
+          $form[$key]['configure']['#value'] .= ' '.t('<a href="!clone_link">remove clone</a>',
+            array('!clone_link' => url('admin/build/block/blockclone_delete/'.$form[$key]['delta']['#value'])));
+      }
+    }
+  }
+  return $form;
+}
+
+/**
+ * Create new clone of existing block
+ */
+function blockclone_createclone() {
+  $mod = arg(4);
+  $delta = arg(5);
+  if (db_result(db_query("SELECT module FROM {blocks} WHERE module = '%s' AND delta = '%s'",$mod,$delta)) != false) {
+    $values->mod_module = $mod;
+    $values->mod_delta = $delta;
+    drupal_write_record('blockclone',$values);
+    $message = t("Block has been cloned.");
+  } else {
+    $message = t("Illegal clone operation");
+  }
+  drupal_set_message($message);
+  drupal_goto('admin/build/block');
+}
+
+/**
+ * Menu callback; confirm deletion of cloned blocks
+ */
+function blockclone_delete_clone(&$form_state, $bid = 0) {
+
+  $clone = db_fetch_object(db_query("SELECT b.module, b.delta FROM {blockclone} bc INNER JOIN {blocks} b on b.module = bc.mod_module AND b.delta = bc.mod_delta WHERE bc.blockclone_id = '%d'",$bid));
+  $info = module_invoke($clone->module, 'block', 'list');
+  $box['info'] = $info[$clone->delta]['info'];
+
+  $form['info'] = array('#type' => 'hidden', '#value' => $box['info'] ? $box['info'] : $box['title']);
+  $form['bid'] = array('#type' => 'hidden', '#value' => $bid);
+
+  return confirm_form($form, t('Are you sure you want to delete the cloned block %name?', array('%name' => $box['info'])), 'admin/build/block', '', t('Delete'), t('Cancel'));
+}
+
+/**
+ * Deletion of cloned blocks.
+ */
+function blockclone_delete_clone_submit($form, &$form_state) {
+  db_query("DELETE FROM {blockclone} WHERE blockclone_id = %d",$form_state['values']['bid']);
+  drupal_set_message(t('The cloned block %name has been removed.', array('%name' => $form_state['values']['info'])));
+  cache_clear_all();
+  $form_state['redirect'] = 'admin/build/block';
+  return;
+}
+
+
+/**
+ * Implementation of hook_block()
+ */
+function blockclone_block($op = 'list', $delta = 0, $edit = array()) {
+  switch($op) {
+    case'list':
+      return blockclone_return_cloned_blocks();
+    break;
+    case 'view':
+      return blockclone_block_view($delta);
+    break;    
+  }
+}
+
+/**
+ * Return cloned blocks into blocks list
+ */
+function blockclone_return_cloned_blocks() {
+  $blocks = array();
+  $cloned_result = db_query("SELECT * FROM {blockclone} bc INNER JOIN {blocks} b ON b.module = bc.mod_module AND b.delta = bc.mod_delta");
+  while ($cloned = db_fetch_object($cloned_result)) {
+    $orig_info = module_invoke($cloned->module, 'block', 'list');
+    $info = $orig_info[$cloned->delta]['info'];
+    $blocks[$cloned->blockclone_id]['info'] = $info.t(' [[CLONED]]');    
+  }
+  return $blocks;
+}
+
+/**
+ * Return cloned block
+ */
+function blockclone_block_view($delta) {
+  $cloned = db_fetch_object(db_query('SELECT * FROM {blockclone} WHERE blockclone_id = %d', $delta));
+  $block = module_invoke($cloned->mod_module, 'block', 'view', $cloned->mod_delta);
+  return $block;
+}

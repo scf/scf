@@ -1,0 +1,5 @@
+; $Id$
+name = GraphBrowser
+description = Graph a taxonomy.
+package = SCF Custom
+core = 6.x

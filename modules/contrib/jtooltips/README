@@ -1,0 +1,89 @@
+// $Id: README,v 1.2 2007/11/20 09:48:04 psicomante Exp $
+// jQuery Tooltips.
+//
+// Module developed by Psicomante
+// psicomante.katapekkia.net - psicomante(AT)gmail(.)com
+//
+
+For support, please submit via the project issues here: http://drupal.org/project/jtooltips
+
+For custom Drupal development, email psicomante AT gmail DOT com
+
+**WHAT THE MODULE IS
+
+This plugin enhances the default tooltips.
+You can style them via stylesheets and improve their behavior.
+The tooltip is shown at the mouse position and moves if there isn't enough space.
+
+**INSTALL INSTRUCTIONS
+
+1. Enable the module at Administer > Site building > Modules > Other
+2. Optional: install sweetTitles
+
+   - Download sweetTitles from: http://www.dustindiaz.com/sweet-titles-finalized
+
+   - Copy addEvent.js and sweetTitles.js from the sweetTitles distribution
+     to the js directory of jTooltips.
+
+3. Optional: configure jTooltips at
+
+   Administer > Site configuration > jQuery tooltips
+
+**ENABLE tooltip for jQuery or sweetTitles
+
+It's simple to enable tooltip for jQuery. Default behavior is using jQuery tooltips.
+
+Using SweetTitles: you need to enable it at admin/settings/jtooltips, selecting "sweetTitles" from the dropdown menu.
+You should download the script pack from the official page and put it in the /js folder in modules/jtooltips
+or sites/all/modules/jtooltips (depends on where the jTooltips module folder is).
+
+**WHERE DOWNLOADING SCRIPTS and getting Information
+
+SweetTitles: necessary if you want to use them
+http://www.dustindiaz.com/sweet-titles-finalized
+
+Tooltip for JQuery: optional, a packed version is included in the Drupal module
+http://bassistance.de/jquery-plugins/jquery-plugin-tooltip/
+
+**STYLING TOOLTIPS
+
+To style tooltips, you should modify css in the module folder. (jtooltips.css for jQuery tooltips, sweetTitles.css for sweetTitles)
+
+**APPLY CUSTOM BEHAVIOR to Jquery Tooltips
+
+In the settings page for this module (admin/settings/jtooltips), if you select
+jQuery tooltips, you will find a textarea with a script inside. The textarea
+can be modified to change the function of the jQuery tooltips.
+
+Some examples are listed in this page:
+http://bassistance.de/jquery-plugins/jquery-plugin-tooltip/
+
+There are some available options:
+    * delay (Number): The number of milliseconds before a tooltip is display, default is 250
+    * event (String): The event on which the tooltip is displayed, default is “mouseover”, “click” works fine, too
+    * track (Boolean): If true, let the tooltip track the mousemovement, default is false
+    * showURL (Boolean): If true, shows the href or src attribute within p.url, default is true
+    * showBody (String): If specified, uses the string to split the title, displaying the first
+      part in the h3 tag, all following in the p.body tag, default is null
+    * extraClass (String): If specified, adds the class to the tooltip helper, default is null
+    * fixPNG (Boolean): If true, fixes transparent PNGs in IE, default is false
+
+**EXAMPLES
+Shows tooltips for anchors, inputs and images, if they have a title
+
+if (Drupal.jsEnabled) {
+  $(document).ready(function () {
+  	$('a, input, img').Tooltip({
+  		delay: 0,
+  		track: true,
+  		showURL: true,
+  		showBody: "; "
+  	});
+  }); 
+}
+
+For support, please submit via the project issues here: http://drupal.org/project/jtooltips
+
+For custom Drupal development, email psicomante AT gmail DOT com
+
+

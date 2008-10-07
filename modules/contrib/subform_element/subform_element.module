@@ -1,0 +1,253 @@
+<?php
+// $Id: subform_element.module,v 1.1.2.8.2.7 2008/02/08 14:13:10 fago Exp $
+
+/***
+ * @file
+ * Provides a new form element, that eases reusing already existing forms
+ */
+
+/**
+ * Generates a subform form element
+ */
+function subform_element_create($id, $arguments = array(), &$form_state, $data_separation = TRUE, $share_button_handler = FALSE) {
+  $element = array(
+    '#type' => 'subform',
+    '#id' => $id,
+    '#arguments' => $arguments,
+    '#data_separation' => $data_separation,
+    '#share_button_handler' => $share_button_handler,
+  );
+
+  $subform_id = form_clean_id($id);
+  $state = &subform_element_get_element_state($subform_id, $form_state);
+
+  $element['#form'] = call_user_func_array('drupal_retrieve_form', array_merge(array($id, $state), $arguments));
+  $element['#form']['#token'] = FALSE;
+  $element['#form']['#subform_id'] = $subform_id;
+
+  drupal_prepare_form($id, $element['#form'], $state);
+
+  if ($data_separation) {
+    $element['#form']['#pre_render']['subform_element_separate_data'] = 'subform_element_separate_data';
+  }
+  return $element;
+}
+
+/**
+ * Implementation of hook_elements()
+ */
+function subform_element_elements() {
+  $type['subform'] = array(
+    '#id' => 'subform_element_subform_id',
+    '#after_build' => array('subform_element_build_subform'),
+    '#element_validate' => array('subform_element_validate'),
+    '#redirect' => FALSE,
+    '#arguments' => array(),
+    '#data_separation' => TRUE,
+    '#share_button_handler' => FALSE,
+  );
+  return $type;
+}
+
+/**
+ * Implementation of hook_theme()
+ */
+function subform_element_theme() {
+  return array(
+    'subform' => array(
+      'arguments' => array('element' => array()),
+    ),
+  );
+}
+
+/**
+ * This function invokes drupal_get_form() once again for the subform.
+ */
+function subform_element_build_subform($element, &$form_state) {
+  $id = $element['#id']; //form id of the subform
+  $subform_id = $element['#form']['#subform_id']; //unique subform id
+
+  $state = &subform_element_get_element_state($subform_id, $form_state);
+
+  $subform = &$element['#form'];
+  $subform['#post'] = $element['#data_separation'] && !empty($element['#post']) ? $_POST[$subform_id] : $element['#post'];
+
+  if (isset($element['#post']['form_id'])) {
+    //fix the form_id, so that form_builder accepts the post data
+    $subform['#post']['form_id'] = $id;
+  }
+
+  $state['values'] = array();
+  $subform = form_builder($id, $subform, $state);
+
+  subform_propagate_state_up($subform_id, $form_state, $state);
+
+  unset($subform['form_id']); //remove the hidden form_id element
+  $subform['#type'] = 'markup'; //just output the content of the form
+
+  //add a reference to the element for later use
+  $form_state['subform'][$subform_id]['element'] = &$element;
+
+  return $element;
+}
+
+/**
+ * Initialies the form_state if necessary and returns a reference on it
+ */
+function &subform_element_get_element_state($subform_id, &$form_state) {
+  if (!isset($form_state['subform'][$subform_id]['state'])) {
+    //init the form_state of the subform, if necessary
+    $form_state['subform'][$subform_id]['state'] = array('storage' => NULL, 'submitted' => FALSE);
+  }
+  return $form_state['subform'][$subform_id]['state'];
+}
+
+/**
+ * Validations handler for the subform element
+ * It validates the subform element by validating the form
+ */
+function subform_element_validate($element, &$form_state) {
+
+  if (!isset($form_state['subform_submit_handlers'])) {
+    //add the subform submit handler and save the origin handler for later
+    $form_state['subform_submit_handlers'] = isset($form_state['submit_handlers']) ? $form_state['submit_handlers'] : FALSE;
+    $form_state['submit_handlers'] = array('subform_element_submit');
+  }
+
+  $state = &subform_element_get_element_state($element['#form']['#subform_id'], $form_state);
+  subform_propagate_state_down($element['#form']['#subform_id'], $form_state, $state);
+
+  drupal_validate_form($element['#id'], $element['#form'], $state);
+}
+
+/**
+ * Submits the subforms of a form
+ */
+function subform_element_submit($form, &$form_state) {
+
+  //submit the subforms
+  foreach ($form_state['subform'] as $subform_id => &$data) {
+    subform_element_drupal_form_submit($data['element']['#form'], $data['state']);
+    if (isset($data['state']['redirect'])) {
+      $form_state['redirect'] = $data['state']['redirect'];
+    }
+    $form_state['rebuild'] = !empty($form_state['rebuild']) || !empty($data['state']['rebuild']) || !empty($data['state']['storage']);
+  }
+
+  //get the origin handlers back in place and continue usual form submission
+  if ($form_state['subform_submit_handlers']) {
+    $form_state['submit_handlers'] = $form_state['subform_submit_handlers'];
+  }
+  else {
+    unset($form_state['submit_handlers']);
+  }
+  unset($form_state['subform_submit_handlers']);
+
+  //now execute the form's submit handler, but only if we don't rebuild
+  if (empty($form_state['rebuild'])) {
+    form_execute_handlers('submit', $form, $form_state);
+  }
+}
+
+/**
+ * Modified form submission code from drupal_process_form()
+ * This is used for submitting subforms
+ */
+function subform_element_drupal_form_submit($form, &$form_state) {
+  $form_state['redirect'] = NULL;
+  form_execute_handlers('submit', $form, $form_state);
+
+  // If batches were set in the submit handlers, we process them now,
+  // possibly ending execution. We make sure we do not react to the batch
+  // that is already being processed (if a batch operation performs a
+  // drupal_execute).
+  if ($batch =& batch_get() && !isset($batch['current_set'])) {
+    // The batch uses its own copies of $form and $form_state for
+    // late execution of submit handers and post-batch redirection.
+    $batch['form'] = $form;
+    $batch['form_state'] = $form_state;
+    $batch['progressive'] = TRUE;
+    batch_process();
+    // Progressive == TRUE lets execution continue because this is a subform.
+  }
+}
+
+/**
+ * Theme function for a subform element
+ * invokes drupal_render_form on the subform like it's done on a normal form
+ */
+function theme_subform($element) { 
+  _form_set_class($element, array('subform'));
+  return '<div id="'. $element['#form']['#subform_id'] .'">'. drupal_render_form($element['#id'], $element['#form']) .'</div>';
+}
+
+/**
+ * This is optionally invoked by #pre_render
+ * Separates the data in $_POST by adding an prefix to each form elements name
+ */
+function subform_element_separate_data($form) {
+
+  _subform_element_add_name_prefix_recursive($form['#subform_id'], $form);
+
+  //unset the #pre_render now, so we avoid another invocation through the node theme
+  unset($form['#pre_render']['subform_element_separate_data']); 
+  return $form;
+}
+
+/*
+ * Prefixes the #name of all input elements except files in $form with $prefix
+ */
+function _subform_element_add_name_prefix_recursive($prefix, &$form) {
+  if ((!isset($form['#access']) || $form['#access'])) {
+    //recurse
+    foreach (element_children($form) as $key) {
+      _subform_element_add_name_prefix_recursive($prefix, $form[$key]);
+    }
+    //we have to exclude file elements, becaused the are treated different by the form_builder
+    if (isset($form['#input']) && $form['#input'] && $form['#type'] != 'file') {
+      $element_name = explode('[', $form['#name'], 2);
+
+      $element_name[0] = '['. $element_name[0] .']';
+      $form['#name'] = $prefix . implode('[', $element_name);
+    }
+  }
+}
+
+/*
+ * Propagates form_state information from the subform up to the wrapper form
+ */
+function subform_propagate_state_up($subform_id, &$form_state, &$state) {
+
+  //if the subform has been submitted, set the form to submitted
+  $form_state['submitted'] = $form_state['submitted'] || $state['submitted'];
+
+  //provide the clicked button information for the wrapper form
+  if (isset($state['clicked_button'])) {
+    $state['clicked_button']['#subform_id'] = $subform_id;
+    $form_state['clicked_button'] = $state['clicked_button'];
+  }
+}
+
+/*
+ * Propagates form_state information from the wrapper form down to the subform
+ */
+function subform_propagate_state_down($subform_id, &$form_state, &$state) {
+
+  //if the form has been submitted, set the subform to submitted
+  $state['submitted'] = $form_state['submitted'] || $state['submitted'];
+
+  //provide the clicked button information for all subforms
+  if (isset($form_state['clicked_button'])) {
+    $state['clicked_button'] = $form_state['clicked_button'];
+  }
+  
+  //set the submit handlers of the clicked button, if activated for this subform
+  if ($form_state['subform'][$subform_id]['element']['#share_button_handler']) {
+    if (isset($state['clicked_button']['#validate'])) {
+      $state['validate_handlers'] = $state['clicked_button']['#validate'];
+    }
+    if (isset($state['clicked_button']['#submit'])) {
+      $state['submit_handlers'] = $state['clicked_button']['#submit'];
+    }
+  }
+}

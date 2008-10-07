@@ -1,0 +1,78 @@
+<?php
+// $Id: image_attach.install,v 1.12 2008/01/06 22:15:24 drewish Exp $
+
+/**
+ * Implementation of hook_schema().
+ */
+function image_attach_schema() {
+  $schema['image_attach'] = array(
+    'description' => t('Stores the image/node relationship.'),
+    'fields' => array(
+      'nid' => array(
+        'description' => t('Primary Key: The {node}.nid of the node.'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'iid' => array(
+        'description' => t('TODO'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+  );
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function image_attach_install() {
+  drupal_install_schema('image_attach');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function image_attach_uninstall() {
+  drupal_uninstall_schema('image_attach');
+  variable_del('image_attach_existing');
+  variable_del('image_attach_block_0_size');
+}
+
+/**
+ * Add an index to the image id field.
+ */
+function image_attach_update_1() {
+  $ret = array();
+  switch ($GLOBALS['db_type']) {
+    case 'mysql':
+    case 'mysqli':
+      $ret[] = update_sql("ALTER TABLE {image_attach} ADD KEY (iid)");
+      break;
+
+    case 'pgsql':
+      $ret[] = update_sql("CREATE INDEX {image_attach}_iid_idx ON {image_attach}(iid)");
+      break;
+  }
+  return $ret;
+}
+
+/**
+ * Remove attach records that point to a missing image.
+ */
+function image_attach_update_2() {
+  $ret = array();
+  switch ($GLOBALS['db_type']) {
+    case 'mysqli':
+    case 'mysql':
+      $ret[] = update_sql("DELETE FROM {image_attach} USING {image_attach} LEFT JOIN {node} n ON {image_attach}.iid = n.nid WHERE n.nid IS NULL OR n.type <> 'image'");
+      break;
+
+    case 'pgsql':
+      $ret[] = update_sql("DELETE FROM {image_attach} USING {node} n WHERE {image_attach}.iid = n.nid AND (n.nid IS NULL OR n.type <> 'image')");
+      break;
+  }
+  return $ret;
+}

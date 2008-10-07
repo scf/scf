@@ -2,6 +2,6 @@
 name = Taxonomy Bulk Operations
 description = Allows bulk operations on taxonomy vocabularies.
 dependencies[] = taxonomy
-package = Harvard IIC
+package = SCF Custom
 version = VERSION
 core = 6.x

@@ -1,0 +1,5 @@
+; $Id: biblio.info,v 1.5 2007/12/24 22:51:51 rjerome Exp $
+name = Biblio
+description = Maintains biblographic lists.
+core = 6.x
+package = Biblio

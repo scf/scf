@@ -1,0 +1,41 @@
+<?php
+
+/*
+ * Implementation of hook_menu()
+ */
+function subform_example_menu() {
+  $items['example'] = array(
+    'title' => t('Subform Example'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('subform_example_add_nodes'),
+    'access callback' => TRUE,
+    'file' => 'node.pages.inc',
+    'file path' => drupal_get_path('module', 'node'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  return $items;
+}
+
+function subform_example_add_nodes(&$form_state) {
+  global $user;
+
+  $form = array();
+  $form['example'] = array(
+    '#type' => 'textfield',
+    '#title' => 'wrapper form field example',
+    '#default_value' => isset($form_state['values']['example']) ? $form_state['values']['example'] : '',
+  );
+  foreach (array(0 => 'page', 1 => 'page', 2 => 'story') as $key => $type) {
+    if (node_access('create', $type)) {
+      $form[$type.'_form_'. $key] = array(
+        '#type' => 'fieldset',
+        '#title' => check_plain(node_get_types('name', $type)),
+        '#collapsible' => TRUE,
+      );
+      // Initialize new node:
+      $node = array('uid' => $user->uid, 'name' => $user->name, 'type' => $type);
+      $form[$type.'_form_'. $key]['subform'] = subform_element_create($type .'_node_form', array($node), $form_state, TRUE, TRUE);
+    }
+  }
+  return $form;
+}

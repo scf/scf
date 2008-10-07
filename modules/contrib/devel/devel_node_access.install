@@ -1,0 +1,7 @@
+<?php
+// $Id: devel_node_access.install,v 1.1.4.1 2008/05/04 18:05:30 salvis Exp $
+
+function devel_node_access_install() {
+  // force drupal to auto-enable the block
+  _block_rehash();
+}
