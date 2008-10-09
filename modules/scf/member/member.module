@@ -606,9 +606,9 @@ function member_theme() {
       'template' => 'member-contribs',
       'arguments' => array('type_singular' => NULL, 'type_plural' => NULL, 'contribs' => array())
     ),
-    'member_rdf' = array(
+    'member_rdf' => array(
       'template' => 'member-rdf',
-      'arguments' = array('member' => NULL),
+      'arguments' => array('member' => NULL),
     ),
   );
 }
