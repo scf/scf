@@ -72,7 +72,7 @@ function ontology_menu() {
   	'page arguments' => array(),
   	'access arguments' => array('annotate content'),
   	'type' => MENU_CALLBACK
-  ); 
+  );
   $items['ontology/node/terms/matches'] = array(
   	'title' => 'Terms in article',
   	'page callback' => 'ontology_service_article_matches',
@@ -112,8 +112,8 @@ function ontology_theme() {
 function ontology_theme_taxonomy_term_page($tids, $result) {
 	$output = '';
 	if (count($tids) == 1) {
-		$tid = $tids[0];		
-		$output = l(t('View in GO Tree'), 
+		$tid = $tids[0];
+		$output = l(t('View in GO Tree'),
 		drupal_get_path('module','graphbrowser') . '/main.html',
 		array(
 		  'attributes' => array(
@@ -147,7 +147,7 @@ function ontology_service_node_title() {
 
 /**
  * This is the "main" function for the graph generation web service.
- * 
+ *
  * It takes two URL parameters: tid for the term to focus on, and (optionally) nid to specify
  * a node ID.  If nid is included, any terms in the graph that the node is tagged with will
  * be highlighted.
@@ -206,7 +206,7 @@ function ontology_get_graph($term_id, $search_type = 'full') {
 		$term = taxonomy_get_term($term_id);
 		
 		// create the cache file
-		$node = array('label' => $term->name, 'ancestors' => $ancestors, 'descendants' => $descendants);		
+		$node = array('label' => $term->name, 'ancestors' => $ancestors, 'descendants' => $descendants);
 		$fh = fopen($cache_dir . $term_id, 'w');
 		if ($fh) {
 			fwrite($fh, serialize($node));
@@ -225,7 +225,7 @@ function ontology_get_graph($term_id, $search_type = 'full') {
 			foreach ($node['ancestors'] as $ancestor_id => $relationship) {
 				$ancestor_graph = ontology_get_graph($ancestor_id, 'ancestor');
 				foreach ($ancestor_graph as $id => $ancestor)
-					$graph[$id] = $ancestor;	
+					$graph[$id] = $ancestor;
 			}
 		}
 	
@@ -323,7 +323,7 @@ function _ontology_to_graphviz($graph, $has_labels) {
 		if ($tagged) {
 			$color = $cssparser->get('.node_tagged', 'background-color');
 			$edgecolor = $cssparser->get('.node_tagged', 'border-color');
-			$node_color = ',color="' . $edgecolor . '",fillcolor="' . $color . '"'; 
+			$node_color = ',color="' . $edgecolor . '",fillcolor="' . $color . '"';
 		}
 		else if (taxonomy_term_count_nodes($in_node_id) > 0) {
 			$color = $cssparser->get('.node_content', 'background-color');
@@ -333,7 +333,7 @@ function _ontology_to_graphviz($graph, $has_labels) {
 		
 		$graphviz_input .= "\t$in_node_id [label=\"$label\"$node_color]\n";
 		
-		foreach ($edges as $out_node_id => $relationship) {	
+		foreach ($edges as $out_node_id => $relationship) {
 			if (!isset($out_edges[$out_node_id]))
 				$out_edges[$out_node_id] = 0;
 			$out_edges[$out_node_id]++;
@@ -439,7 +439,7 @@ function ontology_service_article_matches() {
 function _ontology_is_stopword($word) {
 	$stopwords = array('a', 'an', 'and', 'as', 'by', 'during', 'from', 'in', 'into', 'involved', 'of', 'or', 'to', 'the', 'with');
 	if (in_array($word, $stopwords)) return true;
-	return false;	
+	return false;
 }
 
 /**
@@ -482,12 +482,12 @@ function ontology_import_form() {
 	
 	$form['submit'] = array('#type' => 'submit', '#value' => t('Import'));
 
-	return $form;	
+	return $form;
 }
 
 /**
  * Implementation of hook_form_validate for importing the ontology relationships from the latest .OBO file.
- * 
+ *
  * This function simply makes the uploaded file available to the submit function.
  */
 function ontology_import_form_validate($form, &$form_state) {
@@ -676,7 +676,7 @@ function ontology_service_remove_node_term() {
 
 	taxonomy_node_save($node, $old_term_list);
 	
-	print 1; exit;	
+	print 1; exit;
 }
 
 /**
@@ -744,7 +744,7 @@ function _ontology_get_occurrences($nid, $terms_to_check) {
 	$sentences = preg_split("/\.\s/", $body);
 	
 	// iterate through each sentence
-	$suggestions = array();	
+	$suggestions = array();
 	foreach ($sentences as $sentence) {
 		
 		$sentence_hits = array();
@@ -774,7 +774,7 @@ function _ontology_get_occurrences($nid, $terms_to_check) {
 		}
 		
 		foreach ($sentence_terms as $piece => $freq) {
-			if (isset($term_stems[$piece])) {				
+			if (isset($term_stems[$piece])) {
 				foreach ($term_stems[$piece] as $tid => $stemcount) {
 					if (!isset($sentence_hits[$tid])) {
 						if (!isset($term_hits[$tid])) $term_hits[$tid] = 0;
@@ -852,10 +852,10 @@ function ontology_suggest_form(&$form_state, $vocab_id, $node_id) {
       drupal_get_path('module', 'graphbrowser') . '/main.html',
       array(
         'fragment' => $id . '/' . $node_id,
-        'html' => TRUE;
+        'html' => TRUE,
         'attributes' => array(
           'target' => '_blank',
-        ),
+        )
       )),
 		);
 		
@@ -899,7 +899,7 @@ function _ontology_suggestion_sort_helper($a, $b) {
 
 /**
  * Implementation of hook_form_submit for the suggestion form
- * 
+ *
  * This function updates the tags for the given node.
  */
 function ontology_suggest_form_submit($form, &$form_state) {
