@@ -130,7 +130,7 @@ function scf_profile_task_list() {
  */
 function scf_profile_tasks(&$task, $url) {
 
-  $themes = array('stemcenter', 'scf_base');
+  $themes = array('scf_stub', 'scf_demo');
 
   // forum
   variable_set('node_options_forum', array('status'));

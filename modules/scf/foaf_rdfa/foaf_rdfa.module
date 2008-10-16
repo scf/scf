@@ -1,0 +1,45 @@
+<?php
+
+/**
+ * Implementation of hook_link_alter().
+ */
+function foaf_rdfa_link_alter(&$links, $node) {
+  foreach ($links AS $module => $link) {
+    if (strstr($module, 'taxonomy_term')) {
+      // get synonyms for term in link
+      $tid = substr($module, 14);
+drupal_set_message("tid: " . $tid);
+      if ($topic_interest = foaf_rdfa_taxonomy_synonym_url($tid)) {
+        // add rdfa tags for foaf:interest
+        // not sure we want to keep Drupal's 'tag' 
+        // which leaves us with two elements in the rel attribute
+        $links[$module]['attributes']['rel'] = 'foaf:topic_interest tag';
+        $links[$module]['attributes']['resource'] = $topic_interest;
+      }
+    }
+  }
+}
+
+/**
+ * Fetch the first URL beginning with http in a term's synonyms.
+ *
+ * Useful if by some ridiculous chance you are storing URLs as synonyms of your
+ * terms.
+ *
+ * @param $tid
+ *   A taxonomy term ID.
+ *
+ * @return
+ *   A string containing the first URL in synonyms or NULL if none found.
+ */
+function foaf_rdfa_taxonomy_synonym_url($tid) {
+  // getting term not needed
+  // $term = taxonomy_get_term($tid); // arg(2));
+  //  drupal_set_message('<pre>'.var_export($term,TRUE).'</pre>');
+  $synonyms = taxonomy_get_synonyms($tid);
+  foreach ($synonyms AS $synonym) {
+    if (substr($synonym, 0, 7) == 'http://' || substr($synonym, 0, 8) == 'https://') {
+      return $synonym; 
+    } 
+  }
+}

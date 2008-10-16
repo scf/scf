@@ -1,0 +1,7 @@
+; $Id$
+name = FOAF RDFa
+description = "[foaf_rdfa] Friend Of A Friend information exposed through RDFa (Resource Framework for XHTML)"
+core = 6.x
+dependencies[] = taxonomy
+package = "SCF"
+; @TODO consider changing package to non-SCF and removing taxonomy dependency
