@@ -120,15 +120,20 @@ function scf_perm() {
  * Implementation of hook_theme().
  */
 function scf_theme() {
-  return array(
-    'bio_resources' => array(
-      'template' => 'bio-resources',
-      'arguments' => array(
-        'nodes' => array(),
-        'pagers' => array(),
-      )
-    )
+  $hooks = array();
+  // concepts stolen from views.module
+  $path = drupal_get_path('module', 'scf');  require_once "./$path/theme/theme.inc";  // Some quasi clever array merging here.  $base = array(    'file' => 'theme.inc',    'path' => "$path/theme",  );
+  // @TODO - I don't think I want 'file' in every merge, and perhaps path can be relative (that is, just 'theme')
+
+  $hooks['bio_resources'] = $base + array(
+    'template' => 'bio-resources',
+    'arguments' => array(
+      'nodes' => array(),
+      'pagers' => array(),
+    ),
   );
+  
+  return $hooks;
 }
 
 /**
@@ -176,12 +181,36 @@ function scf_theme_registry_alter(&$theme_registry) {
     'page',
   );
   // Get the path to this module
-  $modulepath = drupal_get_path('module', 'scf');
-  // Add the module path on top in the array of paths
+  $path = drupal_get_path('module', 'scf') . '/theme';
+  // Add the path paths
   foreach ($theme_hooks AS $theme_hook) {
-    array_unshift($theme_registry[$theme_hook]['theme paths'], $modulepath);
+    if (!scf_au_stringpart_in_array($theme_registry[$theme_hook]['theme paths'], 'themes')) {
+      // if there is no path with 'themes' in the theme registry
+      // then replace the template path with our module path
+      // if we add this when the theme is in charge, it throws errors
+      // that oddly mungle the theme path plus the module template path
+      // but without a theme directory being called first, this works
+      // and this really is necessary for everything above
+      
+      // This just gets crazier and crazier.  Must be wrong, but it works.
+      // Transform _ in hook to - to match template naming scheme      $tpl = strtr($theme_hook, '_', '-');
+      $theme_registry[$theme_hook]['template'] = $path . '/' . $tpl;
+    }
+    array_unshift($theme_registry[$theme_hook]['theme paths'], $path);
+//  setting the specific chosen path isn't necessary    
+//  $theme_registry[$theme_hook]['theme path'] = $path . '/' . $theme_hook;
+    // this isn't documented, but it has proven necessary for page at least
   }
-  // dsm($theme_registry[$theme_hook]['theme paths']);
+}
+
+function scf_au_stringpart_in_array($haystack, $needle) {
+  foreach ($haystack AS $bale) {
+    $pos = strpos($bale, $needle);
+    if (FALSE !== $pos && 0 !== $pos) {
+      return TRUE;
+    }
+  }
+  return FALSE;
 }
 
 ////////// begin theme preprocess functions //////////
@@ -191,7 +220,7 @@ function scf_theme_registry_alter(&$theme_registry) {
 function scf_preprocess(&$variables, $hook) {
       // @TODO move somewhere only called once
       // add CSS
-      $module_path = drupal_get_path('module', 'scf');
+      $path = drupal_get_path('module', 'scf') . '/theme';
       $styles = array(
         'layout',
         'admin',
@@ -249,6 +278,55 @@ function scf_preprocess(&$variables, $hook) {
       break;
   }
 }
+
+
+/**
+ * Add to the general preprocessing for this theme
+ */
+function phptemplate_preprocess_page(&$variables) {
+  $variables['template_files'] = 'page';
+      // Provide invoking URL for page templates
+      // - could do in scf_base_preprocess_page - but you seen the size of that sucker!4
+      $variables['url_path'] = $_GET['q'];
+      $variables['url_path_token'] = preg_replace('/\//', '-', $_GET['q']);
+      $variables['url_path_alias'] = drupal_get_path_alias($_GET['q']);
+      $variables['url_path_alias_token'] = preg_replace('/\//', '-',$variables['url_path_alias']);
+      
+      // Replace out the Reaserch statement title 
+      // @todo This is better placed in the researchstatement.module
+      if (isset($variables['node']) && $variables['node']->type) {
+        $node = $variables['node'];
+        if ($node->type == 'researchstatement') {
+          // Could drupal_set_title too but want search engines to identify the statements
+          $variables['title'] = 'Research statement';
+        } else if (isset($node->display_title)) {
+          $variables['display_title'] = $node->display_title;
+          //if ($node->type == 'pubnode') {
+	  // $variables['display_title'] .= '<a href="#editedinfo">*</a>';
+          //}
+        }
+      }
+      
+      // Rather than use Conditional Comments, we use this...
+      $user_agent = ( isset( $_SERVER['HTTP_USER_AGENT'] ) ) ? strtolower( $_SERVER['HTTP_USER_AGENT'] ) : '';
+      switch (true) {
+        case strchr($user_agent, 'msie 5.0'):
+        case strchr($user_agent, 'msie 5.5'):
+        case strchr($user_agent, 'msie 6.0'):
+          $ie_style = path_to_theme() .'/css/ie.css';
+          $ie_js = path_to_theme() .'/jscript/ie.js';
+          if (file_exists($ie_style)) {
+            drupal_add_css($ie_style, 'theme', 'all', FALSE);
+            $variables['styles'] = drupal_get_css();
+          }
+          if (file_exists($ie_js)) {
+            drupal_add_js($ie_js, 'theme');
+            $variables['scripts'] = drupal_get_js();
+          }
+      }
+}
+
+
 
 /**
  * Add to the variables for node.tpl.php
@@ -389,7 +467,7 @@ function scf_preprocess_block(&$variables) {
 }
 
 /**
- * @TODO: this results in drupal 6 invalid foreach forum theme_links, do not bring it back until fixed.  This errer certainly occurred before but was masked by hiding notices.
+ * @TODO: this results in drupal 6 invalid foreach forum theme_links, do not bring it back until fixed.  This error certainly occurred before but was masked by hiding notices.
  * Add to the variables for forums.tpl.php
  *
  * The $variables array contains the following arguments:
@@ -401,6 +479,7 @@ function scf_preprocess_block(&$variables) {
  * - $forum_per_page
  *
  * @see forums.tpl.php
+ */
 function scf_preprocess_forums(&$variables) {
 
   // Clean out some SCF types to simplify the user interface
@@ -431,7 +510,7 @@ function scf_preprocess_forums(&$variables) {
   // Attach these admin links to the existing links variable
   $variables['links'] = theme('links', $variables['links'], array('class' => 'links inline'));
 }
- */
+
 
 /**
  * Add to the variables to format a forum listing.

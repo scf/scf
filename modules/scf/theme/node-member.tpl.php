@@ -1,4 +1,4 @@
-<?php
+hell yeah<?php
 // $Id: node.tpl.php,v 1.4 2008/01/25 21:21:44 goba Exp $
 
 /**

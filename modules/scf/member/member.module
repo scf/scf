@@ -284,6 +284,8 @@ function member_submit(&$node) {
  * Implementation of hook_insert():
  */
 function member_insert($node) {
+drupal_set_message('<pre>'. var_export(drupal_get_schema('member'),TRUE) .'</pre>');
+drupal_set_message('<pre>'.var_export($node,TRUE).'</pre>');
   _member_trim_fields($node);
   drupal_write_record("member", $node);
 }
@@ -292,6 +294,8 @@ function member_insert($node) {
  * Implementation of hook_update():
  */
 function member_update($node) {
+drupal_set_message('<pre>'. var_export(drupal_get_schema('member'),TRUE) .'</pre>');
+drupal_set_message('<pre>'.var_export($node,TRUE).'</pre>');
   _member_trim_fields($node);
   if (isset($node->revision) && $node->revision) {
     drupal_write_record("member", $node);

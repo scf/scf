@@ -32,7 +32,7 @@ abstract class ScfNodeModule extends OONodeModule {
   	return array(
   		'node_list' => array(
   			'template' => 'node-list',
-  			'path' => drupal_get_path('module', 'scf'),
+  			'path' => drupal_get_path('module', 'scf') . '/theme',
   			'arguments' => array(
   				'items' => array(),
   				'title' => NULL,
