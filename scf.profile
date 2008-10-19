@@ -461,11 +461,6 @@ function scf_profile_tasks(&$task, $url) {
 
   // _scf_secondary_link('node/add/member', 'Member profile');
 
-  // these next two lines attempt to get around the issue where the set theme
-  // is somehow not actually enabled.  http://myagaric.com/node/151
-  db_query("UPDATE {system} SET status = 1 WHERE type = 'theme' and name = 'scf_demo'");
-  drupal_rebuild_theme_registry();
-
   // Update the menu router information.
   menu_rebuild();
 }

@@ -120,6 +120,10 @@ function scf_perm() {
  * Implementation of hook_theme().
  */
 function scf_theme() {
+  // these next line attempts to get around the issue where the set theme
+  // is unset during update or install.  http://myagaric.com/node/151
+  db_query("UPDATE {system} SET status = 1 WHERE type = 'theme' and name = 'scf_demo'");
+  
   $hooks = array();
   // concepts stolen from views.module
   $path = drupal_get_path('module', 'scf');  require_once "./$path/theme/theme.inc";  // Some quasi clever array merging here.  $base = array(    'file' => 'theme.inc',    'path' => "$path/theme",  );
