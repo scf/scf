@@ -280,52 +280,6 @@ function scf_preprocess(&$variables, $hook) {
 }
 
 
-/**
- * Add to the general preprocessing for this theme
- */
-function phptemplate_preprocess_page(&$variables) {
-  $variables['template_files'] = 'page';
-      // Provide invoking URL for page templates
-      // - could do in scf_base_preprocess_page - but you seen the size of that sucker!4
-      $variables['url_path'] = $_GET['q'];
-      $variables['url_path_token'] = preg_replace('/\//', '-', $_GET['q']);
-      $variables['url_path_alias'] = drupal_get_path_alias($_GET['q']);
-      $variables['url_path_alias_token'] = preg_replace('/\//', '-',$variables['url_path_alias']);
-      
-      // Replace out the Reaserch statement title 
-      // @todo This is better placed in the researchstatement.module
-      if (isset($variables['node']) && $variables['node']->type) {
-        $node = $variables['node'];
-        if ($node->type == 'researchstatement') {
-          // Could drupal_set_title too but want search engines to identify the statements
-          $variables['title'] = 'Research statement';
-        } else if (isset($node->display_title)) {
-          $variables['display_title'] = $node->display_title;
-          //if ($node->type == 'pubnode') {
-	  // $variables['display_title'] .= '<a href="#editedinfo">*</a>';
-          //}
-        }
-      }
-      
-      // Rather than use Conditional Comments, we use this...
-      $user_agent = ( isset( $_SERVER['HTTP_USER_AGENT'] ) ) ? strtolower( $_SERVER['HTTP_USER_AGENT'] ) : '';
-      switch (true) {
-        case strchr($user_agent, 'msie 5.0'):
-        case strchr($user_agent, 'msie 5.5'):
-        case strchr($user_agent, 'msie 6.0'):
-          $ie_style = path_to_theme() .'/css/ie.css';
-          $ie_js = path_to_theme() .'/jscript/ie.js';
-          if (file_exists($ie_style)) {
-            drupal_add_css($ie_style, 'theme', 'all', FALSE);
-            $variables['styles'] = drupal_get_css();
-          }
-          if (file_exists($ie_js)) {
-            drupal_add_js($ie_js, 'theme');
-            $variables['scripts'] = drupal_get_js();
-          }
-      }
-}
-
 
 
 /**
@@ -596,14 +550,14 @@ function scf_preprocess_forum_submitted(&$variables) {
 function scf_preprocess_forum_topic_navigation(&$variables) {
   $forum = taxonomy_get_term($variables['node']->tid);
   $variables['forum'] = $variables['node']->tid;
-  $variables['forum_title'] = phptemplate_truncate_by_word_count($forum->name, 12);
+  $variables['forum_title'] = scf_au_truncate_by_word_count($forum->name, 12);
   $variables['forum_url'] = url('forum/' . $variables['node']->tid);
   
   if (isset($variables['prev_title'])) {
-    $variables['prev_title'] = phptemplate_truncate_by_word_count($variables['prev_title'], 12);
+    $variables['prev_title'] = scf_au_truncate_by_word_count($variables['prev_title'], 12);
   }
   if (isset($variables['next_title'])) {
-    $variables['next_title'] = phptemplate_truncate_by_word_count($variables['next_title'], 12);
+    $variables['next_title'] = scf_au_truncate_by_word_count($variables['next_title'], 12);
   }
 }
 ////////// end theme functions //////////
@@ -625,7 +579,7 @@ function scf_preprocess_forum_topic_navigation(&$variables) {
  * @return
  *   The resulting string
  */
-function phptemplate_truncate_by_word_count($text, $limit = 120, $hellip = TRUE) {
+function scf_au_truncate_by_word_count($text, $limit = 120, $hellip = TRUE) {
   $text = strip_tags($text);
   $words = str_word_count($text, 2);
   $pos = array_keys($words);
