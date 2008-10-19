@@ -1,6 +1,4 @@
 <?php
-drupal_rebuild_theme_registry();
-
 /**
  * Add to the general preprocessing for this theme
  */
