@@ -451,7 +451,7 @@ function scf_profile_tasks(&$task, $url) {
     // run this after all the blocks set up above or it conflicts
     system_initialize_theme_blocks($theme);
   }
-  variable_set('theme_default', 'scf_stub');
+  variable_set('theme_default', 'scf_demo');
 
   _scf_primary_link('newsarticle/list', 'News');
   _scf_primary_link('scf/pub', 'Book');
@@ -460,6 +460,11 @@ function scf_profile_tasks(&$task, $url) {
   _scf_primary_link('member/dir', 'Members');
 
   // _scf_secondary_link('node/add/member', 'Member profile');
+
+  // these next two lines attempt to get around the issue where the set theme
+  // is somehow not actually enabled.  http://myagaric.com/node/151
+  db_query("UPDATE {system} SET status = 1 WHERE type = 'theme' and name = 'scf_demo'");
+  drupal_rebuild_theme_registry();
 
   // Update the menu router information.
   menu_rebuild();
