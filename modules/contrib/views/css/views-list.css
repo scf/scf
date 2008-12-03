@@ -1,9 +1,10 @@
-/* $Id: views-list.css,v 1.7 2008/05/17 01:13:58 merlinofchaos Exp $ */
+/* $Id: views-list.css,v 1.8 2008/07/09 18:52:43 merlinofchaos Exp $ */
 
 table.views-entry {
   margin: 2px 0;
   border: 1px solid #ccc;
   background-color: white;
+  color: #494949; /* matches garland */
   clear: left;
   width: 100%;
 }

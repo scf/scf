@@ -1,5 +1,5 @@
 <?php
-// $Id: convert.inc,v 1.8 2008/05/19 16:09:48 merlinofchaos Exp $
+// $Id: convert.inc,v 1.12 2008/10/08 00:14:01 merlinofchaos Exp $
 /**
  * @file convert.inc
  *
@@ -102,8 +102,7 @@ function views_ui_delete1_confirm(&$form_state, $vid) {
     $cancel = $_REQUEST['cancel'];
   }
   return confirm_form($form,
-                  t('Are you sure you want to delete the view %name?',
-                  array('%name' => $view->name)),
+                  t('Are you sure you want to delete the view %name?', array('%name' => $view->name)),
                   $cancel,
                   t('This action cannot be undone.'),
                   t('Delete'),
@@ -131,10 +130,10 @@ function views1_import($imported) {
   $view->description = $imported->description;
 
   if (!empty($imported->page)) {
-    $view->add_display('page');
+    $page_display = $view->add_display('page');
   }
   if (!empty($imported->block)) {
-    $view->add_display('block');
+    $block_display = $view->add_display('block');
   }
   $view->init_display();
 
@@ -159,9 +158,8 @@ function views1_import($imported) {
   }
 
   $handler->set_option('access', $access);
-
   if (!empty($imported->page)) {
-    $handler = &$view->display['page']->handler;
+    $handler = &$view->display[$page_display]->handler;
     $url = str_replace('$arg', '%', $imported->url);
     $handler->set_option('path', $url);
     if ($imported->menu) {
@@ -193,7 +191,7 @@ function views1_import($imported) {
   }
 
   if (!empty($imported->block)) {
-    $handler = &$view->display['block']->handler;
+    $handler = &$view->display[$block_display]->handler;
 
     if ($imported->block_title) {
       $handler->set_override('title');
@@ -366,7 +364,10 @@ function views1_load($arg) {
       $sort['field'] = 'node' . substr($sort['field'], 1);
     }
     $sort['id'] = $sort['field'];
-    $view->sort[] = $sort;
+    $bits = explode('.', $sort['field']);
+    $sort['tablename'] = $bits[0];
+    $sort['field'] = $bits[1];
+    $view->sort[$sort['position']] = $sort;
   }
 
   $result = db_query("SELECT * FROM {view_argument} WHERE vid = $view->vid ORDER BY position ASC");
@@ -374,7 +375,7 @@ function views1_load($arg) {
   $view->argument = array();
   while ($arg = db_fetch_array($result)) {
     $arg['id'] = $arg['type'];
-    $view->argument[] = $arg;
+    $view->argument[$arg['position']] = $arg;
   }
 
   $result = db_query("SELECT * FROM {view_tablefield} WHERE vid = $view->vid ORDER BY position ASC");
@@ -403,8 +404,10 @@ function views1_load($arg) {
 
     if ($filter['operator'] == 'AND' ||
         $filter['operator'] == 'OR' ||
-        $filter['operator'] == 'NOR' ||
-        $filters[$filter['field']]['value-type'] == 'array' ) {
+        $filter['operator'] == 'NOR') {
+        // TODO - need another way to identify this type of filter
+        // without being able to call hook_implements().  
+        //|| $filters[$filter['field']]['value-type'] == 'array' ) {
       if ($filter['value'] !== NULL && $filter['value'] !== '') {
         $filter['value'] = explode(',', $filter['value']);
       }
@@ -413,7 +416,10 @@ function views1_load($arg) {
       }
     }
     $filter['id'] = $filter['field'];
-    $view->filter[] = $filter;
+    $bits = explode('.', $filter['field']);
+    $filter['tablename'] = $bits[0];
+    $filter['field'] = $bits[1];
+    $view->filter[$filter['position']] = $filter;
   }
 
   $result = db_query("SELECT * FROM {view_exposed_filter} WHERE vid = $view->vid ORDER BY position ASC");
@@ -443,11 +449,13 @@ function views1_delete($arg) {
     return NULL;
   }
 
-  $result = db_query("DELETE * FROM {view_sort} vs WHERE vid = $view->vid");
-  $result = db_query("DELETE * FROM {view_argument} WHERE vid = $view->vid");
-  $result = db_query("DELETE * FROM {view_tablefield} WHERE vid = $view->vid");
-  $result = db_query("DELETE * FROM {view_filter} WHERE vid = $view->vid");
-  $result = db_query("DELETE * FROM {view_exposed_filter} WHERE vid = $view->vid");
-  $result = db_query("DELETE * FROM {view_view} WHERE vid = $view->vid");
+  
+
+  $result = db_query("DELETE FROM {view_sort} WHERE vid = $view->vid");
+  $result = db_query("DELETE FROM {view_argument} WHERE vid = $view->vid");
+  $result = db_query("DELETE FROM {view_tablefield} WHERE vid = $view->vid");
+  $result = db_query("DELETE FROM {view_filter} WHERE vid = $view->vid");
+  $result = db_query("DELETE FROM {view_exposed_filter} WHERE vid = $view->vid");
+  $result = db_query("DELETE FROM {view_view} WHERE vid = $view->vid");
 }
 

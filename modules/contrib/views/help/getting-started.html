@@ -1,30 +1,23 @@
-<!-- $Id: getting-started.html,v 1.2 2008/05/21 16:36:18 merlinofchaos Exp $ -->
+<!-- $Id: getting-started.html,v 1.8 2008/10/14 18:20:25 merlinofchaos Exp $ -->
 For those new to Views, it can be a complex system that appears totally overwhelming. The good news is that the UI is designed to compartmentalize everything; this means that for the most part, you can ignore the parts you're not interested in. Start small and build your way up.
+
+Because of this, the edit UI can seem overwhelming at first, but there are really just a few things you <strong>have</strong> to know. The rest you can find through exploration. The Views Edit UI image, below, gives an overview of what you'll find on the edit UI.
+
+<div class="help-box" style="text-align:center">
+<a href="path:images/overview-ui-large.png"><img src="path:images/overview-ui-small.png" /></a>
+<em>The Views Edit UI</em>
+</div>
+
+Notes:
+1) Every view has a number of <a href="topic:views/display">displays</a> which represent where output will be placed. If you're familiar with the original Views 1, you could set a view to be a 'page', with a URL (path), or a block that could show up in a sidebar. With Views 2, you can add as many displays as you like. In addition, you have the <em>default</em> display which contains the basic settings, but doesn't actually show up anywhere.
+
+2) When you click on the link for an item, a form will open up. For browsers with smaller resolutions, you may have to scroll down a little to see this form. If a form is open, the item its attached to will be highlighted.
+
+3) <a href="topic:views/overrides">Overrides</a> mean that a particular display is <strong>not</strong> using default settings. When you create a new display, many of its settings will start off using default values. This will be indicated by italics and a lighter color. <strong>If you change these values without first overriding them, you will change the default value for all displays that use them.</strong>
+
+4) Some items, particularly styles, have additional settings. Ordinarily when you <em>update</em> a style, if it has additional settings you will automatically see that form next. Often, you will need to go directly to those settings.
+
+5) You can safely leave a view page to go and do other things. If you come back, the view will still be there, stored in a cache. Keep in mind, however, that while you do this, that view is <em>locked</em>, meaning another user cannot edit this view without breaking the lock. Breaking the lock will discard your changes.
 
 It helps to have something particular in mind that you want to accomplish when using Views. Here are a couple of ideas and a brief sketch of how to accomplish what you want.
 
-<h2>Create a page to list users by role</h2>
-<ol>
-<li>Go to <a href="base_url:admin/build/views/add">add new view</a>.</li>
-<li>Give it the name 'user_list', tag 'users', type 'User' and click <strong>Next</strong>.</li>
-<li>On the left, select 'Page' and click <strong>Add Display</strong>.</li>
-<li>Next to <strong>Fields</strong> click the + icon to add fields.</li>
-<li>In the <strong>Group</strong> section select User, then check the following user fields: <em>Created date</em>, <em>Delete link</em>, <em>Edit link</em>, <em>Last access</em>, <em>Name</em> and <em>Picture</em>. Then click <strong>Add</strong></li>
-<li>You will be taken through the fields you added. For <em>Delete link</em> change the label to "Operations"; otherwise you can leave the options unchanged. Click <strong>Update</strong> to go to the next field.</li>
-<li>Under Page settings, click the <strong>Path</strong> setting. Set the path to 'user_list' (or something else if you prefer.</li>
-<li>Click the <strong>Menu</strong> setting. Select <em>Normal menu entry</em> and set the title to "User list".</li>
-<li>At this point, you have done enough to create a valid view. If you scroll down, you will see a preview of your view. At any time you can click the <strong>Preview button</strong>, but whenever you finish one of the mini forms, the preview will update automatically, so you don't need to, generally.</li>
-<li>Next to <strong>Fields</strong> click the rearrange icon, which is to the right of the + icon to add fields. Drag the Name field to the top and the Delete link (Operations) field to the bottom, and the Edit link field just above it. Then click <strong>Update</strong></li>
-<li>Under the Basic settings, click the <strong>Style</strong> setting, which should default to "Unformatted". Change this to "Table".</li>
-<li>You will be taken to the table settings form. Next to <em>Edit link</em> change the column to <em>Operations</em>. Next to <em>Operations</em> set the Separator to " | " (note the spaces around the | symbol). Check all of the Sortable checkboxes, and set Default sort to <em>Name</em>.</li>
-<li>Click the + icon next to <strong>Filters</strong> and add the <em>User: Name</em> filter. Select <em>Is not one of</em> and enter Anonymous in the Usernames.</li>
-<li>Click on <strong>Use pager</strong> and change it to <em>Full</em>.</li>
-<li>Click on the <strong>add arguments</strong> icon, and add the <em>User: Roles</em> argument. Set the title to "%1", the "Action to take if argument is not present" to "Summary, sorted ascending", and leave the other settings as they are.</li>
-<li>Click <strong>Save</strong>.</li>
-<li>At the very top, click <strong>View "Page"</strong> to go to your new view!</li>
-
-</ol>
-<h3>Create a block to list recent story nodes</h3>
-<ol>
-<li> TODO
-</ol>
