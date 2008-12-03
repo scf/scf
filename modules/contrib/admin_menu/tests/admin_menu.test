@@ -1,0 +1,52 @@
+<?php
+// $Id: admin_menu.test,v 1.1.2.4 2008/07/09 14:59:24 pwolanin Exp $
+
+class AdminMenuTestCase extends DrupalWebTestCase {
+
+  function getInfo() {
+    return array(
+      'name' => t('Admin menu functionality'),
+      'description' => t('Enable a module, make sure an admin user can see the new link.'),
+      'group' => t('Admin menu tests'),
+    );
+  }
+
+  function setUp() {
+    parent::setUp('admin_menu');
+  }
+
+  /**
+   * Test that the links are added to the page (no JS testing).
+   */
+  function testAdminMenu() {
+    // Anonymous users should not see the menu.
+    $this->assertNoRaw('<div id="admin-menu">', 'Admin menu not displayed to anonymous.');
+
+    // Create a user who can see the admin_menu links, but without the
+    // permission 'display drupal links'.
+    $admin_user = $this->drupalCreateUser(array('administer site configuration', 'access administration pages', 'administer nodes', 'access administration menu', 'administer site-wide contact form'));
+    $this->drupalLogin($admin_user);
+
+    // Check that the user can see the admin links, but not the drupal links.
+    $this->assertRaw('<div id="admin-menu">', 'Admin menu displayed to admin user.');
+    $this->drupalGet('node');
+    $this->assertTrue(preg_match('@<div id="admin-menu">(.*\n)*.*admin/content/node@',  $this->drupalGetContent()), 'Administer content link found');
+    $this->assertFalse(preg_match('@<div id="admin-menu">(.*\n)*.*http://drupal.org@',  $this->drupalGetContent()), 'Drupal link not found');
+    $this->assertFalse(preg_match('@<div id="admin-menu">(.*\n)*.*admin/build/contact@',  $this->drupalGetContent()), 'Contact module link not found');
+
+    // Check that a link for the newly enabled module appears.
+    $this->drupalModuleEnable('contact');
+    $this->drupalGet('node');
+    $this->assertTrue(preg_match('@<div id="admin-menu">(.*\n)*.*admin/build/contact@',  $this->drupalGetContent()), 'Contact module link found');
+    $this->drupalGet('logout');
+
+    // A second user with the added permission 'display drupal links', but not
+    // 'administer site-wide contact form'.
+    $admin_user2 = $this->drupalCreateUser(array('administer site configuration', 'access administration pages', 'administer nodes', 'access administration menu', 'display drupal links'));
+    $this->drupalLogin($admin_user2);
+    $this->drupalGet('node');
+    $this->assertTrue(preg_match('@<div id="admin-menu">(.*\n)*.*http://drupal.org@',  $this->drupalGetContent()), 'Drupal link found');
+    $this->assertFalse(preg_match('@<div id="admin-menu">(.*\n)*.*admin/build/contact@',  $this->drupalGetContent()), 'Contact module link not found');
+  }
+}
+

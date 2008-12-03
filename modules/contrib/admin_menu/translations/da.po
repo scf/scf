@@ -1,0 +1,146 @@
+# $Id: da.po,v 1.1 2008/04/26 16:10:10 sun Exp $
+#
+# Danish translation of Drupal admin_menu module
+# Copyright 2008 Mikkel Høgh <mikkel@hoegh.org>
+# Generated from files:
+#  admin_menu.inc,v 1.1.4.10 2008/02/24 03:56:22 sun
+#  admin_menu.module,v 1.26.2.16 2008/02/24 03:56:22 sun
+#  admin_menu.info,v 1.3.6.1 2007/12/02 06:25:51 sun
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: admin_menu 5.x-2.4\n"
+"POT-Creation-Date: 2008-03-26 15:11+0100\n"
+"PO-Revision-Date: 2008-03-26 17:33+0100\n"
+"Last-Translator: Mikkel Høgh <mikkel@hoegh.org>\n"
+"Language-Team: Danish <l10n@drupaldanmark.dk>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+
+#: admin_menu.inc:133
+msgid "Administer"
+msgstr "Administration"
+
+#: admin_menu.inc:150
+msgid "Run cron"
+msgstr "Kør cron"
+
+#: admin_menu.inc:152
+msgid "Run updates"
+msgstr "Kør databaseopdatering"
+
+#: admin_menu.inc:157
+msgid "Drupal.org"
+msgstr "Drupal.org"
+
+#: admin_menu.inc:158
+msgid "Drupal issue queue"
+msgstr "Drupal issue-kø"
+
+#: admin_menu.inc:170
+msgid "@title issue queue"
+msgstr "@title issue-kø"
+
+#: admin_menu.inc:178
+msgid "Logout @name"
+msgstr "Log @name ud"
+
+#: admin_menu.inc:200
+msgid "Add !title"
+msgstr "Tilføj !title"
+
+#: admin_menu.module:20
+msgid "Renders the administer menu tree as dropdown menu at the top of the window."
+msgstr "Viser administrationsmenuen som en dropdown-menu øverst på siden."
+
+#: admin_menu.module:22
+msgid "The Administration Menu will appear at the top of the page for users who have been given the \"access administration menu\" permission.  Customize appearance of the dropdown menu here."
+msgstr "Administrationsmenuen vil blive vist øverst på siden for brugere der har tilladelsen \"tilgå administrationsmenu\". Du kan indstille dens udseende her."
+
+#: admin_menu.module:39;85
+msgid "Apply margin-top to page body"
+msgstr "Læg margin-top på sidens body-tag"
+
+#: admin_menu.module:63
+#: admin_menu.info:0
+msgid "Administration Menu"
+msgstr "Administrationsmenu"
+
+#: admin_menu.module:64
+msgid "Adjust settings for the dropdown Administration Menu."
+msgstr "Indstil drop-down-adminstrationsmenuen."
+
+#: admin_menu.module:87
+msgid "If this setting is disabled, some absolute or fixed positioned page elements may be covered by Administration Menu."
+msgstr "Hvis denne indstilling er slået fra, vil nogen absolute eller fixed positionerede elementer på siden muligvis blive dækket af administrationsmenuen."
+
+#: admin_menu.module:319
+msgid "Current anonymous / authenticated users"
+msgstr "Nuværende antal af bruger der ikke er / er logget ind"
+
+#: admin_menu.module:343
+msgid "Administration Menu settings"
+msgstr "Administrationsmenu-indstillinger"
+
+#: admin_menu.module:348
+msgid "None"
+msgstr "Ingen"
+
+#: admin_menu.module:348
+msgid "Id"
+msgstr "Id"
+
+#: admin_menu.module:348
+msgid "Weight"
+msgstr "Vægt"
+
+#: admin_menu.module:348
+msgid "Parent id"
+msgstr "Parent id"
+
+#: admin_menu.module:351
+msgid "Display extra information for menu items in Drupal Administration Menu"
+msgstr "Vis ekstra information for menuelementer i Drupal-administrationsmenuen"
+
+#: admin_menu.module:354
+msgid "If enabled, the chosen information will appear next to each menu item link."
+msgstr "Hvis denne indstilling er slået til, vil den valgte information dukke op ved siden af hvert menuelement."
+
+#: admin_menu.module:358
+msgid "Display all menu items"
+msgstr "Vis alle menuelementer"
+
+#: admin_menu.module:360
+msgid "Enable this option to disable user access checks for menu items, i.e. every menu item in the visible menu tree will be displayed to every user regardless of access permissions."
+msgstr "Slå denne indstilling til for at slå adgangskontrol fra for elementerne i administrationsmenuen. Altså vil alle menuelementer blive vist til alle bruger, uanset om de har adgang til dem eller ej."
+
+#: admin_menu.module:384
+msgid "Variable editor"
+msgstr "Variable-redigering"
+
+#: admin_menu.module:390
+msgid "Empty cache"
+msgstr "Tøm cache"
+
+#: admin_menu.module:47
+msgid "access administration menu"
+msgstr "tilgå administrationsmenu"
+
+#: admin_menu.module:47
+msgid "display drupal links"
+msgstr "vis Drupal-links"
+
+#: admin_menu.module:0
+msgid "admin_menu"
+msgstr "admin_menu"
+
+#: admin_menu.info:0
+msgid "Renders a menu tree for administrative purposes as dropdown menu at the top of the window."
+msgstr "Viser en menu til administrationsformål øverst på siden."
+
+#: admin_menu.info:0
+msgid "Administration"
+msgstr "Administration"
+
