@@ -68,26 +68,26 @@ function en7_parse(& $tags, & $node_array, $node) {
         case 'AUTHOR' :
           $node_array[$node_id]['biblio_contributors'][] = array(
             'name' => $data,
-            'ctid' => 1
+            'ct_id' => 1
           );
           //$contributors['author'][] = $data;
           break;
         case 'SECONDARY_AUTHOR' :
           $node_array[$node_id]['biblio_contributors'][] = array(
             'name' => $data,
-            'ctid' => 2
+            'ct_id' => 2
           );
           break;
         case 'TERTIARY_AUTHOR' :
           $node_array[$node_id]['biblio_contributors'][] = array(
             'name' => $data,
-            'ctid' => 3
+            'ct_id' => 3
           );
           break;
         case 'SUBSIDIARY_AUTHOR' :
           $node_array[$node_id]['biblio_contributors'][] = array(
             'name' => $data,
-            'ctid' => 4
+            'ct_id' => 4
           );
           break;
         case 'translated-authors' :

@@ -48,7 +48,7 @@ function _endnote7_XML_export($results) {
     $xml .= "\t<REFERENCE_TYPE>$reftype</REFERENCE_TYPE>\n";
     $a = $e = $t = '';
     foreach ($rec->biblio_contributors as $auth) {
-      switch ($auth['ctid']) {
+      switch ($auth['ct_id']) {
         case 1 :
           $a .= "\t\t<AUTHOR>". trim($auth['name']) ."</AUTHOR>\n";
           break;

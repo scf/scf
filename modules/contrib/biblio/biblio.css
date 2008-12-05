@@ -1,35 +1,63 @@
 /** Node admin filter **/
+.biblio-search,.biblio-inline div {
+	display: inline;
+}
+
+.biblio-inline {
+	margin-bottom: 10px;
+}
+
+.biblio-search input {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+.biblio-fieldset {
+	margin-top: -1em;
+	border: none;
+	margin-bottom: 0px;
+	padding: 0px 0px 5px 0px;
+	display: inline;
+}
+
 #biblio-filter ul {
-  padding:                    1px;
-  margin:                     1px;
-  width:                      100%;
+	padding: 1px;
+	margin: 1px;
+	width: 100%;
 }
+
 #biblio-buttons {
-  float:                      left;
-  margin-left:                0.5em;
-  margin-top:                 1em;
- /* clear:                      right; */
+	float: left;
+	margin-left: 0.5em;
+	margin-top: 1em;
+	/* clear:                      right; */
 }
+
 .biblio-alpha-line {
 	text-align: center;
 }
-dl.bibliomultiselect dd.b, dl.bibliomultiselect dd.b .form-item, dl.bibliomultiselect dd.b select {
-  font-family: inherit;
-  font-size: inherit;
-  width: 14em;
+
+dl.bibliomultiselect dd.b,dl.bibliomultiselect dd.b .form-item,dl.bibliomultiselect dd.b select
+	{
+	font-family: inherit;
+	font-size: inherit;
+	width: 14em;
 }
-dl.bibliomultiselect dd.a, dl.bibliomultiselect dd.a .form-item {
-  width: 8em;
+
+dl.bibliomultiselect dd.a,dl.bibliomultiselect dd.a .form-item {
+	width: 8em;
 }
-dl.bibliomultiselect dt, dl.bibliomultiselect dd {
-  float: left;
-  line-height: 1.75em;
-  padding: 0;
-  margin: 0 1em 0 0;
+
+dl.bibliomultiselect dt,dl.bibliomultiselect dd {
+	float: left;
+	line-height: 1.75em;
+	padding: 0;
+	margin: 0 1em 0 0;
 }
+
 dl.bibliomultiselect .form-item {
-  height: 1.75em;
-  margin: 0;
+	height: 1.75em;
+	margin: 0;
 }
 
 .biblio-head {
@@ -44,11 +72,15 @@ dl.bibliomultiselect .form-item {
 	border-top-color: #F0F8FF;
 	padding: 3px;
 }
- .biblio-head a:link , .biblio-head a.active, .biblio-head a:visited,
- .biblio-head a:focus,  .biblio-head a:hover  {
+
+.biblio-head a:link,.biblio-head a.active,.biblio-head a:visited,.biblio-head a:focus,.biblio-head a:hover
+	{
 	color: black;
 }
-.biblio-current-filters {background-color: #ffe1e1;}
+
+.biblio-current-filters {
+	background-color: #ffe1e1;
+}
 
 .biblio-year {
 	color: #000000;
@@ -58,6 +90,7 @@ dl.bibliomultiselect .form-item {
 	padding: 0.5em;
 	margin: 1em 0 1em 0;
 }
+
 .biblio-toolbar {
 	width: 97%;
 	color: Red;
@@ -70,15 +103,17 @@ dl.bibliomultiselect .form-item {
 	border-top-color: #F0F8FF;
 	padding: 3px;
 }
-.biblio-entry  {
-  margin: 1em 0 1em 0;
 
+.biblio-entry {
+	margin: 1em 0 1em 0;
 }
+
 .biblio-publisher {
 	font-style: oblique;
 	font-weight: bold;
 }
-.biblio-title a{
+
+.biblio-title a {
 	font-weight: bold;
 	text-decoration: none;
 	font-style: normal;
@@ -89,72 +124,99 @@ dl.bibliomultiselect .form-item {
 }
 
 a:active {
-
+	
 }
 
-.biblio-authors a{
+.biblio-authors a {
 	font-weight: normal;
 	text-decoration: none;
 	font-style: normal;
 }
+
 .biblio_type-1 {
 	background-color: #F2F2D9;
 }
+
 .biblio_type-2 {
 	background-color: #D9E6F2;
 }
+
 .biblio_type-3 {
 	background-color: #E5F2D9;
 }
+
 .biblio_type-4 {
 	background-color: #D9F2E6;
 }
+
 .biblio_type-5 {
 	background-color: #F2E6D9;
 }
+
 .biblio_type-6 {
 	background-color: #D9E6F2;
 }
+
 .biblio_type-7 {
 	background-color: #D9E6F2;
 }
+
 .biblio_type-8 {
 	background-color: #D9E6F2;
 }
+
 .biblio_type-9 {
 	background-color: #D9E6F2;
 }
-.biblio-export{
+
+.biblio-export {
 	text-align: right;
 	text-decoration: none;
 	float: right;
 }
-.biblio-abstract-link{
+
+.biblio-abstract-link {
 	text-align: left;
 	text-decoration: none;
-  font-style: normal;
-  font-weight: normal;
-  font-size:75%;
+	font-style: normal;
+	font-weight: normal;
+	font-size: 75%;
 }
-.biblio-export-links{
+
+.biblio-export-links {
+	float: right;
 	text-align: left;
 	text-decoration: none;
-  font-style: normal;
-  font-weight: normal;
-  font-size:75%;
+	font-style: normal;
+	font-weight: normal;
+	font-size: 75%;
+	line-height: 100%;
 }
-.biblio-annotation{
+
+ul.biblio-export-buttons,ul.biblio-export-buttons li {
+	background: transparent url(images/bg-tab.png) repeat-x scroll 0 50%;
+	list-style-image: none;
+	list-style-type: none;
+	display: inline;
+	border-bottom: 0px;
+	padding: 0;
+	margin: 0;
+}
+
+.biblio-annotation {
 	text-align: left;
 	text-decoration: none;
-  margin-left:  2.5em;
-  margin-top:   0.5em;
-  margin-right: 2.5em;
+	margin-left: 2.5em;
+	margin-top: 0.5em;
+	margin-right: 2.5em;
 }
-.biblio-sort{
+
+.biblio-sort {
 	text-decoration: none;
 	text-align: left;
 }
-.biblio-openurl-text{
+
+.biblio-openurl-text {
 	text-align: right;
 	text-decoration: none;
 	float: right;

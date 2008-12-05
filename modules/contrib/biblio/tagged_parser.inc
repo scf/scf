@@ -1,5 +1,5 @@
 <?php
-// $Id: tagged_parser.inc,v 1.8.2.6 2008/05/20 02:01:01 rjerome Exp $
+// $Id: tagged_parser.inc,v 1.8.2.8 2008/11/29 03:27:53 rjerome Exp $
 /**
  *   Copyright (C) 2006  Ron Jerome
  *
@@ -78,7 +78,7 @@ function _endnote_tagged_import(& $data, $node_template, & $node_array) {
         case '%A' :
           $node_array[$node_id]['biblio_contributors'][] = array(
             'name' => $value,
-            'ctid' => '1'
+            'ct_id' => '1'
           );
           break;
         case '%B' :
@@ -93,11 +93,11 @@ function _endnote_tagged_import(& $data, $node_template, & $node_array) {
         case '%E' :
           $node_array[$node_id]['biblio_contributors'][] = array(
             'name' => $value,
-            'ctid' => '2'
+            'ct_id' => '2'
           );
           break;
         case '%F' :
-          $node_array[$node_id]['label'] = $value;
+          $node_array[$node_id]['biblio_label'] = $value;
           break;
         case '%I' :
           $node_array[$node_id]['biblio_publisher'] = $value;
@@ -141,7 +141,7 @@ function _endnote_tagged_import(& $data, $node_template, & $node_array) {
         case '%Y' :
           $node_array[$node_id]['biblio_contributors'][] = array(
             'name' => $value,
-            'ctid' => '3'
+            'ct_id' => '3'
           );
           break;
         case '%Z' :

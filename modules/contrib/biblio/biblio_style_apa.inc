@@ -1,5 +1,7 @@
 <?php
-// $Id: biblio_style_apa.inc,v 1.9.2.2 2008/05/13 21:33:26 rjerome Exp $
+
+
+// $Id: biblio_style_apa.inc,v 1.9.2.6 2008/11/21 19:09:40 rjerome Exp $
 /**
  * Get the style information
  *
@@ -7,7 +9,7 @@
  *   The name of the style
  */
 function biblio_style_apa_info() {
-  return array(
+  return array (
     'apa' => 'American Psychological Association (APA)'
   );
 }
@@ -25,16 +27,10 @@ function biblio_style_apa_info() {
  * @return
  *   The styled biblio entry
  */
-function biblio_style_apa($node, $base= 'biblio', $inline= false) {
-  /*  if (variable_get('biblio_normalize', 0)) {
-      $authors = _biblio_parse_authors($node->biblio_authors);
-    } else {
-      $authors = $node->biblio_creators->getCreatorString();
-    }
-  */
-  $contrib_array = _apa_format_authors($node->biblio_contributors);
+function biblio_style_apa($node, $base = 'biblio', $inline = false) {
+  $contrib_array = _apa_format_authors($node->biblio_contributors, $inline);
   $authors = $contrib_array[1];
-  $output .= '<span class="biblio-authors">'. $authors ."</span> \n";
+  $output .= '<span class="biblio-authors">' . $authors . "</span> \n";
   $output .= (strrpos($authors, '.') == strlen($authors)) ? ".&nbsp;&nbsp;" : " ";
   switch ($node->biblio_type) {
     case 1 : // Journal Article
@@ -48,44 +44,46 @@ function biblio_style_apa($node, $base= 'biblio', $inline= false) {
     case 9 :
     default :
       if (isset ($node->biblio_year)) {
-        $output .= "(". check_plain($node->biblio_year) .").&nbsp;&nbsp;";
+        $output .= "(" . check_plain($node->biblio_year) . ").&nbsp;&nbsp;";
       }
       $output .= '<span class="biblio-title-apa">';
       $output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
       $output .= ". </span> \n";
-      $output .= !empty ($contrib_array[2]) ? '('. $contrib_array[2] .', Ed.).' : "";
-      $output .= ($node->biblio_secondary_title) ? '<u>'. check_plain($node->biblio_secondary_title) .'. ' : '<u>';
-      $output .= ($node->biblio_volume) ? check_plain($node->biblio_volume) . ($node->biblio_issue ? '</u>('. check_plain($node->biblio_issue) .'),&nbsp;' : ',</u> ') : '</u> ';
+      $output .= !empty ($contrib_array[2]) ? '(' . $contrib_array[2] . ', Ed.).' : "";
+      $output .= ($node->biblio_secondary_title) ? '<u>' . check_plain($node->biblio_secondary_title) . '. ' : '<u>';
+      $output .= ($node->biblio_volume) ? check_plain($node->biblio_volume) . ($node->biblio_issue ? '</u>(' . check_plain($node->biblio_issue) . '),&nbsp;' : ',</u> ') : '</u> ';
       //  $output .= ($node->biblio_issue) ? '('. check_plain($node->biblio_issue).')' :'';
-      $output .= ($node->biblio_pages) ? check_plain($node->biblio_pages) .'.' : '';
+      $output .= ($node->biblio_pages) ? check_plain($node->biblio_pages) . '.' : '';
       break; // generic
   }
   /*  if ($node->biblio_date) $output .= ', '. check_plain($node->biblio_date);
     if ($node->biblio_number) $output .= ', Number '. check_plain($node->biblio_number);
-
+  
     if ($node->biblio_place_published) $output .= ', '. check_plain($node->biblio_place_published);
   */
   return $output;
 }
-function _apa_format_authors($contributors) {
+/**
+ * 
+ */
+function _apa_format_authors($contributors, $inline = FALSE) {
   if (count($contributors)) {
     foreach ($contributors as $key => $author) {
-      $format= $author['prefix'] .' '. $author['lastname'];
-      $format .= !empty ($author['firstname']) ? ' '. drupal_substr($author['firstname'], 0, 1) .'.' : '';
-      $format .= !empty ($author['initials']) ? $author['initials'] .'.' : '';
+      $format = $author['prefix'] . ' ' . $author['lastname'];
+      $format .= !empty ($author['firstname']) ? ' ' . drupal_substr($author['firstname'], 0, 1) . '.' : '';
+      $format .= !empty ($author['initials']) ? $author['initials'] . '.' : '';
       if (variable_get('biblio_author_links', 1)) {
-        $base= variable_get('biblio_base', 'biblio');
-        $format= _biblio_author_link($format, $author['cid'], $base, $inline);
+        $base = variable_get('biblio_base', 'biblio');
+        $format = _biblio_author_link($format, $author['cid'], $base, $inline);
       }
-      $author_array[$author['ctid']] .= (!empty ($author_array[$author['ctid']])) ? ', '. $format : $format;
+      $author_array[$author['type']] .= (!empty ($author_array[$author['type']])) ? ', ' . $format : $format;
     }
   }
   if (count($author_array)) {
     return $author_array;
-  }
-  else {
-    return array(
+  } else {
+    return array (
       1 => t('No author information available')
-     );
+    );
   }
 }

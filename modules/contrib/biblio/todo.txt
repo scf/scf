@@ -1,0 +1,10 @@
+ todo list (no particular order)
+
+*(DONE) fix author handeling (in contributor widget) http://drupal.org/node/313264
+*(DONE) make citekey database field longer (varchar 255) http://drupal.org/node/282896
+* bibtex handeling of curly braces  http://drupal.org/node/314488
+* add image field http://drupal.org/node/314249
+*(DONE) display attachment description rather than file name http://drupal.org/node/314395
+* check assignment of taxonomy terms  http://drupal.org/node/336344
+* check BOM breaking RIS parsing  http://drupal.org/node/330901
+* create "author editor" UI to find and combine duplcate authors (variations on a name who are actually the same person) 

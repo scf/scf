@@ -1,5 +1,5 @@
 <?php
-// $Id: ris_parser.inc,v 1.4.2.5 2008/05/20 02:01:01 rjerome Exp $
+// $Id: ris_parser.inc,v 1.4.2.7 2008/11/26 22:24:52 rjerome Exp $
 /**
  *   Copyright (C) 2006  Ron Jerome
  *
@@ -120,7 +120,7 @@ function _ris_tagged_import(& $data, $node_template, & $node_array) {
         case 'AU' :
           $node_array[$node_id]['biblio_contributors'][] = array(
             'name' => $value,
-            'ctid' => 1
+            'ct_id' => 1
           );
           break;
         case 'JF' :
@@ -138,7 +138,7 @@ function _ris_tagged_import(& $data, $node_template, & $node_array) {
         case 'ED' :
           $node_array[$node_id]['biblio_contributors'][] = array(
             'name' => $value,
-            'ctid' => '2'
+            'ct_id' => '2'
           );
           break;
         case 'PB' :
@@ -173,13 +173,14 @@ function _ris_tagged_import(& $data, $node_template, & $node_array) {
         case 'VL' :
           $node_array[$node_id]['biblio_volume'] = $value;
           break;
+        case 'AB' :
         case 'N2' :
           $node_array[$node_id]['biblio_abst_e'] .= $value;
           break;
         case 'A3' :
           $node_array[$node_id]['biblio_contributors'][] = array(
             'name' => $value,
-            'ctid' => '5'
+            'ct_id' => '5'
           );
           break;
         case 'N1' :

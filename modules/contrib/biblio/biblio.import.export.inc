@@ -1,6 +1,6 @@
 <?PHP
 
-// $Id: biblio.import.export.inc,v 1.7.2.17 2008/05/21 02:03:49 rjerome Exp $
+// $Id: biblio.import.export.inc,v 1.7.2.23 2008/11/29 03:23:32 rjerome Exp $
 /**
  * @file
  * Functions that are used to import and export biblio data.
@@ -226,7 +226,7 @@ function biblio_import(& $file_content, $type = 'tagged', $userid = 1, $terms = 
     );
     switch ($type) {
       case 'tagged' : // EndNote Tagged
-        require_once (drupal_get_path('module', 'biblio') .'/tagged_parser.inc');
+        module_load_include('inc', 'biblio', 'tagged_parser');
         $parsed = _endnote_tagged_import($file_content, $node_template, $node_array);
         break;
       case 'xml' : // EndNote 7 XML
@@ -245,7 +245,7 @@ function biblio_import(& $file_content, $type = 'tagged', $userid = 1, $terms = 
         $parsed = biblio_restore($file_content, $node_template, $node_array);
         break;
       case 'ris' : // RIS
-        require_once (drupal_get_path('module', 'biblio') .'/ris_parser.inc');
+        module_load_include('inc', 'biblio', 'ris_parser');
         $parsed = _ris_tagged_import($file_content, $node_template, $node_array);
         break;
     }
@@ -287,8 +287,8 @@ function biblio_import(& $file_content, $type = 'tagged', $userid = 1, $terms = 
  * @return
  *   none
  */
-function biblio_export($format = "tagged", $nid = null, $version = 7) {
-  require_once (drupal_get_path('module', 'biblio') .'/biblio.contributors.inc');
+function biblio_export($format = "tagged", $nid = null, $popup = false, $version = 7) {
+  module_load_include('inc', 'biblio', 'biblio.contributors');
   $params = array ();
   if ($nid === null && isset ($_SESSION['last_biblio_query']) && !empty ($_SESSION['last_biblio_query'])) {
     $query = $_SESSION['last_biblio_query'];
@@ -309,19 +309,35 @@ function biblio_export($format = "tagged", $nid = null, $version = 7) {
   if (count($results)) {
     switch ($format) {
       case "tagged" :
-        drupal_set_header('Content-type: 	application/x-endnote-refer');
-        drupal_set_header('Content-Disposition:  filename="Drupal-Biblio.enw"');
-        print biblio_endnote_tagged_export($results);
+        if (!$popup) {
+          drupal_set_header('Content-type: 	application/x-endnote-refer');
+          drupal_set_header('Content-Disposition:  filename="Drupal-Biblio.enw"');
+          print biblio_endnote_tagged_export($results);
+        } 
+        else {
+          return '<pre>' . biblio_endnote_tagged_export($results) . '</pre>';
+        }
         break;
       case "xml" :
-        drupal_set_header('Content-type: application/xml; charset=utf-8');
-        drupal_set_header('Content-Disposition: attachment; filename="Biblio-EndNote'. $version .'.xml"');
-        print biblio_endnote_XML_export($results, $version);
+        if (!$popup) {
+          drupal_set_header('Content-type: application/xml; charset=utf-8');
+          drupal_set_header('Content-Disposition: attachment; filename="Biblio-EndNote'. $version .'.xml"');
+          print biblio_endnote_XML_export($results, $version);
+        } 
+        else {
+          drupal_set_header('Content-type: application/xml; charset=utf-8');
+          return '<pre>'. htmlspecialchars(biblio_endnote_XML_export($results, $version)) . '</pre>';
+        }
         break;
       case "bibtex" :
-        drupal_set_header('Content-type: 	application/text; charset=utf-8');
-        drupal_set_header('Content-Disposition:  filename="Biblio-Bibtex.bib"');
-        print biblio_bibtex_export($results);
+        if (!$popup) {
+          drupal_set_header('Content-type: 	application/text; charset=utf-8');
+          drupal_set_header('Content-Disposition:  filename="Biblio-Bibtex.bib"');
+          print biblio_bibtex_export($results);
+        }
+        else{
+          return '<pre>'. biblio_bibtex_export($results) . '</pre>';
+        }
         break;
       case "csv" :
         drupal_set_header('Content-Type: application/text; charset=utf-8');
@@ -344,7 +360,8 @@ function biblio_export($format = "tagged", $nid = null, $version = 7) {
  *   an array of node ids
  */
 function biblio_bibtex_import(& $data, $node_template, & $node_array) {
-  require_once (drupal_get_path('module', 'biblio') .'/bibtexParse/PARSEENTRIES.php');
+  module_load_include('php', 'biblio', 'bibtexParse/PARSEENTRIES');
+  //require_once (drupal_get_path('module', 'biblio') .'/bibtexParse/PARSEENTRIES.php');
   $bibtex = new PARSEENTRIES();
   $bibtex->loadBibtexString($data);
   $bibtex->extractEntries();
@@ -389,7 +406,7 @@ function biblio_bibtex_export($results) {
         break;
       case 103 :
         $type = "inproceedings";
-        $journal = $pub->biblio_secondary_title;
+        $booktitle = $pub->biblio_secondary_title;
         $organization = $pub->biblio_publisher;
         $series = $pub->biblio_tertiary_title;
         break;
@@ -406,7 +423,7 @@ function biblio_bibtex_export($results) {
         break;
       case 109 :
         $type = "techreport";
-        $organization = $pub->biblio_publisher;
+        $institution  = $pub->biblio_publisher;
         $pub->biblio_publisher = null;
         break;
       case 124 :
@@ -461,11 +478,13 @@ function biblio_bibtex_export($results) {
       $bibtex .= "\tURL = {". $pub->biblio_url ."},\n";
     $a = $e = NULL;
     foreach ($pub->biblio_contributors as $auth) {
-      switch ($auth['ctid']) {
+      switch ($auth['ctdid']) {
         case 1 :
           $a .= (!empty ($a)) ? ' and '. trim($auth['name']) : trim($auth['name']);
           break;
         case 2 :
+        case 10 :
+        case 14 :
           $e .= (!empty ($e)) ? ' and '. trim($auth['name']) : trim($auth['name']);
           break;
       }
@@ -544,13 +563,13 @@ function biblio_endnote_XML_import(& $data, $node_template, & $node_array, $vers
   xml_parser_set_option($xml_parser, XML_OPTION_SKIP_WHITE, true);
   if ($version == 8) {
     global $user, $records, $rec_count, $node_array, $node_template, $node_id;
-    require_once (drupal_get_path('module', 'biblio') .'/endnote8_parser.inc');
+    module_load_include('inc', 'biblio', 'endnote8_parser');
     xml_set_element_handler($xml_parser, "en8_startElement", "en8_endElement");
     xml_set_character_data_handler($xml_parser, "en8_characterData");
     xml_parse($xml_parser, $data, 1);
   }
   elseif ($version == 7) {
-    require_once (drupal_get_path('module', 'biblio') .'/endnote7_parser.inc');
+    module_load_include('inc', 'biblio', 'endnote7_parser');
     xml_parse_into_struct($xml_parser, $data, $values);
     en7_parse($values, $node_array, $node_template);
   }
@@ -570,11 +589,11 @@ function biblio_endnote_XML_import(& $data, $node_template, & $node_array, $vers
  */
 function biblio_endnote_XML_export($result, $version = 7) {
   if ($version == 8) {
-    require_once (drupal_get_path('module', 'biblio') .'/endnote8_export.inc');
+    module_load_include('inc', 'biblio', 'endnote8_export');
     $xml = _endnote8_XML_export($result);
   }
   elseif ($version == 7) {
-    require_once (drupal_get_path('module', 'biblio') .'/endnote7_export.inc');
+    module_load_include('inc', 'biblio', 'endnote7_export');
     $xml = _endnote7_XML_export($result);
   }
   return $xml;
@@ -702,20 +721,21 @@ function biblio_endnote_tagged_export($results) {
       $doc .= "%D ". trim($pub->biblio_year) ."\r\n";
     if (!empty($pub->title))
       $doc .= "%T ". trim($pub->title) ."\r\n";
-    foreach ($pub->biblio_contributors as $auth) {
-      switch ($auth['ctid']) {
-        case 1 :
-          $doc .= "%A ". trim($auth['name']) ."\r\n";
-          break;
-        case 2 :
-          $doc .= "%E ". trim($auth['name']) ."\r\n";
-          break;
-        case 3 :
-          $doc .= "%Y ". trim($auth['name']) ."\r\n";
-          break;
+    if (count($pub->biblio_contributors)) {
+      foreach ($pub->biblio_contributors as $auth) {
+        switch ($auth['ct_id']) {
+          case 1 :
+            $doc .= "%A ". trim($auth['name']) ."\r\n";
+            break;
+          case 2 :
+            $doc .= "%E ". trim($auth['name']) ."\r\n";
+            break;
+          case 3 :
+            $doc .= "%Y ". trim($auth['name']) ."\r\n";
+            break;
+        }
       }
     }
-
     if (!empty($pub->biblio_place_published))
       $doc .= "%C ". trim($pub->biblio_place_published) ."\r\n";
     if (!empty($pub->biblio_publisher))
