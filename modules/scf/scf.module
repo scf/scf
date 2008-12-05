@@ -120,9 +120,6 @@ function scf_perm() {
  * Implementation of hook_theme().
  */
 function scf_theme() {
-  // these next line attempts to get around the issue where the set theme
-  // is unset during update or install.  http://myagaric.com/node/151
-  db_query("UPDATE {system} SET status = 1 WHERE type = 'theme' and name = 'scf_demo'");
   
   $hooks = array();
   // concepts stolen from views.module
