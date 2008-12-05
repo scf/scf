@@ -1,5 +1,5 @@
 <?php
-// $Id: views-view.tpl.php,v 1.9 2008/04/16 18:50:49 merlinofchaos Exp $
+// $Id: views-view.tpl.php,v 1.10 2008/09/22 20:50:58 merlinofchaos Exp $
 /**
  * @file views-view.tpl.php
  * Main view template
@@ -19,7 +19,7 @@
  * @ingroup views_templates
  */
 ?>
-<div class="view view-<?php print $css_name; ?> view-id-<?php print $name; ?> view-display-id-<?php print $display_id; ?>">
+<div class="view view-<?php print $css_name; ?> view-id-<?php print $name; ?> view-display-id-<?php print $display_id; ?> view-dom-id-<?php print $dom_id; ?>">
   <?php if ($admin_links): ?>
     <div class="views-admin-links views-hide">
       <?php print $admin_links; ?>

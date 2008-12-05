@@ -1,5 +1,5 @@
 <?php
-// $Id: handlers.inc,v 1.79 2008/05/27 23:27:39 merlinofchaos Exp $
+// $Id: handlers.inc,v 1.96 2008/09/30 23:59:04 merlinofchaos Exp $
 /**
  * @file handlers.inc
  * Defines the various handler objects to help build and display views.
@@ -8,23 +8,77 @@
 /**
  * Instantiate and construct a new handler
  */
-function _views_create_handler($definition) {
+function _views_create_handler($definition, $type = 'handler') {
 //  vpr('Instantiating handler ' . $definition['handler']);
-  if (empty($definition['handler']) || !class_exists($definition['handler'])) {
+  if (empty($definition['handler'])) {
+    return;
+  }
+
+  if (!class_exists($definition['handler']) && !views_include_handler($definition, $type)) {
     return;
   }
 
   $handler = new $definition['handler'];
   $handler->set_definition($definition);
   // let the handler have something like a constructor.
-  if (isset($definition['arguments'])) {
-    call_user_func_array(array(&$handler, 'construct'), $definition['arguments']);
-  }
-  else {
-    $handler->construct();
-  }
+  $handler->construct();
 
   return $handler;
+}
+
+/**
+ * Attempt to find the include file for a given handler from its definition.
+ *
+ * This will also attempt to include all parents, though we're maxing the
+ * parent chain to 10 to prevent infinite loops.
+ */
+function views_include_handler($definition, $type, $count = 0) {
+  // Do not proceed if the class already exists.
+  if (isset($definition['handler']) && class_exists($definition['handler'])) {
+    return TRUE;
+  }
+
+  // simple infinite loop prevention.
+  if ($count > 10) {
+    vpr(t('Handler @handler include tried to loop infinitely!', array('@handler' => $definition['handler'])));
+    return FALSE;
+  }
+
+  if (!isset($definition['path'])) {
+    if ($type == 'handler') {
+      $definition += views_fetch_handler_data($definition['handler']);
+    }
+    else {
+      $definition += views_fetch_plugin_data($type, $definition['handler']);
+    }
+  }
+
+  if (!empty($definition['parent'])) {
+    if ($type == 'handler') {
+      $parent = views_fetch_handler_data($definition['parent']);
+    }
+    else {
+      $parent = views_fetch_plugin_data($type, $definition['parent']);
+    }
+
+    if ($parent) {
+      $rc = views_include_handler($parent, $type, $count + 1);
+      // If the parent chain cannot be included, don't try; this will
+      // help alleviate problems with modules with cross dependencies.
+      if (!$rc) {
+        return FALSE;
+      }
+    }
+  }
+
+  if (isset($definition['path']) && $definition['file']) {
+    $filename = './' . $definition['path'] . '/' . $definition['file'];
+    if (file_exists($filename)) {
+      require_once $filename;
+    }
+  }
+
+  return class_exists($definition['handler']);
 }
 
 /**
@@ -32,17 +86,81 @@ function _views_create_handler($definition) {
  */
 function _views_prepare_handler($definition, $data, $field) {
   foreach (array('group', 'title', 'help', 'real field') as $key) {
-    // First check the field level
-    if (!isset($definition[$key]) && !empty($data[$field][$key])) {
-      $definition[$key] = $data[$field][$key];
-    }
-    // Then if that doesn't work, check the table level
-    else if (!isset($definition['table'][$key]) && !empty($data['table'][$key])) {
-      $definition[$key] = $data['table'][$key];
+    if (!isset($definition[$key])) {
+      // First check the field level
+      if (!empty($data[$field][$key])) {
+        $definition[$key] = $data[$field][$key];
+      }
+      // Then if that doesn't work, check the table level
+      else if (!empty($data['table'][$key])) {
+        $definition[$key] = $data['table'][$key];
+      }
     }
   }
 
   return _views_create_handler($definition);
+}
+
+/**
+ * Fetch the handler data from cache.
+ */
+function views_fetch_handler_data($handler = NULL) {
+  static $cache = NULL;
+  if (!isset($cache)) {
+    $start = microtime();
+
+    $cache = views_discover_handlers();
+
+    vpr('Views handlers build time: ' . (microtime() - $start) * 1000 . ' ms');
+  }
+
+  if (!$handler) {
+    return $cache;
+  }
+  else if (isset($cache[$handler])) {
+    return $cache[$handler];
+  }
+
+  // Return an empty array if there is no match.
+  return array();
+}
+
+/**
+ * Builds and return a list of all handlers available in the system.
+ *
+ * @return Nested array of handlers
+ */
+function views_discover_handlers() {
+  $cache = array();
+  // Get handlers from all modules.
+  foreach (module_implements('views_handlers') as $module) {
+    $function = $module . '_views_handlers';
+    $result = $function();
+    if (!is_array($result)) {
+      continue;
+    }
+
+    $module_dir = isset($result['info']['module']) ? $result['info']['module'] : $module;
+    $path = isset($result['info']['path']) ? $result['info']['path'] : drupal_get_path('module', $module_dir);
+
+    foreach ($result['handlers'] as $handler => $def) {
+      if (!isset($def['module'])) {
+        $def['module'] = $module_dir;
+      }
+      if (!isset($def['path'])) {
+        $def['path'] = $path;
+      }
+      if (!isset($def['file'])) {
+        $def['file'] = "$handler.inc";
+      }
+      if (!isset($def['handler'])) {
+        $def['handler'] = $handler;
+      }
+      // merge the new data in
+      $cache[$handler] = $def;
+    }
+  }
+  return $cache;
 }
 
 /**
@@ -87,21 +205,28 @@ function views_get_table_join($table, $base_table) {
  * It creates a common interface to create consistency amongst
  * handlers and data.
  *
- * The default handler has no constructor, so there's no need to jank with
- * parent::views_handler() here.
- *
  * This class would be abstract in PHP5, but PHP4 doesn't understand that.
  *
+ * Definition terms:
+ * - table: The actual table this uses; only specify if different from
+ *          the table this is attached to.
+ * - real field: The actual field this uses; only specify if different from
+ *               the field this item is attached to.
+ * - group: A text string representing the 'group' this item is attached to,
+ *          for display in the UI. Examples: "Node", "Taxonomy", "Comment",
+ *          "User", etc. This may be inherited from the parent definition or
+ *          the 'table' definition.
+ * - title: The title for this handler in the UI. This may be inherited from
+ *          the parent definition or the 'table' definition.
+ * - help: A more informative string to give to the user to explain what this
+ *         field/handler is or does.
+ * - access callback: If this field should have access control, this could
+ *                    be a function to use. 'user_access' is a common
+ *                    function to use here. If not specified, no access
+ *                    control is provided.
+ * - access arguments: An array of arguments for the access callback.
  */
 class views_handler extends views_object {
-  /**
-   * A constructor for the handler base object
-   *
-   * This should be overridden to provide for a consistent constructor
-   * mechanism.
-   */
-  function construct() { }
-
   /**
    * init the handler with necessary data.
    * @param $view
@@ -112,7 +237,7 @@ class views_handler extends views_object {
    */
   function init(&$view, $options) {
     $this->view = &$view;
-    $this->options = &$options;
+    $this->unpack_options($this->options, $options);
 
     // This exist on most handlers, but not all. So they are still optional.
     if (isset($options['table'])) {
@@ -134,9 +259,7 @@ class views_handler extends views_object {
       }
     }
 
-    if (!empty($view->query)) {
-      $this->query = &$view->query;
-    }
+    $this->query = &$view->query;
   }
 
   /**
@@ -145,11 +268,6 @@ class views_handler extends views_object {
   function ui_name() {
     return t('!group: !title', array('!group' => $this->definition['group'], '!title' => $this->definition['title']));
   }
-
-  /**
-   * Provide defaults for the handler.
-   */
-  function options(&$option) { }
 
   /**
    * Provide a form for setting options.
@@ -265,18 +383,18 @@ class views_handler extends views_object {
     $relationship = $this->options['relationship'];
 
     // Ignore missing/broken relationships.
-    if (empty($this->view->relationship[$relationship]) || empty($this->view->relationship[$relationship]['handler'])) {
+    if (empty($this->view->relationship[$relationship])) {
       return;
     }
 
     // Check to see if the relationship has already processed. If not, then we
     // cannot process it.
-    if (empty($this->view->relationship[$relationship]['handler']->alias)) {
+    if (empty($this->view->relationship[$relationship]->alias)) {
       return;
     }
 
     // Finally!
-    $this->relationship = $this->view->relationship[$relationship]['handler']->alias;
+    $this->relationship = $this->view->relationship[$relationship]->alias;
   }
 
   /**
@@ -292,6 +410,7 @@ class views_handler extends views_object {
    */
   function ensure_my_table() {
     if (!isset($this->table_alias)) {
+      if (!method_exists($this->query, 'ensure_table')) { vpr_trace(); exit; }
       $this->table_alias = $this->query->ensure_table($this->table, $this->relationship);
     }
     return $this->table_alias;
@@ -325,6 +444,11 @@ class views_handler extends views_object {
   function accept_exposed_input($input) { return TRUE; }
 
   /**
+   * If set to remember exposed input in the session, store it there.
+   */
+  function store_exposed_input($input, $status) { return TRUE; }
+
+  /**
    * Get the join object that should be used for this handler.
    *
    * This method isn't used a great deal, but it's very handy for easily
@@ -333,9 +457,25 @@ class views_handler extends views_object {
    */
   function get_join() {
     // get the join from this table that links back to the base table.
-    return drupal_clone(views_get_table_join($this->table, $this->query->base_table));
+    // Determine the primary table to seek
+    if (empty($this->query->relationships[$this->relationship])) {
+      $base_table = $this->query->base_table;
+    }
+    else {
+      $base_table = $this->query->relationships[$this->relationship]['base'];
+    }
+
+    $join = views_get_table_join($this->table, $base_table);
+    if ($join) {
+      return drupal_clone($join);
+    }
   }
 
+  /**
+   * Determine if the handler is considered 'broken', meaning it's a
+   * a placeholder used when a handler can't be found.
+   */
+  function broken() { }
 }
 
 /**
@@ -345,10 +485,20 @@ class views_handler extends views_object {
  * be used. For now, look at the arguments and filters that use it. Lots
  * of stuff is just pass-through but there are definitely some interesting
  * areas where they interact.
+ *
+ * Any handler that uses this can have the following possibly additional
+ * definition terms:
+ * - numeric: If true, treat this field as numeric, using %d instead of %s in
+ *            queries.
+ *
  */
 class views_many_to_one_helper {
   function views_many_to_one_helper(&$handler) {
     $this->handler = &$handler;
+  }
+
+  function option_definition(&$options) {
+    $options['reduce_duplicates'] = array('default' => FALSE);
   }
 
   function options_form(&$form, &$form_state) {
@@ -624,21 +774,539 @@ function views_break_phrase($str, $filter = NULL) {
     $filter->value = explode(',', $str);
   }
 
+  // Keep an 'error' value if invalid strings were given.
+  if (!empty($str) && (empty($filter->value) || !is_array($filter->value))) {
+    $filter->value = array(-1);
+    return $filter;
+  }
+
   // Doubly ensure that all values are numeric only.
   foreach ($filter->value as $id => $value) {
     $filter->value[$id] = intval($value);
   }
 
-  // Keep an 'error' value if invalid strings were given.
-  if (!empty($str) && empty($filter->value)) {
-    $filter->value = array(-1);
-  }
   return $filter;
 }
 
-views_include('join.handlers');
-views_include('relationship.handlers');
-views_include('field.handlers');
-views_include('sort.handlers');
-views_include('filter.handlers');
-views_include('argument.handlers');
+// --------------------------------------------------------------------------
+// Date helper functions
+
+/**
+ * Figure out what timezone we're in; needed for some date manipulations.
+ */
+function views_get_timezone() {
+  global $user;
+  if (variable_get('configurable_timezones', 1) && $user->uid && strlen($user->timezone)) {
+    $timezone = $user->timezone;
+  }
+  else {
+    $timezone = variable_get('date_default_timezone', 0);
+  }
+
+  // set up the database timezone
+  if (in_array($GLOBALS['db_type'], array('mysql', 'mysqli'))) {
+    static $already_set = false;
+    if (!$already_set) {
+      if ($GLOBALS['db_type'] == 'mysqli' || version_compare(mysql_get_server_info(), '4.1.3', '>=')) {
+        db_query("SET @@session.time_zone = '+00:00'");
+      }
+      $already_set = true;
+    }
+  }
+
+  return $timezone;
+}
+
+/**
+ * Helper function to create cross-database SQL dates.
+ *
+ * @param $field
+ *   The real table and field name, like 'tablename.fieldname'.
+ * @param $field_type
+ *   The type of date field, 'int' or 'datetime'.
+ * @param $set_offset
+ *   The name of a field that holds the timezone offset or a fixed timezone
+ *   offset value. If not provided, the normal Drupal timezone handling
+ *   will be used, i.e. $set_offset = 0 will make no timezone adjustment.
+ * @return
+ *   An appropriate SQL string for the db type and field type.
+ */
+function views_date_sql_field($field, $field_type = 'int', $set_offset = NULL) {
+  $db_type = $GLOBALS['db_type'];
+  $offset = $set_offset !== NULL ? $set_offset : views_get_timezone();
+  switch ($db_type) {
+    case 'mysql':
+    case 'mysqli':
+      switch ($field_type) {
+        case 'int':
+          $field = "FROM_UNIXTIME($field)";
+          break;
+        case 'datetime':
+          break;
+      }
+      if (!empty($offset)) {
+        $field = "($field + INTERVAL $offset SECOND)";
+      }
+      return $field;
+    case 'pgsql':
+      switch ($field_type) {
+        case 'int':
+          $field = "$field::ABSTIME";
+          break;
+        case 'datetime':
+          break;
+      }
+      if (!empty($offset)) {
+        $field = "($field + INTERVAL '$offset SECONDS')";
+      }
+      return $field;
+  }
+}
+
+/**
+ * Helper function to create cross-database SQL date formatting.
+ *
+ * @param $format
+ *   A format string for the result, like 'Y-m-d H:i:s'.
+ * @param $field
+ *   The real table and field name, like 'tablename.fieldname'.
+ * @param $field_type
+ *   The type of date field, 'int' or 'datetime'.
+ * @param $set_offset
+ *   The name of a field that holds the timezone offset or a fixed timezone
+ *   offset value. If not provided, the normal Drupal timezone handling
+ *   will be used, i.e. $set_offset = 0 will make no timezone adjustment.
+ * @return
+ *   An appropriate SQL string for the db type and field type.
+ */
+function views_date_sql_format($format, $field, $field_type = 'int', $set_offset = NULL) {
+  $db_type = $GLOBALS['db_type'];
+  $field = views_date_sql_field($field, $field_type, $set_offset);
+  switch ($db_type) {
+    case 'mysql':
+    case 'mysqli':
+      $replace = array(
+        'Y' => '%Y',
+        'm' => '%m',
+        'd' => '%%d',
+        'H' => '%H',
+        'i' => '%i',
+        's' => '%s',
+        );
+      $format = strtr($format, $replace);
+      return "DATE_FORMAT($field, '$format')";
+    case 'pgsql':
+      $replace = array(
+        'Y' => 'YY',
+        'm' => 'MM',
+        'd' => 'DD',
+        'H' => 'HH24',
+        'i' => 'MI',
+        's' => 'SS',
+        );
+      $format = strtr($format, $replace);
+      return "TO_CHAR($field, '$format')";
+  }
+}
+
+/**
+ * Helper function to create cross-database SQL date extraction.
+ *
+ * @param $extract_type
+ *   The type of value to extract from the date, like 'MONTH'.
+ * @param $field
+ *   The real table and field name, like 'tablename.fieldname'.
+ * @param $field_type
+ *   The type of date field, 'int' or 'datetime'.
+ * @param $set_offset
+ *   The name of a field that holds the timezone offset or a fixed timezone
+ *   offset value. If not provided, the normal Drupal timezone handling
+ *   will be used, i.e. $set_offset = 0 will make no timezone adjustment.
+ * @return
+ *   An appropriate SQL string for the db type and field type.
+ */
+function views_date_sql_extract($extract_type, $field, $field_type = 'int', $set_offset = NULL) {
+  $db_type = $GLOBALS['db_type'];
+  $field = views_date_sql_field($field, $field_type, $set_offset);
+
+  // Note there is no space after FROM to avoid db_rewrite problems
+  // see http://drupal.org/node/79904.
+  switch ($extract_type) {
+  case('DATE'):
+    return $field;
+  case('YEAR'):
+    return "EXTRACT(YEAR FROM($field))";
+  case('MONTH'):
+    return "EXTRACT(MONTH FROM($field))";
+  case('DAY'):
+    return "EXTRACT(DAY FROM($field))";
+  case('HOUR'):
+    return "EXTRACT(HOUR FROM($field))";
+  case('MINUTE'):
+    return "EXTRACT(MINUTE FROM($field))";
+  case('SECOND'):
+    return "EXTRACT(SECOND FROM($field))";
+  case('WEEK'):  // ISO week number for date
+    switch ($db_type) {
+      case('mysql'):
+      case('mysqli'):
+        // WEEK using arg 3 in mysql should return the same value as postgres EXTRACT
+        return "WEEK($field, 3)";
+      case('pgsql'):
+        return "EXTRACT(WEEK FROM($field))";
+    }
+  case('DOW'):
+    switch ($db_type) {
+      case('mysql'):
+      case('mysqli'):
+        // mysql returns 1 for Sunday through 7 for Saturday
+        // php date functions and postgres use 0 for Sunday and 6 for Saturday
+        return "INTEGER(DAYOFWEEK($field) - 1)";
+      case('pgsql'):
+        return "EXTRACT(DOW FROM($field))";
+    }
+  case('DOY'):
+    switch ($db_type) {
+      case('mysql'):
+      case('mysqli'):
+        return "DAYOFYEAR($field)";
+      case('pgsql'):
+        return "EXTRACT(DOY FROM($field))";
+    }
+  }
+}
+
+/**
+ * Implementation of hook_views_handlers() to register all of the basic handlers
+ * views uses.
+ */
+function views_views_handlers() {
+  return array(
+    'info' => array(
+      'path' => drupal_get_path('module', 'views') . '/handlers',
+    ),
+    'handlers' => array(
+      // argument handlers
+      'views_handler_argument' => array(
+        'parent' => 'views_handler',
+      ),
+      'views_handler_argument_numeric' => array(
+        'parent' => 'views_handler_argument',
+      ),
+      'views_handler_argument_formula' => array(
+        'parent' => 'views_handler_argument',
+      ),
+      'views_handler_argument_date' => array(
+        'parent' => 'views_handler_argument_formula',
+      ),
+      'views_handler_argument_string' => array(
+        'parent' => 'views_handler_argument',
+      ),
+      'views_handler_argument_many_to_one' => array(
+        'parent' => 'views_handler_argument',
+      ),
+      'views_handler_argument_null' => array(
+        'parent' => 'views_handler_argument',
+      ),
+
+      // field handlers
+      'views_handler_field' => array(
+        'parent' => 'views_handler',
+      ),
+      'views_handler_field_date' => array(
+        'parent' => 'views_handler_field',
+      ),
+      'views_handler_field_boolean' => array(
+        'parent' => 'views_handler_field',
+      ),
+      'views_handler_field_markup' => array(
+        'parent' => 'views_handler_field',
+      ),
+      'views_handler_field_xss' => array(
+        'parent' => 'views_handler_field',
+        'file' => 'views_handler_field.inc',
+      ),
+      'views_handler_field_url' => array(
+        'parent' => 'views_handler_field',
+      ),
+      'views_handler_field_file_size' => array(
+        'parent' => 'views_handler_field',
+        'file' => 'views_handler_field.inc',
+      ),
+      'views_handler_field_prerender_list' => array(
+        'parent' => 'views_handler_field',
+      ),
+      'views_handler_field_numeric' => array(
+        'parent' => 'views_handler_field',
+      ),
+
+      // filter handlers
+      'views_handler_filter' => array(
+        'parent' => 'views_handler',
+      ),
+      'views_handler_filter_equality' => array(
+        'parent' => 'views_handler_filter',
+      ),
+      'views_handler_filter_string' => array(
+        'parent' => 'views_handler_filter',
+      ),
+      'views_handler_filter_boolean_operator' => array(
+        'parent' => 'views_handler_filter',
+      ),
+      'views_handler_filter_in_operator' => array(
+        'parent' => 'views_handler_filter',
+      ),
+      'views_handler_filter_numeric' => array(
+        'parent' => 'views_handler_filter',
+      ),
+      'views_handler_filter_date' => array(
+        'parent' => 'views_handler_filter_numeric',
+      ),
+      'views_handler_filter_many_to_one' => array(
+        'parent' => 'views_handler_filter_in_operator',
+      ),
+
+      // relationship handlers
+      'views_handler_relationship' => array(
+        'parent' => 'views_handler',
+      ),
+
+
+      // sort handlers
+      'views_handler_sort' => array(
+        'parent' => 'views_handler',
+      ),
+      'views_handler_sort_formula' => array(
+        'parent' => 'views_handler_sort',
+      ),
+      'views_handler_sort_date' => array(
+        'parent' => 'views_handler_sort',
+      ),
+      'views_handler_sort_menu_hierarchy' => array(
+        'parent' => 'views_handler_sort',
+      ),
+      'views_handler_sort_random' => array(
+        'parent' => 'views_handler_sort',
+      ),
+    ),
+  );
+}
+
+
+/**
+ * @}
+ */
+
+/**
+ * @defgroup views_join_handlers Views' join handlers
+ * @{
+ * Handlers to tell Views how to join tables together.
+
+ * Here is how you do complex joins:
+ *
+ * @code
+ * class views_join_complex extends views_join {
+ *   // PHP 4 doesn't call constructors of the base class automatically from a
+ *   // constructor of a derived class. It is your responsibility to propagate
+ *   // the call to constructors upstream where appropriate.
+ *   function construct($table, $left_table, $left_field, $field, $extra = array(), $type = 'LEFT') {
+ *     parent::construct($table, $left_table, $left_field, $field, $extra, $type);
+ *   }
+ *
+ *   function join($table, &$query) {
+ *     $output = parent::join($table, $query);
+ *   }
+ *   $output .= "AND foo.bar = baz.boing";
+ *   return $output;
+ * }
+ * @endcode
+ */
+/**
+ * A function class to represent a join and create the SQL necessary
+ * to implement the join.
+ *
+ * This is the Delegation pattern. If we had PHP5 exclusively, we would
+ * declare this an interface.
+ *
+ * Extensions of this class can be used to create more interesting joins.
+ *
+ * join definition
+ *   - table: table to join (right table)
+ *   - field: field to join on (right field)
+ *   - left_table: The table we join to
+ *   - left_field: The field we join to
+ *   - type: either LEFT (default) or INNER
+ *   - extra: Either a string that's directly added, or an array of items:
+ *   - - table: if not set, current table; if NULL, no table. This field can't
+ *       be set in the cached definition because it can't know aliases; this field
+ *       can only be used by realtime joins.
+ *   - - field: Field or formula
+ *   - - operator: defaults to =
+ *   - - value: Must be set. If an array, operator will be defaulted to IN.
+ *   - - numeric: If true, the value will not be surrounded in quotes.
+ *   - extra type: How all the extras will be combined. Either AND or OR. Defaults to AND.
+ */
+class views_join {
+  /**
+   * Construct the views_join object.
+   */
+  function construct($table = NULL, $left_table = NULL, $left_field = NULL, $field = NULL, $extra = array(), $type = 'LEFT') {
+    $this->extra_type = 'AND';
+    if (!empty($table)) {
+      $this->table = $table;
+      $this->left_table = $left_table;
+      $this->left_field = $left_field;
+      $this->field = $field;
+      $this->extra = $extra;
+      $this->type = strtoupper($type);
+    }
+    else if (!empty($this->definition)) {
+      // if no arguments, construct from definition.
+      // These four must exist or it will throw notices.
+      $this->table = $this->definition['table'];
+      $this->left_table = $this->definition['left_table'];
+      $this->left_field = $this->definition['left_field'];
+      $this->field = $this->definition['field'];
+      if (!empty($this->definition['extra'])) {
+        $this->extra = $this->definition['extra'];
+      }
+      if (!empty($this->definition['extra type'])) {
+        $this->extra_type = strtoupper($this->definition['extra type']);
+      }
+
+      $this->type = !empty($this->definition['type']) ? strtoupper($this->definition['type']) : 'LEFT';
+    }
+  }
+
+  /**
+   * Build the SQL for the join this object represents.
+   */
+  function join($table, &$query) {
+    $left = $query->get_table_info($this->left_table);
+    $output = " $this->type JOIN {" . $this->table . "} $table[alias] ON $left[alias].$this->left_field = $table[alias].$this->field";
+
+    // Tack on the extra.
+    if (isset($this->extra)) {
+      if (is_array($this->extra)) {
+        $extras = array();
+        foreach ($this->extra as $info) {
+          $extra = '';
+          // Figure out the table name. Remember, only use aliases provided
+          // if at all possible.
+          $join_table = '';
+          if (!array_key_exists('table', $info)) {
+            $join_table = $table['alias'] . '.';
+          }
+          elseif (isset($info['table'])) {
+            $join_table = $info['table'] . '.';
+          }
+
+          // And now deal with the value and the operator.  Set $q to
+          // a single-quote for non-numeric values and the
+          // empty-string for numeric values, then wrap all values in $q.
+          $raw_value = $this->db_safe($info['value']);
+          $q = (empty($info['numeric']) ? "'" : '');
+
+          if (is_array($raw_value)) {
+            $operator = !empty($info['operator']) ? $info['operator'] : 'IN';
+            // Transform from IN() notation to = notation if just one value.
+            if (count($raw_value) == 1) {
+              $value = $q . array_shift($raw_value) . $q;
+              $operator = $operator == 'NOT IN' ? '!=' : '=';
+            }
+            else {
+              $value = "($q" . implode("$q, $q", $raw_value) . "$q)";
+            }
+          }
+          else {
+            $operator = !empty($info['operator']) ? $info['operator'] : '=';
+            $value = "$q$raw_value$q";
+          }
+          $extras[] = "$join_table$info[field] $operator $value";
+        }
+
+        if ($extras) {
+          if (count($extras) == 1) {
+            $output .= ' AND ' . array_shift($extras);
+          }
+          else {
+            $output .= ' AND (' . implode(' ' . $this->extra_type . ' ', $extras) . ')';
+          }
+        }
+      }
+      else if ($this->extra && is_string($this->extra)) {
+        $output .= " AND ($this->extra)";
+      }
+    }
+    return $output;
+  }
+
+  /**
+   * Ensure that input is db safe. We only check strings and ints tho
+   * so something that needs floats in their joins needs to do their
+   * own type checking.
+   */
+  function db_safe($input) {
+    if (is_array($input)) {
+      $output = array();
+      foreach ($input as $value) {
+        if (empty($info['numeric'])) {
+          $output[] = db_escape_string($value);
+        }
+        else {
+          $output[] = intval($value);
+        }
+      }
+    }
+    else if (empty($info['numeric'])) {
+      $output = db_escape_string($input);
+    }
+    else {
+      $output = intval($input);
+    }
+
+    return $output;
+  }
+}
+
+/**
+ * @}
+ */
+
+// Declare API compatibility on behalf of core modules:
+
+/**
+ * Implementation of hook_views_api().
+ *
+ * This one is used as the base to reduce errors when updating.
+ */
+function views_views_api() {
+  return array(
+    'api' => 2,
+    'path' => drupal_get_path('module', 'views') . '/modules',
+  );
+}
+
+function book_views_api() { return views_views_api(); }
+
+function comment_views_api() { return views_views_api(); }
+
+function node_views_api() { return views_views_api(); }
+
+function poll_views_api() { return views_views_api(); }
+
+function profile_views_api() { return views_views_api(); }
+
+function search_views_api() { return views_views_api(); }
+
+function statistics_views_api() { return views_views_api(); }
+
+function system_views_api() { return views_views_api(); }
+
+function taxonomy_views_api() { return views_views_api(); }
+
+function translation_views_api() { return views_views_api(); }
+
+function upload_views_api() { return views_views_api(); }
+
+function user_views_api() { return views_views_api(); }

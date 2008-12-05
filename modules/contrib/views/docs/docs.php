@@ -1,5 +1,5 @@
 <?php
-// $Id: docs.php,v 1.5 2008/05/19 16:24:09 merlinofchaos Exp $
+// $Id: docs.php,v 1.10 2008/10/02 22:54:56 merlinofchaos Exp $
 /**
  * @file
  * This file contains no working PHP code; it exists to provide additional documentation
@@ -9,7 +9,9 @@
 /**
  * @mainpage Views 2 API Manual
  *
- * This is a stub for the main page.
+ * Much of this information is actually stored in the advanced help; please
+ * check the API topic. This help will primarily be aimed at documenting
+ * classes and function calls.
  *
  * Topics:
  * - @ref view_lifetime
@@ -57,7 +59,7 @@
  */
 
 /**
- * Stub hook documentation
+ * The full documentation for this hook is now in the advanced help.
  *
  * This hook should be placed in MODULENAME.views.inc and it will be auto-loaded.
  * This must either be in the same directory as the .module file or in a subdirectory
@@ -68,7 +70,7 @@ function hook_views_data() {
 }
 
 /**
- * Stub hook documentation
+ * The full documentation for this hook is now in the advanced help.
  *
  * This hook should be placed in MODULENAME.views.inc and it will be auto-loaded.
  * This must either be in the same directory as the .module file or in a subdirectory
@@ -80,6 +82,25 @@ function hook_views_data() {
  */
 function hook_views_plugins() {
   // example code here
+}
+
+/**
+ * Register handler, file and parent information so that handlers can be
+ * loaded only on request.
+ *
+ * The full documentation for this hook is in the advanced help.
+ */
+function hook_views_handlers() {
+  // example code here
+}
+
+/**
+ * Register View API information. This is required for your module to have
+ * its include files loaded.
+ *
+ * The full documentation for this hook is in the advanced help.
+ */
+function hook_views_api() {
 }
 
 /**
@@ -358,16 +379,47 @@ function hook_views_query_substitutions() {
 }
 
 /**
- * Stub hook documentation
- *
- * This hook should be placed in MODULENAME.views.inc and it will be auto-loaded.
- * This must either be in the same directory as the .module file or in a subdirectory
- * named 'includes'.
+ * This hook is called at the very beginning of views processing,
+ * before anything is done.
  *
  * Adding output to the view cam be accomplished by placing text on
  * $view->attachment_before and $view->attachment_after
  */
 function hook_views_pre_view(&$view, &$display_id, &$args) {
+  // example code here
+}
+
+/**
+ * This hook is called right before the build process, but after displays
+ * are attached and the display performs its pre_execute phase.
+ *
+ * Adding output to the view cam be accomplished by placing text on
+ * $view->attachment_before and $view->attachment_after
+ */
+function hook_views_pre_build(&$view) {
+  // example code here
+}
+
+/**
+ * This hook is called right before the execute process. The query is
+ * now fully built, but it has not yet been run through db_rewrite_sql.
+ *
+ * Adding output to the view cam be accomplished by placing text on
+ * $view->attachment_before and $view->attachment_after
+ */
+function hook_views_pre_execute(&$view) {
+  // example code here
+}
+
+/**
+ * This hook is called right before the render process. The query has
+ * been executed, and the pre_render() phase has already happened for
+ * handlers, so all data should be available.
+ *
+ * Adding output to the view cam be accomplished by placing text on
+ * $view->attachment_before and $view->attachment_after
+ */
+function hook_views_pre_render(&$view) {
   // example code here
 }
 
@@ -380,6 +432,40 @@ function hook_views_pre_view(&$view, &$display_id, &$args) {
  *
  */
 function hook_views_query_alter(&$view, &$query) {
+  // example code here
+}
+
+/**
+ * This hook should be placed in MODULENAME.views.inc and it will be auto-loaded.
+ * This must either be in the same directory as the .module file or in a subdirectory
+ * named 'includes'.
+ *
+ * Alter the links that appear over a view. They are in a format suitable for
+ * theme('links').
+ *
+ * Warning: $view is not a reference in PHP4 and cannot be modified here. But it IS
+ * a reference in PHP5, and can be modified. Please be careful with it.
+ *
+ * @see theme_links
+ */
+function hook_views_admin_links_alter(&$links, $view) {
+  // example code here
+}
+
+/**
+ * This hook should be placed in MODULENAME.views.inc and it will be auto-loaded.
+ * This must either be in the same directory as the .module file or in a subdirectory
+ * named 'includes'.
+ *
+ * Alter the rows that appear with a view, which includes path and query information.
+ * The rows are suitable for theme('table').
+ *
+ * Warning: $view is not a reference in PHP4 and cannot be modified here. But it IS
+ * a reference in PHP5, and can be modified. Please be careful with it.
+ *
+ * @see theme_table
+ */
+function hook_views_preview_info_alter(&$rows, $view) {
   // example code here
 }
 

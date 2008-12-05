@@ -1,9 +1,18 @@
-/* $Id: views-admin.css,v 1.1 2008/05/27 23:49:36 merlinofchaos Exp $ */
+/* $Id: views-admin.css,v 1.11 2008/09/19 22:06:03 sun Exp $ */
 
 /*
  * Summary pad
  */
+/* set up some defaults so weird themes don't override us too badly. */
 .views-tabset {
+  color: #494949;
+  background-color: white;
+}
+
+.views-tabset a:visited,
+.views-tabset a:hover,
+.views-tabset a {
+  color: #027AC6;
 }
 
 .views-tabset .views-tab fieldset {
@@ -94,8 +103,8 @@
 .views-tabset .views-display {
   border: #D6DBDE 1px solid;
   margin-left: 118px; /* 118 -1 causes borders to overlap */
-//  min-height: 302px;
-//  _height: 300px;  /*stupid IE hack */
+  min-height: 302px;
+  _height: 300px; /*stupid IE hack */
 }
 
 * html .views-tabset .views-display {
@@ -337,7 +346,7 @@ html.js #views-ajax-pad {
 
 #views-ajax-pad .views-left-50 {
   float: left;
-  width: 50%;
+  width: 49.5%;
 }
 
 #views-ajax-pad .views-right-50 {
@@ -362,7 +371,7 @@ html.js #views-ajax-pad {
 
 #views-ajax-pad .views-radio-box {
   overflow: auto;
-  height: 180px;
+  height: 22em;
 }
 
 #views-ajax-pad fieldset {
@@ -391,6 +400,7 @@ a.views-button-remove {
   margin: 2px 0px 1px 0px;
   border-bottom: #C2C9CE 1px solid;
   border-right: #C2C9CE 1px solid;
+  padding: 0px;
 }
 
 a.views-button-remove {
@@ -480,11 +490,24 @@ div.changed div.view-changed {
 }
 
 .views-display .tab-section .inside .overridden {
-  /* all this so we odn't mess up background-color */
-  background-image: url(/themes/garland/images/menu-leaf.gif);
+  /* all this so we don't mess up background-color */
+/*  background-image: url(../images/overridden.gif);
   background-repeat: no-repeat;
   background-position: left;
-  padding-left: 10px;
+  padding-left: 10px; */
+}
+
+.views-display .tab-section .views-category-content.overridden {
+  background-image: none;
+}
+
+.views-display .tab-section .inside .defaulted {
+  color: #aaa;
+  font-style: italic;
+}
+
+.views-display .tab-section .inside .defaulted a {
+  font-style: italic;
 }
 
 .hilited {
@@ -508,11 +531,16 @@ div.changed div.view-changed {
 
 form#views-add-display-form {
   margin-bottom: 0em;
+  border-bottom: 1px solid #ccc;
+}
+
+form#views-add-display-form select {
+  width: 8.5em;
 }
 
 #views-ui-edit-view-form {
-  margin: 0 0 0 118px;
-  padding: 0 0 0 1em;
+  margin: 0;
+  padding: 0;
 }
 
 #views-live-preview {
@@ -549,7 +577,18 @@ html.js .views-hidden {
 }
 
 .views-query-info {
-  overflow: auto;
+/*  overflow: auto; */
+}
+
+.views-query-info pre {
+  white-space: pre; /* CSS2 */
+  white-space: -moz-pre-wrap; /* Mozilla */
+  white-space: -hp-pre-wrap; /* HP printers */
+  white-space: -o-pre-wrap; /* Opera 7 */
+  white-space: -pre-wrap; /* Opera 4-6 */
+  white-space: pre-wrap; /* CSS 2.1 */
+  white-space: pre-line; /* CSS 3 (and 2.1 as well, actually) */
+  word-wrap: break-word; /* IE */
 }
 
 .views-quick-links {
@@ -589,4 +628,10 @@ html.js .views-hidden {
 .views-display .remove-display form,
 .remove-display input {
   margin: 0 !important;
+}
+
+.views-validator-options {
+  padding: 0 1em;
+  margin: 0 1em;
+  border: 1px solid;
 }

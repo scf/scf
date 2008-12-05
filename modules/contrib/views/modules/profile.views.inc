@@ -1,5 +1,5 @@
 <?php
-//$Id: profile.views.inc,v 1.6 2008/04/21 17:52:10 merlinofchaos Exp $
+//$Id: profile.views.inc,v 1.9 2008/09/24 21:21:21 merlinofchaos Exp $
 /**
  * @file
  * Provide views data and handlers for user.module
@@ -82,7 +82,7 @@ function profile_views_get_fields() {
         }
         else {
           // serialized fields or modified version
-          $row->options = unserialize($row->options);
+          $row->options = unserialize(db_decode_blob($row->options));
         }
       }
       $fields[$row->fid] = $row;
@@ -218,133 +218,26 @@ function profile_views_fetch_field($field) {
 }
 
 /**
- * Field handler display a profile date
- *
- * The dates are stored serialized, which makes them mostly useless from
- * SQL. About all we can do is unserialize and display them.
- *
- * @ingroup views_field_handlers
+ * Implementation of hook_views_handlers() to register all of the basic handlers
+ * views uses.
  */
-class views_handler_field_profile_date extends views_handler_field_date {
-  function options_form(&$form, &$form_state) {
-    parent::options_form($form, $form_state);
-    // we can't do "time ago" so remove it from the form.
-    unset($form['date_format']['#options']['time ago']);
-  }
-
-  /**
-   * Display a profile field of type 'date'
-   */
-  function render($value) {
-    if (!$value->{$this->field_alias}) {
-      return;
-    }
-    $value = unserialize($value->{$this->field_alias});
-    $format = $this->options['date_format'];
-    switch ($format) {
-      case 'custom':
-        $format = $this->options['custom_date_format'];
-        break;
-      case 'small':
-        $format = variable_get('date_format_short', 'm/d/Y - H:i');
-        break;
-      case 'medium':
-        $format = variable_get('date_format_medium', 'D, m/d/Y - H:i');
-        break;
-      case 'large':
-        $format = variable_get('date_format_long', 'l, F j, Y - H:i');
-        break;
-    }
-
-    // Note: Avoid PHP's date() because it does not handle dates before
-    // 1970 on Windows. This would make the date field useless for e.g.
-    // birthdays.
-
-    // But we *can* deal with non-year stuff:
-    $date = gmmktime(0, 0, 0, $value['month'], $value['day'], 1970);
-    $replace = array(
-      // day
-      'd' => sprintf('%02d', $value['day']),
-      'D' => NULL,
-      'l' => NULL,
-      'N' => NULL,
-      'S' => date('S', $date),
-      'w' => NULL,
-      'j' => $value['day'],
-      // month
-      'F' => date('F', $date),
-      'm' => sprintf('%02d', $value['month']),
-      'M' => date('M', $date),
-      'n' => date('n', $date),
-
-      'Y' => $value['year'],
-      'y' => substr($value['year'], 2, 2),
-
-      // kill time stuff
-      'a' => NULL,
-      'A' => NULL,
-      'g' => NULL,
-      'G' => NULL,
-      'h' => NULL,
-      'H' => NULL,
-      'i' => NULL,
-      's' => NULL,
-      ':' => NULL,
-      'T' => NULL,
-      ' - ' => NULL,
-      ':' => NULL,
-    );
-
-    return strtr($format, $replace);
-  }
-}
-
-/**
- * Field handler display a profile date
- *
- * The dates are stored serialized, which makes them mostly useless from
- * SQL. About all we can do is unserialize and display them.
- *
- * @ingroup views_field_handlers
- */
-class views_handler_field_profile_list extends views_handler_field_prerender_list {
-  /**
-   * Break up our field into a proper list.
-   */
-  function render($value) {
-    $field = $value->{$this->field_alias};
-    $this->items[$field] = array();
-    foreach (split("[,\n\r]", $field) as $item) {
-      if ($item != '' && $item !== NULL) {
-        $this->items[$field][] = $item;
-      }
-    }
-    return parent::render($value);
-  }
-}
-
-/**
- * Filter by a selection widget in the profile.
- *
- * @ingroup views_filter_handlers
- */
-class views_handler_filter_profile_selection extends views_handler_filter_in_operator {
-  function get_value_options() {
-    if (isset($this->value_options)) {
-      return;
-    }
-
-    $this->value_options = array();
-    $all_options = profile_views_get_fields();
-    $field = $all_options[$this->definition['fid']];
-
-    $lines = split("[,\n\r]", $field->options);
-    foreach ($lines as $line) {
-      if ($line = trim($line)) {
-        $this->value_options[$line] = $line;
-      }
-    }
-  }
+function profile_views_handlers() {
+  return array(
+    'info' => array(
+      'path' => drupal_get_path('module', 'views') . '/modules/profile',
+    ),
+    'handlers' => array(
+      'views_handler_field_profile_date' => array(
+        'parent' => 'views_handler_field_date',
+      ),
+      'views_handler_field_profile_list' => array(
+        'parent' => 'views_handler_field_prerender_list',
+      ),
+      'views_handler_filter_profile_selection' => array(
+        'parent' => 'views_handler_filter_in_operator',
+      ),
+    ),
+  );
 }
 
 /**

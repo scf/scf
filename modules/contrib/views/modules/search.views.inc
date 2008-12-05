@@ -1,5 +1,5 @@
 <?php
-// $Id: search.views.inc,v 1.5 2008/05/07 21:15:23 merlinofchaos Exp $
+// $Id: search.views.inc,v 1.14 2008/09/25 00:39:18 merlinofchaos Exp $
 /**
  * @file
  * Provide views data and handlers for search.module
@@ -52,11 +52,15 @@ function search_views_data() {
       'left_table' => 'search_index',
       'left_field' => 'sid',
       'field' => 'sid',
+      'extra' => 'search_index.type = search_dataset.type',
+      'type' => 'INNER',
     ),
     'users' => array(
       'left_table' => 'search_index',
       'left_field' => 'sid',
       'field' => 'sid',
+      'extra' => 'search_index.type = search_dataset.type',
+      'type' => 'INNER',
     ),
   );
 
@@ -130,128 +134,28 @@ function search_views_data() {
 }
 
 /**
- * Field handler to provide simple renderer that allows linking to a node.
- *
- * @ingroup views_field_handlers
+ * Implementation of hook_views_handlers() to register all of the basic handlers
+ * views uses.
  */
-class views_handler_filter_search extends views_handler_filter {
-  /**
-   * Provide basic defaults for the equality operator
-   */
-  function options(&$options) {
-    parent::options($options);
-    $options['operator'] = 'optional';
-    $options['value'] = '';
-  }
-
-  /**
-   * Provide simple equality operator
-   */
-  function operator_form(&$form, &$form_state) {
-    $form['operator'] = array(
-      '#type' => 'radios',
-      '#title' => t('On empty input'),
-      '#default_value' => $this->operator,
-      '#options' => array(
-        'optional' => t('Show All'),
-        'required' => t('Show None'),
+function search_views_handlers() {
+  return array(
+    'info' => array(
+      'path' => drupal_get_path('module', 'views') . '/modules/search',
+    ),
+    'handlers' => array(
+      'views_handler_filter_search' => array(
+        'parent' => 'views_handler_filter',
       ),
-    );
-  }
-
-  /**
-   * Provide a simple textfield for equality
-   */
-  function exposed_form(&$form, &$form_state) {
-    $key = $this->options['expose']['identifier'];
-    $form[$key] = array(
-      '#type' => 'textfield',
-      '#title' => t('Search'),
-      '#size' => 15,
-      '#default_value' => $this->value,
-      '#attributes' => array('title' => t('Enter the terms you wish to search for.')),
-    );
-  }
-
-  /**
-   * Validate the options form.
-   */
-  function exposed_validate($form, &$form_state) {
-    $key = $this->options['expose']['identifier'];
-    if (!empty($form_state['values'][$key])) {
-      $this->search_query = search_parse_query($form_state['values'][$key]);
-      $this->search_query[0] = str_replace('d.', 'search_data.', $this->search_query[0]);
-      $this->search_query[2] = str_replace('i.', 'search_index.', $this->search_query[2]);
-
-      if ($this->search_query[2] == '') {
-        form_set_error($key, t('You must include at least one positive keyword with @count characters or more.', array('@count' => variable_get('minimum_word_size', 3))));
-      }
-      if ($this->search_query[6]) {
-        if ($this->search_query[6] == 'or') {
-          drupal_set_message(t('Search for either of the two terms with uppercase <strong>OR</strong>. For example, <strong>cats OR dogs</strong>.'));
-        }
-      }
-    }
-  }
-
-  /**
-   * Add this filter to the query.
-   *
-   * Due to the nature of fapi, the value and the operator have an unintended
-   * level of indirection. You will find them in $this->operator
-   * and $this->value respectively.
-   */
-  function query() {
-    $this->ensure_my_table();
-    if (!isset($this->search_query)) {
-      if ($this->operator == 'required') {
-        $this->query->add_where($this->options['group'], '0');
-      }
-    }
-    else {
-      $join = new views_join;
-      $join->construct('search_total', 'search_index', 'word', 'word');
-      $this->query->add_relationship(NULL, $join, 'search_index');
-#      $this->query->add_table('search_total', 'search_index', $join);
-      $this->query->add_field('', "SUM(search_index.score * search_total.count)", 'score');
-      $this->query->add_where($this->options['group'], $this->search_query[2], $this->search_query[3]);
-      $this->query->add_where($this->options['group'], "search_index.type = '%s'", $this->view->base_table);
-      if (!$this->search_query[5]) {
-        $join = new views_join_search_dataset;
-        $join->construct();
-        $this->query->add_relationship(NULL, $join, 'search_index');
-        $this->query->add_table('search_dataset', 'search_index', $join);
-        $this->query->add_where($this->options['group'], $this->search_query[0], $this->search_query[1]);
-      }
-      // @note: i don't think that this needed since we restrict based on type
-//    $this->query->add_groupby('node.type'); // isn't this the same as search_index.type?
-      $this->query->add_groupby("search_index.sid");
-      $this->query->add_having($this->options['group'], 'COUNT(*) >= %d', $this->search_query[4]);
-      // @todo: normalize the score
-    }
-  }
+    ),
+  );
 }
-
-class views_join_search_dataset extends views_join {
-  function construct() {
-    parent::construct('search_dataset', 'sid', array(), 'LEFT');
-  }
-
-  function join($table, &$query) {
-    $output = parent::join($table, $query);
-    $output .= " AND table[alias].type = search_dataset.type";
-    return $output;
-  }
-}
-
-/**
- * @}
- */
 
 /**
  * Implementation of hook_views_plugins
  */
 function search_views_plugins() {
+  return;
+  // DISABLED. This currently doesn't work.
   return array(
     'module' => 'views', // This just tells our themes are elsewhere.
     'row' => array(
@@ -259,37 +163,13 @@ function search_views_plugins() {
         'title' => t('Search'),
         'help' => t('Display the results with standard search view.'),
         'handler' => 'views_plugin_row_search_view',
+        'path' => drupal_get_path('module', 'views') . '/modules/search', // not necessary for most modules
         'theme' => 'views_view_row_search',
         'base' => array('node'), // only works with 'node' as base.
+        'type' => 'normal',
       ),
     ),
   );
-}
-
-/**
- * Plugin which performs a node_view on the resulting object.
- *
- * @ingroup views_row_plugins
- */
-class views_plugin_row_search_view extends views_plugin_row {
-  function options(&$options) {
-    $options['score'] = TRUE;
-  }
-
-  function options_form(&$form, &$form_state) {
-    $form['score'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Display score'),
-      '#default_value' => $this->options['score'],
-    );
-  }
-
-  /**
-   * Override the behavior of the render() function.
-   */
-  function render($row) {
-    return theme($this->theme_functions(), $this->view, $this->options, $row);
-  }
 }
 
 /**
@@ -318,7 +198,7 @@ function template_preprocess_views_view_row_search(&$vars) {
   // Fetch terms for snippet
   $node->body .= module_invoke('taxonomy', 'nodeapi', $node, 'update index');
 
-  $vars['url'] = url('node/'. $nid);
+  $vars['url'] = url('node/' . $nid);
   $vars['title'] = check_plain($node->title);
 
   $info = array();
@@ -338,7 +218,7 @@ function template_preprocess_views_view_row_search(&$vars) {
   $vars['snippet'] = search_excerpt($vars['view']->value, $node->body);
 }
 
+
 /**
  * @}
  */
-

@@ -1,5 +1,5 @@
 <?php
-// $Id: form.inc,v 1.8 2008/04/20 15:47:03 merlinofchaos Exp $
+// $Id: form.inc,v 1.10 2008/06/25 21:10:10 merlinofchaos Exp $
 
 /**
  * @file form.inc
@@ -46,7 +46,7 @@ function _drupal_build_form($form_id, &$form_state) {
       array_unshift($args_temp, $form_id);
 
       $form = call_user_func_array('drupal_retrieve_form', $args_temp);
-      $form_build_id = 'form-'. md5(mt_rand());
+      $form_build_id = 'form-' . md5(mt_rand());
       $form['#build_id'] = $form_build_id;
 
       if ($form_state['method'] == 'get' && !isset($form['#method'])) {
@@ -122,7 +122,7 @@ function drupal_rebuild_form_new($form_id, &$form_state, $args, $form_build_id =
 
   if (!isset($form_build_id)) {
     // We need a new build_id for the new version of the form.
-    $form_build_id = 'form-'. md5(mt_rand());
+    $form_build_id = 'form-' . md5(mt_rand());
   }
   $form['#build_id'] = $form_build_id;
   drupal_prepare_form($form_id, $form, $form_state);
@@ -172,7 +172,7 @@ function drupal_process_form_new($form_id, &$form, &$form_state) {
   // from the POST data is set and matches the current form_id.
 
   if ((!empty($form['#programmed'])) || (!empty($form['#post']) && (isset($form['#post']['form_id']) && ($form['#post']['form_id'] == $form_id)))) {
-    drupal_validate_form($form_id, $form, $form_state);
+    drupal_validate_form_new($form_id, $form, $form_state);
 
     // form_clean_id() maintains a cache of element IDs it has seen,
     // so it can prevent duplicates. We want to be sure we reset that
@@ -189,8 +189,8 @@ function drupal_process_form_new($form_id, &$form, &$form_state) {
       // here, as we've finished with them. The in-memory copies are still
       // here, though.
       if (variable_get('cache', CACHE_DISABLED) == CACHE_DISABLED && !empty($form_state['values']['form_build_id'])) {
-        cache_clear_all('form_'. $form_state['values']['form_build_id'], 'cache_form');
-        cache_clear_all('storage_'. $form_state['values']['form_build_id'], 'cache_form');
+        cache_clear_all('form_' . $form_state['values']['form_build_id'], 'cache_form');
+        cache_clear_all('storage_' . $form_state['values']['form_build_id'], 'cache_form');
       }
 
       // If batches were set in the submit handlers, we process them now,
@@ -227,6 +227,31 @@ function drupal_process_form_new($form_id, &$form, &$form_state) {
       }
     }
   }
+}
+
+/**
+ * The original version of drupal_validate_form does not have an override for
+ * the static check to only validate a form id once. Unfortunately, we need
+ * to be able to overridet his.
+ */
+function drupal_validate_form_new($form_id, $form, &$form_state) {
+  static $validated_forms = array();
+
+  if (isset($validated_forms[$form_id]) && empty($form_state['must_validate'])) {
+    return;
+  }
+
+  // If the session token was set by drupal_prepare_form(), ensure that it
+  // matches the current user's session.
+  if (isset($form['#token'])) {
+    if (!drupal_valid_token($form_state['values']['form_token'], $form['#token'])) {
+      // Setting this error will cause the form to fail validation.
+      form_set_error('form_token', t('Validation error, please try again. If this error persists, please contact the site administrator.'));
+    }
+  }
+
+  _form_validate($form, $form_state, $form_id);
+  $validated_forms[$form_id] = TRUE;
 }
 
 /**

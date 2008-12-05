@@ -1,5 +1,5 @@
 <?php
-// $Id: admin.inc,v 1.107 2008/05/27 23:49:37 merlinofchaos Exp $
+// $Id: admin.inc,v 1.142 2008/10/14 17:48:14 merlinofchaos Exp $
 /**
  * @file admin.inc
  * Provides the Views' administrative interface.
@@ -31,7 +31,13 @@ function views_ui_check_advanced_help() {
   }
 
   if (!module_exists('advanced_help')) {
-    drupal_set_message(t('If you install the advanced help module from !href, Views will provide more and better help. <a href="@hide">Hide this message.</a>', array('!href' => l('http://drupal.org/project/advanced_help', 'http://drupal.org/project/advanced_help'), '@hide' => url('admin/build/views/tools'))));
+    $filename = db_result(db_query("SELECT filename FROM {system} WHERE type = 'module' AND name = 'advanced_help'"));
+    if ($filename && file_exists($filename)) {
+      drupal_set_message(t('If you <a href="@modules">enable the advanced help module</a>, Views will provide more and better help. <a href="@hide">Hide this message.</a>', array('@modules' => url('admin/build/modules'),'@hide' => url('admin/build/views/tools'))));
+    }
+    else {
+      drupal_set_message(t('If you install the advanced help module from !href, Views will provide more and better help. <a href="@hide">Hide this message.</a>', array('!href' => l('http://drupal.org/project/advanced_help', 'http://drupal.org/project/advanced_help'), '@hide' => url('admin/build/views/tools'))));
+    }
   }
 }
 
@@ -197,6 +203,30 @@ function views_ui_list_views_form(&$form_state) {
   $all = array('all' => t('<All>'));
   $none = array('none' => t('<None>'));
 
+  $form['type'] = array(
+    '#type' => 'select',
+    '#title' => t('Storage'),
+    '#options' => array(
+      'all' => t('<All>'),
+      t('Normal') => t('Normal'),
+      t('Default') => t('Default'),
+      t('Overridden') => t('Overridden'),
+    ),
+    '#default_value' => 'all',
+  );
+
+  $bases = array();
+  foreach (views_fetch_base_tables() as $table => $info) {
+    $bases[$table] = $info['title'];
+  }
+
+  $form['base'] = array(
+    '#type' => 'select',
+    '#title' => t('Type'),
+    '#options' => array_merge($all, $bases),
+    '#default_value' => 'all',
+  );
+
   $tags = array();
 
   $extras = array();
@@ -228,30 +258,6 @@ function views_ui_list_views_form(&$form_state) {
     '#type' => 'select',
     '#title' => t('Displays'),
     '#options' => array_merge($all, $displays),
-    '#default_value' => 'all',
-  );
-
-  $bases = array();
-  foreach (views_fetch_base_tables() as $table => $info) {
-    $bases[$table] = $info['title'];
-  }
-
-  $form['base'] = array(
-    '#type' => 'select',
-    '#title' => t('Type'),
-    '#options' => array_merge($all, $bases),
-    '#default_value' => 'all',
-  );
-
-  $form['type'] = array(
-    '#type' => 'select',
-    '#title' => t('Storage'),
-    '#options' => array(
-      'all' => t('<All>'),
-      t('Normal') => t('Normal'),
-      t('Default') => t('Default'),
-      t('Overridden') => t('Overridden'),
-    ),
     '#default_value' => 'all',
   );
 
@@ -329,6 +335,7 @@ function views_ui_preview($js, $view) {
   $errors = $view->validate();
   if ($errors === TRUE) {
     $view->ajax = $js;
+    $view->live_preview = TRUE;
 
     // Store the current view URL for later use:
     $view->set_display($form_state['display_id']);
@@ -358,6 +365,18 @@ function views_ui_preview($js, $view) {
         $query = preg_replace_callback(DB_QUERY_REGEXP, '_db_query_callback', $query);
       }
       $rows[] = array('<strong>' . t('Query') . '</strong>', '<pre>' . check_plain($query) . '</pre>');
+      if (!empty($view->additional_queries)) {
+        $queries = '<strong>' . t('These queries were run during view rendering:') . '</strong>';
+        foreach ($view->additional_queries as $query) {
+          if ($queries) {
+            $queries .= "\n";
+          }
+          $queries .= t('[@time ms]', array('@time' => intval($query[1] * 100000) / 100)) . ' ' . $query[0];
+        }
+
+        $rows[] = array('<strong>' . t('Other queries') . '</strong>', '<pre>' . $queries . '</pre>');
+      }
+
       $rows[] = array('<strong>' . t('Title') . '</strong>', filter_xss_admin($view->get_title()));
       if (isset($path)) {
         $path = l($path, $path);
@@ -368,6 +387,10 @@ function views_ui_preview($js, $view) {
 
       $rows[] = array('<strong>' . t('Path') . '</strong>', $path);
 
+      $rows[] = array('<strong>' . t('Query build time') . '</strong>', t('@time ms', array('@time' => intval($view->build_time * 100000) / 100)));
+      $rows[] = array('<strong>' . t('Query execute time') . '</strong>', t('@time ms', array('@time' => intval($view->execute_time * 100000) / 100)));
+      $rows[] = array('<strong>' . t('View render time') . '</strong>', t('@time ms', array('@time' => intval($view->render_time * 100000) / 100)));
+      drupal_alter('views_preview_info', $rows, $view);
 
       $info = theme('table', array(), $rows);
     }
@@ -383,10 +406,14 @@ function views_ui_preview($js, $view) {
     $info = '';
   }
 
-  $output .= '<div class="views-query-info">';
-  $output .= $info;
-  $output .= '</div>';
-  $output .= $preview;
+  $info = '<div class="views-query-info">' . $info . '</div>';
+
+  if (variable_get('views_ui_query_on_top', FALSE)) {
+    $output .= $info . $preview;
+  }
+  else {
+    $output .= $preview . $info;
+  }
 
   if (!$js) {
     views_add_css('views-admin');
@@ -480,7 +507,7 @@ function views_ui_clone_page($view) {
     'view' => $view->copy(),
   );
 
-  drupal_set_title(t('Clone view @view', array('@view' => $view->name)));
+  drupal_set_title(t('Clone view %view', array('%view' => $view->name)));
   return drupal_build_form('views_ui_add_form', $form_state);
 }
 
@@ -587,11 +614,20 @@ function views_ui_delete_confirm(&$form_state, $view) {
   if (!empty($_REQUEST['cancel'])) {
     $cancel = $_REQUEST['cancel'];
   }
+
+  if ($view->type == t('Overridden')) {
+    $title = t('Are you sure you want to revert the view %name?', array('%name' => $view->name));
+    $desc = t('Reverting the view will delete the view that is in the database, reverting it to the original default view. Any changes you have made will be lost and cannot be recovered.');
+  }
+  else {
+    $title = t('Are you sure you want to delete the view %name?', array('%name' => $view->name));
+    $desc = t('Deleting a view cannot be undone.');
+  }
+
   return confirm_form($form,
-                  t('Are you sure you want to delete the view %name?',
-                  array('%name' => $view->name)),
+                  $title,
                   $cancel,
-                  t('Deleting a view cannot be undone.'),
+                  $desc,
                   t('Delete'),
                   t('Cancel'));
 }
@@ -638,14 +674,14 @@ function views_ui_break_lock_confirm(&$form_state, $view) {
 function views_ui_break_lock_confirm_submit(&$form, &$form_state) {
   db_query("DELETE FROM {views_object_cache} WHERE obj = 'view' AND name = '%s'", $form_state['view']->name);
   $form_state['redirect'] = 'admin/build/views/edit/' . $form_state['view']->name;
-  drupal_set_message('The lock has been broken and you may now edit this view.');
+  drupal_set_message(t('The lock has been broken and you may now edit this view.'));
 }
 
 /**
  * The main view edit page
  */
 function views_ui_edit_page($view) {
-  drupal_set_title(t('Edit view "%view"', array('%view' => $view->name)));
+  drupal_set_title(t('Edit view %view', array('%view' => $view->name)));
   $output = theme('views_ui_edit_view', $view);
   views_ui_check_advanced_help();
   return $output;
@@ -701,6 +737,7 @@ function views_ui_import_validate($form, &$form_state) {
   if (!is_object($view)) {
     form_error($form['view'], t('Unable to interpret view code.'));
   }
+
   if (empty($view->api_version) || $view->api_version < 2) {
     // Check for some value that would only exist on a Views 1 view.
     if (isset($view->url) || isset($view->page) || isset($view->block)) {
@@ -713,6 +750,11 @@ function views_ui_import_validate($form, &$form_state) {
     }
   }
 
+  // View name must be alphanumeric or underscores, no other punctuation.
+  if (!empty($form_state['values']['name']) && preg_match('/[^a-zA-Z0-9_]/', $form_state['values']['name'])) {
+    form_error($form['name'], t('View name must be alphanumeric or underscores only.'));
+  }
+
   if ($form_state['values']['name']) {
     $view->name = $form_state['values']['name'];
   }
@@ -720,6 +762,51 @@ function views_ui_import_validate($form, &$form_state) {
   $test = views_get_view($view->name);
   if ($test && $test->type != t('Default')) {
     form_set_error('', t('A view by that name already exists; please choose a different name'));
+  }
+
+  $view->init_display();
+
+  $broken = FALSE;
+  // Make sure that all plugins and handlers needed by this view actually exist.
+  foreach ($view->display as $id => $display) {
+    if (empty($display->handler) || !empty($display->handler->broken)) {
+      drupal_set_message(t('Display plugin @plugin is not available.', array('@plugin' => $display->display_plugin)), 'error');
+      $broken = TRUE;
+      continue;
+    }
+
+    $plugin = views_get_plugin('style', $display->handler->get_option('style_plugin'));
+    if (!$plugin) {
+      drupal_set_message(t('Style plugin @plugin is not available.', array('@plugin' => $display->handler->get_option('style_plugin'))), 'error');
+      $broken = TRUE;
+    }
+    else if ($plugin->uses_row_plugin()) {
+      $plugin = views_get_plugin('row', $display->handler->get_option('row_plugin'));
+      if (!$plugin) {
+        drupal_set_message(t('Row plugin @plugin is not available.', array('@plugin' => $display->handler->get_option('row_plugin'))), 'error');
+        $broken = TRUE;
+      }
+    }
+
+    foreach (views_object_types() as $type => $info) {
+      $handlers = $display->handler->get_handlers($type);
+      if ($handlers) {
+        foreach ($handlers as $id => $handler) {
+          if ($handler->broken()) {
+            drupal_set_message(t('@type handler @table.@field is not available.', array(
+              '@type' => $info['stitle'],
+              '@table' => $handler->table,
+              '@field' => $handler->field,
+            )), 'error');
+            $broken = TRUE;
+          }
+        }
+      }
+    }
+  }
+
+  if ($broken) {
+    form_set_error('', t('Unable to import view.'));
   }
 
   $form_state['view'] = &$view;
@@ -766,7 +853,12 @@ function views_ui_edit_view_form(&$form_state, $view) {
 /**
  * Validate that a view is complete and whole.
  */
-function views_ui_edit_view_form_validate($form, $form_state) {
+function views_ui_edit_view_form_validate($form, &$form_state) {
+  // Do not validate cancel or delete.
+  if (empty($form_state['clicked_button']['#value']) || $form_state['clicked_button']['#value'] != t('Save')) {
+    return;
+  }
+
   $errors = $form_state['view']->validate();
   if ($errors !== TRUE) {
     foreach ($errors as $error) {
@@ -808,6 +900,11 @@ function views_ui_edit_view_form_submit($form, &$form_state) {
 function views_ui_edit_view_form_cancel($form, &$form_state) {
   // Remove this view from cache so edits will be lost.
   views_object_cache_clear('view', $form_state['view']->name);
+  if (empty($form['view']->vid)) {
+    // I seem to have to drupal_goto here because I can't get fapi to
+    // honor the redirect target. Not sure what I screwed up here.
+    drupal_goto('admin/build/views');
+  }
 }
 
 function views_ui_edit_view_form_delete($form, &$form_state) {
@@ -870,7 +967,7 @@ function template_preprocess_views_ui_edit_view(&$vars) {
     $account = user_load($view->locked->uid);
     $vars['locked'] = theme('username', $account);
     $vars['lock_age'] = format_interval(time() - $view->locked->updated);
-    $vars['break'] = l(t('break this lock'), 'admin/build/views/break-lock/' . $view->name);
+    $vars['break'] = url('admin/build/views/break-lock/' . $view->name);
   }
 
   $vars['quick_links_raw'] = array(
@@ -976,6 +1073,8 @@ function template_preprocess_views_ui_edit_tab(&$vars) {
     $data = &$categories[$option['category']]['data'][$id];
     $data['content'] = '';
     $data['links'] = '';
+    $data['overridden'] = FALSE;
+    $data['defaulted'] = FALSE;
 
     // If there are optional links, build them first so they float properly.
     if (!empty($option['links'])) {
@@ -988,13 +1087,16 @@ function template_preprocess_views_ui_edit_tab(&$vars) {
     }
 
     $data['content'] .= $display->handler->option_link($option['value'], $id, '', empty($option['desc']) ? '' : $option['desc']);
-    if (!empty($display->display_options['defaults'][$id])) {
+    if (!empty($display->handler->options['defaults'][$id])) {
       $display_id = 'default';
+      $data['defaulted'] = TRUE;
     }
     else {
       $display_id = $display->id;
-      if ($display->handler->defaultable_sections($id) && !$display->handler->is_default_display()) {
-        $data['overridden'] = TRUE;
+      if (!$display->handler->is_default_display()) {
+        if ($display->handler->defaultable_sections($id)) {
+          $data['overridden'] = TRUE;
+        }
       }
     }
     $data['class'] = views_ui_item_css($display_id . '-' . $id);
@@ -1017,10 +1119,7 @@ function template_preprocess_views_ui_edit_tab(&$vars) {
   $style_plugin = $display->handler->get_plugin();
 
   $vars['fields'] = '';
-  if ($style_plugin && $style_plugin->uses_fields()) {
-    $vars['fields'] = theme('views_ui_edit_item', 'field', $view, $display);
-  }
-
+  $vars['fields'] = theme('views_ui_edit_item', 'field', $view, $display, !($style_plugin && $style_plugin->uses_fields()));
   $vars['relationships'] = theme('views_ui_edit_item', 'relationship', $view, $display);
   $vars['arguments'] = theme('views_ui_edit_item', 'argument', $view, $display);
   $vars['filters'] = theme('views_ui_edit_item', 'filter', $view, $display);
@@ -1031,9 +1130,14 @@ function template_preprocess_views_ui_edit_tab(&$vars) {
  * Generate the summary output for a single display to render in a tab.
  */
 function views_ui_display_tab($view, $display) {
-  $plugin = $display->handler->definition;
+  if (isset($display->handler)) {
+    $plugin = $display->handler->definition;
+  }
   if (empty($plugin)) {
-    return array(t('Invalid'), t("Error: Display @display refers to a plugin named '@plugin', but that plugin doesn't exist!", array('@display' => $display->id, '@plugin' => $display->display_plugin)));
+    $title = isset($display->display_title) ? $display->display_title : t('Invalid');
+    return array($title, t("Error: Display @display refers to a plugin named '@plugin', but that plugin doesn't exist!", array('@display' => $display->id, '@plugin' => $display->display_plugin)));
+
+    // @todo We can do a better 'plugin does not exist' tab.
   }
 
   // The display should always be initialized prior to this call.
@@ -1052,13 +1156,32 @@ function template_preprocess_views_ui_edit_item(&$vars) {
   $type = $vars['type'];
   $view = $vars['view'];
   $display = $vars['display'];
+
   $types = views_object_types();
+
+  $vars['overridden'] = FALSE;
+  $vars['defaulted'] = FALSE;
+
+  if ($vars['no_fields']) {
+    $vars['title'] = $types[$type]['title'];
+    $vars['item_help_icon'] = theme('advanced_help_topic', 'views', $type);
+    $vars['rearrange'] = NULL;
+    $vars['add'] = NULL;
+    return;
+  }
 
   $vars['rearrange'] = l('<span>' . t('Rearrange') . '</span>', "admin/build/views/nojs/rearrange/$view->name/$display->id/$type", array('attributes' => array('class' => 'views-button-rearrange views-ajax-link', 'title' => t('Rearrange')), 'html' => true));
 
   $vars['add'] = l('<span>' . t('Add') . '</span>', "admin/build/views/nojs/add-item/$view->name/$display->id/$type", array('attributes' => array('class' => 'views-button-add views-ajax-link', 'title' => t('Add')), 'html' => true));
 
-  $vars['overridden'] = (!$display->handler->is_default_display() && empty($display->display_options['defaults'][$types[$type]['plural']]));
+  if (!$display->handler->is_default_display()) {
+    if (!$display->handler->is_defaulted($types[$type]['plural'])) {
+      $vars['overridden'] = TRUE;
+    }
+    else {
+      $vars['defaulted'] = TRUE;
+    }
+  }
 
   $vars['title'] = l($types[$type]['title'], "admin/build/views/nojs/config-type/$view->name/$display->id/$type", array('attributes' => array('class' => 'views-ajax-link')));
 //  $vars['title'] = l($types[$type]['title'], "admin/build/views/nojs/config-type/$view->name/$display->id/$type", array('attributes' => array('class' => 'views-ajax-link')));
@@ -1069,6 +1192,7 @@ function template_preprocess_views_ui_edit_item(&$vars) {
   if (!isset($relationships)) {
     // Get relationship labels
     $relationships = array();
+    // @todo: get_handlers()
     foreach ($display->handler->get_option('relationships') as $id => $relationship) {
       $handler = views_get_handler($relationship['table'], $relationship['field'], 'relationship');
       if (empty($handler)) {
@@ -1079,6 +1203,7 @@ function template_preprocess_views_ui_edit_item(&$vars) {
     }
   }
 
+  // @todo: get_handlers()
   foreach ($display->handler->get_option($types[$type]['plural']) as $id => $field) {
     $fields[$id] = array();
 
@@ -1116,7 +1241,7 @@ function template_preprocess_views_ui_edit_item(&$vars) {
         $fields[$pid]['links'] = l('<span>' . t('Change settings for this style') . '</span>', "admin/build/views/nojs/config-style/$view->name/$display->id/$type/$id", array('attributes' => array('class' => 'views-button-configure views-ajax-link', 'title' => t('Settings')), 'html' => true));
       }
 
-      $fields[$pid]['title'] = t(' &nbsp; Style: !style', array('!style' => l($style_title, "admin/build/views/nojs/change-style/$view->name/$display->id/$type/$id", array('attributes' => array('class' => 'views-ajax-link')))));
+      $fields[$pid]['title'] = ' ' . t('&nbsp; Style: !style', array('!style' => l($style_title, "admin/build/views/nojs/change-style/$view->name/$display->id/$type/$id", array('attributes' => array('class' => 'views-ajax-link')))));
       $fields[$pid]['class'] = views_ui_item_css($display->id . '-' . $type . '-' . $pid);
       if (!empty($view->changed_sections[$display->id . '-' . $type . '-' . $pid])) {
         $fields[$pid]['changed'] = TRUE;
@@ -1147,7 +1272,7 @@ function views_ui_regenerate_tabs(&$view, $display_id = NULL, $object = NULL) {
   }
 
   if (!$view->set_display('default')) {
-    views_ajax_render(t('Invalid display id while regenerating tabs'));
+    views_ajax_render(t('Invalid display id found while regenerating tabs'));
   }
 
   if (!is_object($object)) {
@@ -1246,7 +1371,9 @@ function views_ui_standard_form_buttons(&$form, &$form_state, $form_id, $name = 
   $form['#no_cache'] = TRUE;
 
   // If this isn't an ajaxy form, then we want to set the title.
-  drupal_set_title($form['#title']);
+  if (!empty($form['#title'])) {
+    drupal_set_title($form['#title']);
+  }
   views_add_css('views-admin');
 }
 
@@ -1784,7 +1911,12 @@ function views_ui_edit_display_form(&$form_state) {
 
   // Get form from the handler.
   $display->handler->options_form($form, $form_state);
-  views_ui_standard_form_buttons($form, $form_state, 'views_ui_edit_display_form');
+  $name = NULL;
+  if (isset($form_state['update_name'])) {
+    $name = $form_state['update_name'];
+  }
+
+  views_ui_standard_form_buttons($form, $form_state, 'views_ui_edit_display_form', $name);
   return $form;
 }
 
@@ -1835,8 +1967,8 @@ function views_ui_config_type_form(&$form_state) {
   $form['#section'] = $display_id . 'config-item';
 
   if ($display->handler->defaultable_sections($types[$type]['plural'])) {
-    $display->handler->add_override_button($form, $types[$type]['plural']);
     $form_state['section'] = $types[$type]['plural'];
+    $display->handler->add_override_button($form, $form_state, $form_state['section']);
   }
 
   if (!empty($types[$type]['options']) && function_exists($types[$type]['options'])) {
@@ -1845,7 +1977,12 @@ function views_ui_config_type_form(&$form_state) {
     $types[$type]['options']($form, $form_state);
   }
 
-  views_ui_standard_form_buttons($form, $form_state, 'views_ui_config_type_form');
+  $name = NULL;
+  if (isset($form_state['update_name'])) {
+    $name = $form_state['update_name'];
+  }
+
+  views_ui_standard_form_buttons($form, $form_state, 'views_ui_config_type_form', $name);
   return $form;
 }
 
@@ -1885,14 +2022,15 @@ function views_ui_rearrange_form(&$form_state) {
   $form['#section'] = $display_id . 'rearrange-item';
 
   if ($display->handler->defaultable_sections($types[$type]['plural'])) {
-    $display->handler->add_override_button($form, $types[$type]['plural']);
     $form_state['section'] = $types[$type]['plural'];
+    $display->handler->add_override_button($form, $form_state, $form_state['section']);
   }
 
   $count = 0;
 
   // Get relationship labels
   $relationships = array();
+  // @todo: get_handlers()
   foreach ($display->handler->get_option('relationships') as $id => $relationship) {
     $handler = views_get_handler($relationship['table'], $relationship['field'], 'relationship');
     if (empty($handler)) {
@@ -1902,6 +2040,7 @@ function views_ui_rearrange_form(&$form_state) {
     $relationships[$id] = $handler->label();
   }
 
+  // @todo: get_handlers()
   foreach ($display->handler->get_option($types[$type]['plural']) as $id => $field) {
     $form[$id] = array('#tree' => TRUE);
     $form[$id]['weight'] = array(
@@ -1941,6 +2080,11 @@ function views_ui_rearrange_form(&$form_state) {
     'hidden' => TRUE,
     'limit' => 0,
   );
+
+  $name = NULL;
+  if (isset($form_state['update_name'])) {
+    $name = $form_state['update_name'];
+  }
 
   views_ui_standard_form_buttons($form, $form_state, 'views_ui_rearrange_form');
   return $form;
@@ -2046,7 +2190,7 @@ function views_ui_add_item_form(&$form_state) {
     );
 
     foreach ($options as $key => $option) {
-      $group = strtr(strtolower($option['group']), '_ ', '--');
+      $group = preg_replace('/[^a-z0-9]/', '-', strtolower($option['group']));
       $groups[$group] = $option['group'];
       $form['name'][$key] = array(
         '#prefix' => '<div class="views-dependent-all views-dependent-' . $group . '">',
@@ -2116,27 +2260,14 @@ function views_ui_config_item_form(&$form_state) {
     $handler = views_get_handler($item['table'], $item['field'], $type);
     if (empty($handler)) {
       $form['markup'] = array('#value' => t("Error: handler for @table > @field doesn't exist!", array('@table' => $item['table'], '@field' => $item['field'])));
-      break;
     }
     else {
       $handler->init($view, $item);
       $types = views_object_types();
 
-      if (!$view->display_handler->is_default_display()) {
-        if ($view->display_handler->is_defaulted($types[$type]['plural'])) {
-          $form['options']['override'] = array(
-            '#prefix' => '<div class="form-item description">',
-            '#value' => theme('advanced_help_topic', 'views', 'overrides') . t('Status: using default values.'),
-            '#suffix' => '</div>',
-          );
-        }
-        else {
-          $form['options']['override'] = array(
-            '#prefix' => '<div class="form-item description">',
-            '#value' => theme('advanced_help_topic', 'views', 'overrides') . t('Status: using overridden values.'),
-            '#suffix' => '</div>',
-          );
-        }
+      if ($view->display_handler->defaultable_sections($types[$type]['plural'])) {
+        $form_state['section'] = $types[$type]['plural'];
+        $view->display_handler->add_override_button($form['options'], $form_state, $form_state['section']);
       }
 
       // A whole bunch of code to figure out what relationships are valid for
@@ -2160,7 +2291,7 @@ function views_ui_config_item_form(&$form_state) {
         $data = views_fetch_data($relationship['table']);
         $base = $data[$relationship['field']]['relationship']['base'];
         $base_fields = views_fetch_fields($base, $form_state['type']);
-        if (isset($base_fields[$handler->table . '.' . $handler->field])) {
+        if (isset($base_fields[$item['table'] . '.' . $item['field']])) {
           $relationship_handler->init($view, $relationship);
           $relationship_options[$relationship['id']] = $relationship_handler->label();
         }
@@ -2170,12 +2301,17 @@ function views_ui_config_item_form(&$form_state) {
         // Make sure the existing relationship is even valid. If not, force
         // it to none.
         $base_fields = views_fetch_fields($view->base_table, $form_state['type']);
-        if (isset($base_fields[$handler->table . '.' . $handler->field])) {
+        if (isset($base_fields[$item['table'] . '.' . $item['field']])) {
           $relationship_options = array_merge(array('none' => t('Do not use a relationship')), $relationship_options);
         }
         $rel = empty($item['relationship']) ? 'none' : $item['relationship'];
         if (empty($relationship_options[$rel])) {
-          $rel = 'none';
+          // Pick the first relationship.
+          $rel = key($relationship_options);
+          // We want this relationship option to get saved even if the user
+          // skips submitting the form.
+          $view->set_item_option($display_id, $type, $id, 'relationship', $rel);
+          views_ui_cache_set($view);
         }
 
         $form['options']['relationship'] = array(
@@ -2193,17 +2329,21 @@ function views_ui_config_item_form(&$form_state) {
       }
 
       $form['#title'] = check_plain($view->display[$display_id]->display_title) . ': ';
-      $form['#title'] .= t('Configure @type "@item"', array('@type' => $types[$type]['lstitle'], '@item' => $handler->ui_name()));
+      $form['#title'] .= t('Configure @type %item', array('@type' => $types[$type]['lstitle'], '%item' => $handler->ui_name()));
 
       $form['#section'] = $display_id . '-' . $type . '-' . $id;
 
       // Get form from the handler.
       $handler->options_form($form['options'], $form_state);
-        $form_state['handler'] = &$handler;
-
+      $form_state['handler'] = &$handler;
     }
 
-    views_ui_standard_form_buttons($form, $form_state, 'views_ui_config_item_form', NULL, t('Remove'), 'remove');
+    $name = NULL;
+    if (isset($form_state['update_name'])) {
+      $name = $form_state['update_name'];
+    }
+
+    views_ui_standard_form_buttons($form, $form_state, 'views_ui_config_item_form', $name, t('Remove'), 'remove');
   }
   return $form;
 }
@@ -2302,7 +2442,7 @@ function views_ui_config_item_extra_form(&$form_state) {
       $types = views_object_types();
 
       $form['#title'] = check_plain($view->display[$display_id]->display_title) . ': ';
-      $form['#title'] .= t('Configure extra settings for @type "@item"', array('@type' => $types[$type]['lstitle'], '@item' => $handler->ui_name()));
+      $form['#title'] .= t('Configure extra settings for @type %item', array('@type' => $types[$type]['lstitle'], '%item' => $handler->ui_name()));
 
       $form['#section'] = $display_id . '-' . $type . '-' . $id;
 
@@ -2312,7 +2452,7 @@ function views_ui_config_item_extra_form(&$form_state) {
 
     }
 
-    views_ui_standard_form_buttons($form, $form_state, 'views_ui_config_item_extra_form', NULL, t('Remove'), 'remove');
+    views_ui_standard_form_buttons($form, $form_state, 'views_ui_config_item_extra_form');
   }
   return $form;
 }
@@ -2367,9 +2507,9 @@ function views_ui_change_style_form(&$form_state) {
     }
     $handler->init($view, $item);
     $types = views_object_types();
-    $form['#title'] = t('Change summary style for @type "@item"', array('@type' => $types[$type]['lstitle'], '@item' => $handler->ui_name()));
+    $form['#title'] = t('Change summary style for @type %item', array('@type' => $types[$type]['lstitle'], '%item' => $handler->ui_name()));
 
-    $form['#section'] = $display_id . '-' . $type . '-' . $id .'-style-plugin';
+    $form['#section'] = $display_id . '-' . $type . '-' . $id . '-style-plugin';
 
     $form['style_plugin'] =  array(
       '#type' => 'radios',
@@ -2384,6 +2524,16 @@ function views_ui_change_style_form(&$form_state) {
   return $form;
 }
 
+function views_ui_change_style_form_validate($form, &$form_state) {
+  // Run it through the handler's submit function.
+  $form_state['handler']->options_validate($form['options'], $form_state);
+
+  $plugin = views_get_plugin('style', $form_state['values']['style_plugin']);
+  if (!$plugin) {
+    form_error($form['style_plugin'], t('Internal error: broken plugin.'));
+  }
+}
+
 /**
  * Submit handler for configing new item(s) to a view.
  */
@@ -2393,10 +2543,16 @@ function views_ui_change_style_form_submit($form, &$form_state) {
   $item = $form_state['handler']->options;
 
   $plugin = views_get_plugin('style', $form_state['values']['style_plugin']);
+  if (!$plugin) {
+    drupal_set_message(t('Internal error: broken plugin.'), 'error');
+    return;
+  }
+
   $plugin->init($form_state['view'], $form_state['view']->display[$form_state['display_id']]);
+
+  // If changing style plugin, reset options to defaults.
   if (empty($item['style_plugin']) || $item['style_plugin'] != $form_state['values']['style_plugin']) {
-    $item['style_options'] = array();
-    $plugin->options($item['style_options']);
+    $item['style_options'] = $plugin->options;
   }
 
   // Store the data we're given.
@@ -2438,7 +2594,7 @@ function views_ui_config_style_form(&$form_state) {
     $types = views_object_types();
 
     $form['#title'] = check_plain($view->display[$display_id]->display_title) . ': ';
-    $form['#title'] .= t('Configure summary style for @type "@item"', array('@type' => $types[$type]['lstitle'], '@item' => $handler->ui_name()));
+    $form['#title'] .= t('Configure summary style for @type %item', array('@type' => $types[$type]['lstitle'], '%item' => $handler->ui_name()));
 
     $form['#section'] = $display_id . '-' . $type . '-style-options';
 
@@ -2555,11 +2711,39 @@ function views_ui_admin_tools() {
     '#default_value' => variable_get('views_hide_help_message', FALSE),
   );
 
+  $form['views_ui_query_on_top'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Show query above live preview'),
+    '#description' => t("The live preview feature will show you the output of the view you're creating, as well as the view. Check here to show the query and other information above the view; leave this unchecked to show that information below the view."),
+    '#default_value' => variable_get('views_ui_query_on_top', FALSE),
+  );
+
+  $form['views_show_additional_queries'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Show other queries run during render during live preview'),
+    '#description' => t("Drupal has the potential to run many queries while a view is being rendered. Checking this box will display every query run during view render as part of the live preview."),
+    '#default_value' => variable_get('views_show_additional_queries', FALSE),
+  );
+
+  $form['views_no_hover_links'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Do not show hover links over views'),
+    '#description' => t("To make it easier to administrate your views, Views provides 'hover' links to take you to the edit and export screen of a view whenever the view is used. This can be distracting on some themes, though; if it is problematic, you can turn it off here."),
+    '#default_value' => variable_get('views_no_hover_links', FALSE),
+  );
+
   $form['views_devel_output'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable views performance statistics via the Devel module'),
-    '#description' => t("Tick this to enable some Views query and performance statistics <em>if Devel is installed</em>."),
+    '#description' => t("Check this to enable some Views query and performance statistics <em>if Devel is installed</em>."),
     '#default_value' => variable_get('views_devel_output', FALSE),
+  );
+
+  $form['views_no_javascript'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Disable javascript with Views'),
+    '#description' => t("If you are having problems with the javascript, you can disable it here; the Views UI should degrade and still be usable without javascript, it just not as good."),
+    '#default_value' => variable_get('views_no_javascript', FALSE),
   );
 
   $regions = system_region_list(variable_get('theme_default', 'garland'));
@@ -2583,34 +2767,25 @@ function views_ui_tools_clear_cache() {
 }
 
 /**
- * Page callback for views user autocomplete
+ * Submit hook to clear Drupal's theme registry (thereby triggering
+ * a templates rescan).
  */
-function views_ui_autocomplete_user($string = '') {
-  // The user enters a comma-separated list of tags. We only autocomplete the last tag.
-  $array = drupal_explode_tags($string);
+function views_ui_config_item_form_rescan($form, &$form_state) {
+  // Clear *all* theme registry entries:
+  cache_clear_all('theme_registry:', 'cache', TRUE);
+  drupal_rebuild_theme_registry();
 
-  // Fetch last tag
-  $last_string = trim(array_pop($array));
-  $matches = array();
-  if ($last_string != '') {
-    $prefix = count($array) ? implode(', ', $array) . ', ' : '';
+  // The 'Theme: Information' page is about to be shown again. That page
+  // analyzes the output of theme_get_registry(). However, this latter
+  // function uses an internal cache (which was initialized before we
+  // called drupal_rebuild_theme_registry()) so it won't reflect the
+  // current state of our theme registry. The only way to clear that cache
+  // is to re-initialize the theme system:
+  unset($GLOBALS['theme']);
+  init_theme();
 
-    if (strpos('anonymous', strtolower($last_string)) !== FALSE) {
-      $matches[$prefix . 'Anonymous'] = 'Anonymous';
-    }
-    $result = db_query_range("SELECT name FROM {users} WHERE LOWER(name) LIKE LOWER('%s%%')", $last_string, 0, 10);
-
-    while ($account = db_fetch_object($result)) {
-      $n = $account->name;
-      // Commas and quotes in terms are special cases, so encode 'em.
-      if (strpos($account->name, ',') !== FALSE || strpos($account->name, '"') !== FALSE) {
-        $n = '"'. str_replace('"', '""', $account->name) .'"';
-      }
-      $matches[$prefix . $n] = check_plain($account->name);
-    }
-  }
-
-  drupal_json($matches);
+  $form_state['rerender'] = TRUE;
+  $form_state['rebuild'] = TRUE;
 }
 
 /**
@@ -2636,3 +2811,250 @@ function views_ui_autocomplete_tag($string = '') {
 
   drupal_json($matches);
 }
+
+// ------------------------------------------------------------------
+// Get information from the Views data
+
+function _views_weight_sort($a, $b) {
+  if ($a['weight'] != $b['weight']) {
+    return $a['weight'] < $b['weight'] ? -1 : 1;
+  }
+  if ($a['title'] != $b['title']) {
+    return $a['title'] < $b['title'] ? -1 : 1;
+  }
+
+  return 0;
+}
+
+/**
+ * Fetch a list of all base tables available
+ *
+ * @return
+ *   A keyed array of in the form of 'base_table' => 'Description'.
+ */
+function views_fetch_base_tables() {
+  static $base_tables = array();
+  if (empty($base_tables)) {
+    $weights = array();
+    $tables = array();
+    $data = views_fetch_data();
+    foreach ($data as $table => $info) {
+      if (!empty($info['table']['base'])) {
+        $tables[$table] = array(
+          'title' => $info['table']['base']['title'],
+          'description' => $info['table']['base']['help'],
+          'weight' => !empty($info['table']['base']['weight']) ? $info['table']['base']['weight'] : 0,
+        );
+      }
+    }
+    uasort($tables, '_views_weight_sort');
+    $base_tables = $tables;
+  }
+
+  return $base_tables;
+}
+
+function _views_sort_types($a, $b) {
+  if ($a['group'] != $b['group']) {
+    return $a['group'] < $b['group'] ? -1 : 1;
+  }
+
+  if ($a['title'] != $b['title']) {
+    return $a['title'] < $b['title'] ? -1 : 1;
+  }
+
+  return 0;
+}
+
+/**
+ * Fetch a list of all fields available for a given base type.
+ *
+ * @return
+ *   A keyed array of in the form of 'base_table' => 'Description'.
+ */
+function views_fetch_fields($base, $type) {
+  static $fields = array();
+  if (empty($fields)) {
+    $data = views_fetch_data();
+    $start = microtime();
+    // This constructs this ginormous multi dimensional array to
+    // collect the important data about fields. In the end,
+    // the structure looks a bit like this (using nid as an example)
+    // $strings['nid']['filter']['title'] = 'string'.
+    //
+    // This is constructed this way because the above referenced strings
+    // can appear in different places in the actual data structure so that
+    // the data doesn't have to be repeated a lot. This essentially lets
+    // each field have a cheap kind of inheritance.
+
+    foreach ($data as $table => $table_data) {
+      $bases = array();
+      $strings = array();
+      $skip_bases = array();
+      foreach ($table_data as $field => $info) {
+        // Collect table data from this table
+        if ($field == 'table') {
+          // calculate what tables this table can join to.
+          if (!empty($info['join'])) {
+            $bases = array_keys($info['join']);
+          }
+          // And it obviously joins to itself.
+          $bases[] = $table;
+          continue;
+        }
+        foreach (array('field', 'sort', 'filter', 'argument', 'relationship') as $key) {
+          if (!empty($info[$key])) {
+            if (!empty($info[$key]['skip base'])) {
+              foreach ((array) $info[$key]['skip base'] as $base_name) {
+                $skip_bases[$field][$key][$base_name] = TRUE;
+              }
+            }
+            elseif (!empty($info['skip base'])) {
+              foreach ((array) $info['skip base'] as $base_name) {
+                $skip_bases[$field][$key][$base_name] = TRUE;
+              }
+            }
+            foreach (array('title', 'group', 'help', 'base') as $string) {
+              // First, try the lowest possible level
+              if (!empty($info[$key][$string])) {
+                $strings[$field][$key][$string] = $info[$key][$string];
+              }
+              // Then try the field level
+              elseif (!empty($info[$string])) {
+                $strings[$field][$key][$string] = $info[$string];
+              }
+              // Finally, try the table level
+              elseif (!empty($table_data['table'][$string])) {
+                $strings[$field][$key][$string] = $table_data['table'][$string];
+              }
+              else {
+                if ($string != 'base') {
+                  $strings[$field][$key][$string] = t("Error: missing @component", array('@component' => $string));
+                }
+              }
+            }
+          }
+        }
+      }
+      foreach ($bases as $base_name) {
+        foreach ($strings as $field => $field_strings) {
+          foreach ($field_strings as $type_name => $type_strings) {
+            if (empty($skip_bases[$field][$type_name][$base_name])) {
+              $fields[$base_name][$type_name]["$table.$field"] = $type_strings;
+            }
+          }
+        }
+      }
+    }
+//    vsm('Views UI data build time: ' . (microtime() - $start) * 1000 . ' ms');
+  }
+
+  // If we have an array of base tables available, go through them
+  // all and add them together. Duplicate keys will be lost and that's
+  // Just Fine.
+  if (is_array($base)) {
+    $strings = array();
+    foreach ($base as $base_table) {
+      if (isset($fields[$base_table][$type])) {
+        $strings += $fields[$base_table][$type];
+      }
+    }
+    uasort($strings, '_views_sort_types');
+    return $strings;
+  }
+
+  if (isset($fields[$base][$type])) {
+    uasort($fields[$base][$type], '_views_sort_types');
+    return $fields[$base][$type];
+  }
+  return array();
+}
+
+/**
+ * Fetch a list of all base tables available
+ *
+ * @param $type
+ *   Either 'display', 'style' or 'row'
+ * @param $key
+ *   For style plugins, this is an optional type to restrict to. May be 'normal',
+ *   'summary', 'feed' or others based on the neds of the display.
+ * @param $base
+ *   An array of possible base tables.
+ *
+ * @return
+ *   A keyed array of in the form of 'base_table' => 'Description'.
+ */
+function views_fetch_plugin_names($type, $key = NULL, $base = array()) {
+  $data = views_fetch_plugin_data();
+
+  $plugins[$type] = array();
+
+  foreach ($data[$type] as $id => $plugin) {
+    // Skip plugins that don't conform to our key.
+    if ($key && (empty($plugin['type']) || $plugin['type'] != $key)) {
+      continue;
+    }
+    if (empty($plugin['no ui']) && (empty($base) || empty($plugin['base']) || array_intersect($base, $plugin['base']))) {
+      $plugins[$type][$id] = $plugin['title'];
+    }
+  }
+
+  if (!empty($plugins[$type])) {
+    asort($plugins[$type]);
+    return $plugins[$type];
+  }
+  // fall-through
+  return array();
+}
+
+
+/**
+ * Theme the form for the table style plugin
+ */
+function theme_views_ui_style_plugin_table($form) {
+  $output = drupal_render($form['description_markup']);
+
+  $header = array(
+    t('Field'),
+    t('Column'),
+    t('Separator'),
+    array(
+      'data' => t('Sortable'),
+      'align' => 'center',
+    ),
+    array(
+      'data' => t('Default sort'),
+      'align' => 'center',
+    ),
+  );
+  $rows = array();
+  foreach (element_children($form['columns']) as $id) {
+    $row = array();
+    $row[] = drupal_render($form['info'][$id]['name']);
+    $row[] = drupal_render($form['columns'][$id]);
+    $row[] = drupal_render($form['info'][$id]['separator']);
+    if (!empty($form['info'][$id]['sortable'])) {
+      $row[] = array(
+        'data' => drupal_render($form['info'][$id]['sortable']),
+        'align' => 'center',
+      );
+      $row[] = array(
+        'data' => drupal_render($form['default'][$id]),
+        'align' => 'center',
+      );
+    }
+    else {
+      $row[] = '';
+      $row[] = '';
+    }
+    $rows[] = $row;
+  }
+
+  // Add the special 'None' row.
+  $rows[] = array(t('None'), '', '', '', array('align' => 'center', 'data' => drupal_render($form['default'][-1])));
+
+  $output .= theme('table', $header, $rows);
+  $output .= drupal_render($form);
+  return $output;
+}
+
