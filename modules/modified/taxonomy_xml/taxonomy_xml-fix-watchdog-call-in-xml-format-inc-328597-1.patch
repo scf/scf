@@ -1,0 +1,11 @@
+--- xml_format.inc.orig	2008-10-29 20:48:20.000000000 -0400
++++ xml_format.inc	2008-10-31 09:12:45.000000000 -0400
+@@ -147,7 +147,7 @@ function taxonomy_xml_xml_parse(&$data, 
+   xml_set_character_data_handler($xml_parser, 'taxonomy_xml_element_data');
+ 
+   if (!xml_parse($xml_parser, $data, 1)) {
+-    watchdog('error', t('Taxonomy_xml: failed to parse file: %error at line %line.', array('%error' => xml_error_string(xml_get_error_code($xml_parser)), '%line' => xml_get_current_line_number($xml_parser))));
++    watchdog('taxonomy_xml', 'Taxonomy_xml: failed to parse file: %error at line %line.', array('%error' => xml_error_string(xml_get_error_code($xml_parser)), '%line' => xml_get_current_line_number($xml_parser)), array(), WATCHDOG_ERROR);
+     drupal_set_message(t('Failed to parse file: %error at line %line.', array('%error' => xml_error_string(xml_get_error_code($xml_parser)), '%line' => xml_get_current_line_number($xml_parser))), 'error');
+   }
+   xml_parser_free($xml_parser);

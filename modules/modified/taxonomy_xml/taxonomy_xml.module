@@ -1,0 +1,1468 @@
+<?php
+/* double-commented to avoid conflict with svn
+// $Id: taxonomy_xml.module,v 1.9.2.13 2008/10/30 16:08:47 dman Exp $ 
+*/
+
+/**
+ * 2008 rewrite Dan Morrison http://coders.co.nz 
+ * 
+ * Copyright (c) 2007  Nicolas Haase <nicolas.haase@team.ourbrisbane.com>
+ * Copyright (c) 2006  Sami Khan <sami@etopian.com> 
+ * Copyright (c) 2005  Sheldon Rampton <sheldon@prwatch.org>
+ *                                                                               
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License.
+ */
+
+/** 
+ * @file taxonomy_xml.module
+ * This module makes it possible to import and export taxonomies
+ * as XML documents.
+ */
+
+/**
+ * Following is a list of the cannonic keywords used in the expected source
+ * files to represent parent-child relationships and other attributes. These
+ * words based on one selected govt vocabulary, many others are likely.
+ * 
+ * A hash table of SYNONYMS for these terms is included in this module for
+ * maximum compatability with other syntaxes found in the wild.
+ * @see taxonomy_xml_relationship_synonyms()
+ * 
+ * Refer also to ISO2788 for a description of the use of these structural
+ * relations 
+ * "http://www.ontopia.net/topicmaps/materials/tm-vs-thesauri.html#sect-thesauri"
+ * 
+ * 
+ * 
+ * An example Thesaurus source file may be the text version of 
+ * 
+ * Thesaurus for Graphic Materials I: Subject Terms [Library of Congress]
+ * 
+ * "http://www.loc.gov/rr/print/tgm1/downloadtgm1.html" 
+ */
+
+define('TAXONOMY_XML_RELATED',       'Related Terms');
+define('TAXONOMY_XML_PARENT',        'Broader Terms');
+define('TAXONOMY_XML_CHILD',         'Narrower Terms');
+define('TAXONOMY_XML_HAS_SYNONYM',   'Used for');
+define('TAXONOMY_XML_SYNONYM_OF',    'Use');
+define('TAXONOMY_XML_DESCRIPTION',   'Definition');
+define('TAXONOMY_XML_IN_VOCABULARY', 'Part of');
+define('TAXONOMY_XML_NAME',          'name');
+define('TAXONOMY_XML_UNUSED',        'unused');
+
+/**
+ * The batch process is tricky.
+ * When we import a document, it may have any number of external references that
+ * need retrieving and resolving.
+ * As they are found, they are added to a queue.
+ * As the queue is processed, it in turn adds more references branching off the
+ * process. Probably growing exponentially for a few rounds.
+ * To try and avoid the worst of the scaling problems, we will limit batch sizes
+ * to manageable numbers. 
+ * It is impossible to extimate just how many or how deep the spidering process
+ * will go - we just have to aim and go.
+ */
+define('TAXONOMY_XML_MAX_BATCH_SIZE' , 50);
+
+
+/**
+ * Implementation of hook_help().
+ */
+function taxonomy_xml_help($path, $arg) {
+  switch ($path) {
+    case 'admin/modules#description':
+      return t('Makes it possible to import and export taxonomy terms via XML.');
+    case 'admin/content/taxonomy/import':
+      return t("
+        You can upload or import a vocabulary and/or taxonomy terms from a properly-formatted input document or web service. 
+      ") . theme("more_help_link", url('admin/help/taxonomy_xml')) ;
+
+    case 'admin/content/taxonomy/export':
+      return t("You can export XML documents for each vocabulary and its terms in this website's !taxonomies. Choose the vocabulary from the list below.",
+        array('!taxonomies' => l(t("taxonomies"), "admin/help/taxonomy")));
+    case 'admin/help#taxonomy_xml':
+      $extra_help = file_get_contents(drupal_get_path('module', 'taxonomy_xml') .'/help.txt');
+      return t("
+        <p>This module makes it possible to import and export vocabularies and 
+        taxonomy terms from various formats. 
+        See !formats in the module folder for more detail about the supported syntax. 
+        </p>
+        <p>Once installed and enabled, it provides a list of downloadable XML 
+        documents for each vocabulary at !downloads. 
+        To import a vocabulary, use !upload.</p>" . $extra_help,
+        array(
+          '!downloads' => l(t("Taxonomy Export"), "admin/taxonomy/export"), 
+          '!upload' => l("Administer > Taxonomy > Import", "admin/taxonomy/import"),
+          '!formats' => l("formats.html", drupal_get_path('module', 'taxonomy_xml') .'/formats.html'),
+        )
+      );
+  }
+}
+
+/** 
+ * Implementation of hook_menu: Define menu links.
+ * 
+ * @note See hook_menu for a description of return values.
+ */
+function taxonomy_xml_menu() {
+  if (!module_exists('taxonomy')) {
+    return;
+  }
+  $items = array();
+  $items['admin/content/taxonomy/export'] = array(
+    'title' => t('Export'),
+    'access arguments' => array('administer taxonomy'),
+    'page callback' => 'taxonomy_xml_export',
+    'type' => MENU_LOCAL_TASK);
+
+  $items['admin/content/taxonomy/import'] = array(
+    'title' => t('Import'),
+    'access arguments' => array('administer taxonomy'),
+    'page callback' => 'taxonomy_xml_import',
+    'type' => MENU_LOCAL_TASK);
+
+  $items['taxonomy_xml'] = array(
+    'title' => t('Taxonomy XML'),
+    'access arguments' => array('access content'),
+    'page callback' => 'taxonomy_xml_file',
+    'type' => MENU_CALLBACK);
+  return $items;
+}
+
+/**
+ * taxonomy_xml_export
+ * 
+ * Outputs an unordered list of all available vocabularies for export
+ * 
+ * @return An unordered HTML list
+ */
+function taxonomy_xml_export() {
+  // return the list of vocabularies
+  $output = '';
+  $vocabularies = module_invoke('taxonomy', 'get_vocabularies');
+  
+  if (empty($vocabularies)) {
+    $output .= t('There are no vocabularies present');
+  }
+  else {
+    foreach ($vocabularies as $vocabulary) {
+      $vocablist[$vocabulary->vid] = l($vocabulary->name, "taxonomy_xml/$vocabulary->vid") ;
+      $vocablist[$vocabulary->vid] .= ' '. l("RDF", "taxonomy_xml/$vocabulary->vid/rdf") ;
+      $vocablist[$vocabulary->vid] .= ' '. l("TCS", "taxonomy_xml/$vocabulary->vid/tcs") ;
+    }
+    $output = theme_item_list($vocablist);
+  }
+  return $output;
+}
+
+/**
+ * taxonomy_xml_file
+ * 
+ * Return a flat file representation of the requested vocab
+ * 
+ * Default format is the original custom Drupal XML file.
+ */
+function taxonomy_xml_file($vid, $format = 'xml') {
+  // Retrieving Vocabulary name
+  $vocabulary = taxonomy_vocabulary_load($vid);
+  $vname = strtolower(str_replace(' ', '_', trim($vocabulary->name)));
+  unset($vocabulary);
+
+  // TODO make this more naturally extensible - names are pretty predictable
+  switch ($format) {
+    case 'xml' :
+      require_once('xml_format.inc');
+      $file = taxonomy_xml_xml_create($vid);
+    break;
+    case 'rdf' :
+      require_once('rdf_format.inc');
+      $file = taxonomy_xml_rdf_create($vid);
+    break;
+    case 'tcs' :
+      require_once('tcs_format.inc');
+      $file = taxonomy_xml_tcs_create($vid);
+    break;
+  }  
+  
+  if (!empty($_SERVER['HTTP_USER_AGENT']) && (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 5.5') || strpos($_SERVER['HTTP_USER_AGENT'], 'Opera'))) {
+    header('Content-Type: application/dummy');
+  }
+  else {
+    header('Content-Type: application/octet-stream');
+  }
+  if (headers_sent()) {
+    echo 'Some data has already been output to browser, can\'t send file';
+  }
+  header('Content-Length: '. strlen($file));
+  header("Content-Disposition: attachment; filename=taxonomy_$vname.$format");
+  echo $file;
+}
+
+/**
+ * Menu callback for the import page.
+ */
+function taxonomy_xml_import() {
+  return drupal_get_form('taxonomy_xml_import_form');
+}
+
+
+
+/**
+ * Builds the import form.
+ */
+function taxonomy_xml_import_form($form_state) {
+  drupal_add_js(drupal_get_path('module', 'taxonomy_xml') .'/taxonomy_xml.js');
+  drupal_add_css(drupal_get_path('module', 'taxonomy_xml') .'/taxonomy_xml.css');
+
+  $formats = taxonomy_xml_formats();
+  $vocs[0] = t('[Determined by source file]');
+  foreach (module_invoke('taxonomy', 'get_vocabularies') as $vid => $voc) {
+    $vocs[$vid] = $voc->name;
+  }
+  $vocs[-1] = t('[Create new]');
+  $form['vid'] = array(
+    '#type' => 'select',
+    '#title' => t('Target vocabulary'),
+    '#default_value' => variable_get('taxonomy_xml_vid', 0),
+    '#options' => $vocs,
+    '#description' => t('The vocabulary into which terms should be loaded.'),
+  );
+
+  $form['data_source'] = array(
+    '#type' => 'fieldset',
+    #'#title' => t('Data Source'),
+    '#attributes' => array('id' => 'data_source'),
+  );
+  $form['data_source']['source_selector'] = array(
+    '#type' => 'select',
+    '#title' => t('Data Source'),
+    '#options' => array(
+      'none' => t('CHOOSE'),
+      'upload-file' => t('Upload File'),
+      'batch-upload-file' => t('Upload file for batch processing'),
+      'url' => t('Web URL'),
+      'service' => t('Web Service')),
+    '#attributes' => array('id' => 'source_selector'),
+    '#default_value' => variable_get('taxonomy_xml_source_selector', 'none'),
+  );
+  
+  $form['data_source']['upload_file'] = array(
+    '#type' => 'file',
+    '#title' => t('File to import'),
+    '#description' => t('Click "Browse..." to select a local document to upload.'),  
+  );
+
+  $form['data_source']['url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('URL to import from'),
+    '#description' => t('Enter the URL of a file or web service containing a vocabulary definition.'),  
+    '#default_value' => variable_get('taxonomy_xml_url', ''),
+  );
+
+  $available_services = taxonomy_xml_lookup_services('lookup', 'options');
+
+  $form['data_source']['service'] = array(
+    '#type' => 'fieldset',
+    '#attributes' => array('id' => 'edit-service-wrapper'),
+    'service_id' => array(
+      '#type' => 'select',
+      '#title' => t('Taxonomy Server'),
+      '#description' => t('Choose one of the available taxonomy server services. These preset services are defined in the taxonomy_xml module include file.'),  
+      '#default_value' => variable_get('taxonomy_xml_service_id', ''),
+      '#options' => $available_services,
+     ),
+    'identifier' => array(
+      '#type' => 'textfield',
+      '#title' => t('Unique Identifier for this service'),
+      '#description' => t('ID, GIUD, LSID, URI or other UID as required by this service.'),  
+      '#default_value' => variable_get('taxonomy_xml_identifier', ''),
+     ),
+      
+  );
+
+  $form['format'] = array(
+    '#type' => 'select',
+    '#title' => t('Format of file'),
+    '#default_value' => variable_get('taxonomy_xml_format', 'xml_format'),
+    '#options' => $formats, 
+  );
+
+  $form['recurse_down'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Recurse down the taxonomy tree'),
+    '#description' => t('
+      Some taxonomy sources return references to further external URL 
+      sources (child terms). 
+      Tick this if those references are to be followed. 
+      <br/>The recursion may get intensive, although the tasks will be "batched".
+      <br/>Note: You will <b>need</b> taxonomy_enhancer or something similar to be 
+      recording the external IDs or relationships cannot be maintained 
+      over batches.
+    '),
+    '#default_value' => variable_get('taxonomy_xml_recurse_down', TRUE),
+  );
+
+
+  $form['advanced'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('advanced'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['advanced']['duplicate'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Allow duplicate terms'),
+    '#description' => t('If you want to keep the same term in different positions in the vocabulary hierarchy, check this'),
+    '#default_value' => variable_get('taxonomy_xml_duplicate', FALSE),
+  );
+  $form['advanced']['reuseids'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Re-use IDs'),
+    '#description' => t('If the source data includes numeric IDs, try to use them as Drupal term IDs. This may have mixed results on sites that are not directly synched.'),
+    '#default_value' => variable_get('taxonomy_xml_reuseids', FALSE),
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Import'),
+  );
+  $form['#attributes'] = array('enctype' => 'multipart/form-data');
+
+  return $form;
+}
+
+
+/**
+ * Imports the actual XML.
+ */
+function taxonomy_xml_import_form_submit($form, &$form_state) {
+  #if ( function_exists('xdebug_start_trace')) { xdebug_start_trace() ; }
+
+  // Remember prefs, just for convenience of the user
+  // @TODO - could we do this without abusing the variables array?
+  variable_set('taxonomy_xml_format', $form_state['values']['format']);
+  variable_set('taxonomy_xml_vid', $form_state['values']['vid']);
+  variable_set('taxonomy_xml_duplicate', $form_state['values']['duplicate']);
+  variable_set('taxonomy_xml_reuseids', $form_state['values']['reuseids']);
+  variable_set('taxonomy_xml_source_selector', $form_state['values']['source_selector']);
+  variable_set('taxonomy_xml_url', $form_state['values']['url']);
+  variable_set('taxonomy_xml_recurse_down', $form_state['values']['recurse_down']);
+
+  // Include the appropriate format library
+  $incfile = dirname(drupal_get_filename('module', 'taxonomy_xml')) .'/'. $form_state['values']['format'] .'.inc';
+  include_once($incfile);
+
+  // Allow either upload, web service or URL sources
+  // 
+  switch ($form_state['values']['source_selector']) {
+
+    case 'upload-file' :
+      // Retrieve submitted data and parse it
+      if ($file = file_save_upload('upload_file')) {
+        $fd = fopen($file->filepath, "rb");
+        if (!$fd) {
+          form_set_error('upload_file', t('Vocabulary import failed: file %filename cannot be read.', array('%filename' => $file->filename)));
+        }
+        else {
+          $info = fstat($fd);
+          $len = $info["size"];
+          $text = fread($fd, $len);
+          fclose($fd);
+          drupal_set_message(t('Loaded file %filename. Now processing it.', array('%filename' => $file->filename)));
+          $form_state['values']['file'] = $file;
+          taxonomy_xml_invoke_import($text, $form_state['values']);
+        }
+      }
+      else {
+        form_set_error('upload_file', t('Vocabulary import failed: file was not uploaded.'));
+      }
+    break;
+    
+    case 'batch-upload-file' :
+      if (!taxonomy_xml_implements_file_batching($form_state['values']['format'])) {
+        form_set_error('upload_file', t('Batch processing not available for this format: '. $form_state['values']['format']));
+      }
+      elseif ($file = file_save_upload('upload_file', $validators)) {
+        $fd = fopen($file->filepath, "rb");
+        if (!$fd) {
+          form_set_error('upload_file', t('Vocabulary import failed: file %filename cannot be read.', array('%filename' => $file->filename)));
+        }
+        else {
+          drupal_set_message(t('Loaded file %filename. Now processing it.', array('%filename' => $file->filename)));
+          $form_state['values']['file'] = $file;
+          taxonomy_xml_invoke_import($file, $form_state['values'], NULL, TRUE);
+        }
+      }
+      else {
+        form_set_error('upload_file', t('Taxonomy import failed: file did not upload.'));
+      }
+    break;
+
+    case 'url' :
+      // Retrieve remote URL and parser it
+      if ($url = $form_state['values']['url']) {
+        $text = taxonomy_xml_cached_get_contents($url);
+        drupal_set_message(t('Retrieved Submitted URL %url. Now starting an import process.', array('%url' => $url)));
+        taxonomy_xml_invoke_import($text, $form_state['values'], $url);
+      }
+    break;
+
+    case 'service' :
+      // Invoke service and parse response
+      $services = taxonomy_xml_lookup_services(NULL, 'full');
+      $service = $services[$form_state['values']['service_id']];
+
+      // Don't yet have a subroutine for invoking services, just create a lookup and call it.
+      $req = taxonomy_xml_sub_placeholders_into_pattern($service['pattern'], $form_state['values']);
+      $text = taxonomy_xml_cached_get_contents($req);
+      drupal_set_message(t('Requested service %servicename from URL %req. Now starting an import process.', array('%servicename' => $service['provider'], '%req' => $req)));
+      
+      // Before running, need to make sure the preferences on the form 
+      // are in line with those set for the service - 
+      // ie, the format is selected right. Maybe more later?
+      $form_state['values']['format'] = $service['format'];
+      variable_set('taxonomy_xml_format', $form_state['values']['format']);
+      taxonomy_xml_invoke_import($text, $form_state['values'], $req);
+
+    break;
+  }
+  
+  // The initial import may have queued up some further process to do.
+  // Check the queue and run it when this form goes.
+  $_SESSION['taxonomy_xml_batch_count'] = 0;
+  batch_set(taxonomy_xml_add_term_to_batch_queue());
+}
+
+
+/**
+ * Do the actual importing from the given string, pased on the parameters passed
+ * from the form.
+ */
+function taxonomy_xml_invoke_import($data, $form_values, $url = NULL, $batch_process_file = FALSE) {
+// $data is text string or file object
+  $vid = $form_values['vid'];
+  if ($vid == -1) {
+    // Requested to create new vocab.
+    $newname = $form_values['file'] ? basename($form_values['file']->filename) : basename($url);
+    $vocabulary = _taxonomy_xml_get_vocabulary_placeholder($newname);
+    $vid = $vocabulary->vid;
+  }
+
+  // Sitemenu implodes when I try to do bulk updates? Or is it pathauto
+  // TODO figure this out
+  // module_disable(array('sitemenu','pathauto'));
+  
+  // Invoke the appropriate format library
+  $format_name = preg_replace('/_format$/', '', $form_values['format']);
+  $funcname = 'taxonomy_xml_' . $format_name;
+  if ($batch_process_file == TRUE) {
+    // pass a file object rather than a url for file-based batch processing
+    $funcname .= '_batch_parse_file';
+    // we avoided redundent add to of file to $form_values['file'];
+    $extra_parameter = NULL;
+  }
+  else {
+    $funcname .= '_parse';
+    $extra_parameter = $url;
+  }
+  if ( function_exists($funcname) ) {
+    $modified_terms = $funcname($data, $vid, $extra_parameter);    
+
+    // Func may have modified vocab or vid during its import. reload (just for these messages).
+    if ($vid) {
+      $vocabulary = taxonomy_vocabulary_load($vid);
+      drupal_set_message(t("
+        Imported vocabulary %vocab_name. 
+        You may now need to <a href='!settings_link'>Review the vocabulary settings</a> 
+        or <a href='!list_link'>List the terms</a>", 
+        array(
+          '%vocab_name' => $vocabulary->name,
+          '!settings_link' => url('admin/content/taxonomy/edit/vocabulary/'. $vid), 
+          '!list_link' => url('admin/content/taxonomy/'. $vid),
+        ) 
+      ));
+    }
+    if (!empty($modified_terms )) {
+      $term_list = array();
+      foreach ($modified_terms as $list_term) {
+        $term_list[] = l($list_term->name, 'admin/content/taxonomy/edit/term/'. $list_term->tid);
+      }
+      drupal_set_message(t('Updated %count term(s)', array('%count' => count($modified_terms))) .' <i>'. implode(', ', $term_list) .'.</i> ');
+    }
+    else {
+      drupal_set_message(t("Failed to import any new terms. This may be due to syntax or formattings errors in the import file.", array()) , 'error');
+    }
+  }
+  else {
+    drupal_set_message("Unavailable format. $funcname was not found in formatting library $incfile.", 'error');
+  }
+}
+
+
+/**
+ * Return a list of available file formats.
+ * 
+ * Scan the module directory for appropriate inc files.
+ * @return 
+ *  Array (
+ *   [csv_format]   => CSV
+ *   [rdf_format]   => RDF
+ *   [xml_format]   => XML
+ *  )
+ */
+function taxonomy_xml_formats() {
+  $incs = file_scan_directory(dirname(drupal_get_filename('module', 'taxonomy_xml')), '.*_format.inc');
+  $formats = array();
+  foreach ($incs as $file) {
+    $formats[$file->name] = strtoupper(preg_replace('/_format$/', '', $file->name));
+  }
+  return $formats;
+}
+
+
+/** 
+ * Either fetch the named vocab if it exists, or create and return a useful
+ * placeholder.
+ * 
+ * @return the new vocab object.
+ */
+function _taxonomy_xml_get_vocabulary_placeholder($name) {
+  if ($vocabulary = taxonomy_xml_get_vocabulary_by_name($name)) {
+    return $vocabulary;
+  }
+
+  // Create new vocab 
+  $vocabulary = array(
+    'name' => $name,
+    'relations' => TRUE,
+    'hierarchy' => 2,
+  );
+
+  module_invoke('taxonomy', 'save_vocabulary', $vocabulary);
+
+  // Need to retrieve it from DB again - the result isn't given back to us.
+  $vid = db_result(db_query("SELECT vid FROM {vocabulary} WHERE LOWER('%s') LIKE LOWER(name)", $vocabulary['name']));
+  $vocabulary = taxonomy_vocabulary_load($vid);
+  drupal_set_message(t('Created vocabulary %vid %vocabname to put these terms into. You probably want to <a href="!vocablink">go edit it now</a>.', array('%vocabname' => $vocabulary->name, '%vid' => $vid, '!vocablink' => url('admin/content/taxonomy/edit/vocabulary/'. $vid) )));
+  return $vocabulary;
+}
+
+
+/**
+ * Use the vocabs defined as resources in the input to find or create vocabulary
+ * definitions.
+ * 
+ * @param $vocabularies An array of vocabulary definition objects, extracted
+ * from the XML. Modified with their deduced or new vid values by reference
+ * 
+ * $vocabularies = array(
+ *   '#vocabulary-3' => stdClass Object
+ *     'name' => "Countries",
+ *     'predicates'  => array(
+ *       'description' => array( 0 => "A list of countries" ),
+ *       'version'  => array( 0 => "2008-08-08" ),
+ *     )
+ *   )
+ * )
+ * 
+ * All 'predicates' will be compressed into properties. EG in the above example, 
+ * ['#vocabulary-3']['predicates']['description'][0]
+ * is flattened to 
+ * ['#vocabulary-3']['description']
+ * 
+ * Either input format is fine.
+ * 
+ * 
+ */
+function taxonomy_xml_absorb_vocabulary_definitions(&$vocabularies) {    
+  // See if we can match this definition against the given vid 
+  // - then on name.
+  // If neither seems to exist, make a new one.
+  
+  if (is_array($vocabularies)) {
+    # dpm(array("The vocabulary definition(s) found in the input file is ", $vocabularies));
+    // There may be more than one vocab def per file, although this is unlikely
+    foreach ($vocabularies as $vocabid => &$vocab) {
+
+      // Merge all predicate data into a simpler array, re-tagging the attributes as needed
+      // - there's not a lot of metadata about vocabs we know how to import, but try anyway - for expansion
+      taxonomy_xml_merge_predicates_into_attributes($vocab);
+      
+      $target_vocab = NULL;
+      // Deduce the given vocab definitions vid, if given as a value
+      if (isset($vocab->vid)) {
+        $vocab->internal_id = $vocab->vid ;
+        drupal_set_message(t("Found a vocabulary definition in the input, called $vocabid. vid=$vocab->internal_id"));
+
+        // Try to maintain old Vocabulary IDs
+        // Check if it's a good number to write into
+        // If the input defines a vid BUT there is already a non-matching vocab with that number, we need a new number
+        // If it DOES seem to match, we are safe
+        $target_vocab = taxonomy_vocabulary_load($vocab->internal_id);
+      }
+
+      #dpm(array('loaded vocab' => $target_vocab, 'parsed vocab' => $vocab));
+      if (! empty($target_vocab) && ($target_vocab->name == $vocab->name)) {
+        // Looks like a great match
+        $vocab->vid = $vocab->internal_id;
+        drupal_set_message(t("Found matching target vocabulary '%vocab_name' vid=%vocab_vid", array('%vocab_name' => $vocab->name, '%vocab_vid' => $vocab->vid)));        
+      }
+      else {
+        if ($target_vocab) {
+          drupal_set_message(t("The vocab ID given in the input file (%vocab_vid) conflicts with an existing vocabulary. We need a different ID... ", array('%vocab_vid' => $vocab->vid) ));        
+        }
+        unset($vocab->vid);
+        // Vocab with this id exists, but is called something else - Do not merge with it
+        // Look for a match by name instead
+        if ($target_vocab = taxonomy_xml_get_vocabulary_by_name($vocab->name)) {
+          // Found a local vocab called the same as the input vocab. That's a good enough match for us.
+          $vocab->vid = $target_vocab->vid;
+          drupal_set_message(t("Found a target vocabulary already in the database, matching by name '%name' vid=%vid . This will be used, but not updated.", array('%name' => $vocab->name, '%vid' => $vocab->vid)));        
+        }
+      }
+
+      // Have we found a target vocab yet?
+      if (empty($vocab->vid)) {
+        // Make a brand new one from the imported definition
+        $vocab = _taxonomy_xml_get_vocabulary_placeholder($vocab->name);
+        
+        // Built a vocabulary from input details. Now save it
+        // dpm($vocab);
+        $vocab_array = (array) $vocab;
+        taxonomy_save_vocabulary($vocab_array);
+        $vocab = taxonomy_vocabulary_load($vocab_array['vid']);
+        drupal_set_message(t("Made a new Drupal vocabulary definition from data found in the input. Vocab is called: '%name' : %description ", array('%name' => $vocab->name, '%description' => $vocab->description) ));
+        #dpm($vocab);
+      }
+    } // end looping through found vocabs
+  }
+  else {
+    drupal_set_message("The document provided no recognisible vocabulary definitions");
+  }
+
+  // This is the default (last found) vid. Probably should not be used, but we may have to make a guess.
+  // Either an input file contains just one vocab - in which case this will be right,
+  // or the input file contains multiple vocabularies - in which case the terms damn well ought to be tagged with which vocab to use. 
+  return isset($vocab->vid) ? $vocab->vid : NULL;
+}
+
+
+/**
+ * Given a term with a collection of named predicate relations, convert those
+ * into canonic (known, defined) terms. This involves some duplication as the
+ * original and true names are both packed into the $term->predicates array.
+ * Only the true names are looked at later however.
+ */
+function taxonomy_xml_canonicize_predicates(&$term) {
+  // Translate the predicate statements into what we need
+
+  // $predicate_synonyms is a translation array to match synonyms from various syntaxes with Drupal concepts
+  $predicate_synonyms = taxonomy_xml_relationship_synonyms();
+
+  foreach ((array) $term->predicates as $predicate => $values) {
+    $original_predicate = $predicate;
+
+    // First translate misc terminology synonyms to the cannonic predicate I use everywhere
+    // This allows us to interpret several XML dialects at once
+    
+    if (isset($predicate_synonyms[$predicate]) && $cannonic = $predicate_synonyms[$predicate]) {
+      $predicate = $cannonic;
+    }
+
+    # drupal_set_message(t("Applying '$predicate' ($predicate) value of ". print_r($values, 1) ." found in $uri"));
+    switch ($predicate) {
+      case TAXONOMY_XML_DESCRIPTION :
+        $term->description = taxonomy_xml_get_literal_string($values);
+        break;
+      case TAXONOMY_XML_NAME :
+        // In the (hopefully never) case that a term has, eg, both a 'name' 
+        // and a 'title' set, and different, we may have conflicts to resolve.
+        // Pre-empt this here by noting both, but revisit if we can come up 
+        // with better logic, eg ordering priority of synonyms.
+        $val = taxonomy_xml_get_literal_string($values);
+        if (isset($term->name) && $val != $term->name) {
+          $term->name .= ' ('. $val .')';
+        }
+        else {
+          $term->name = $val;
+        }
+        break;
+      case TAXONOMY_XML_PARENT :
+      case TAXONOMY_XML_RELATED :
+      case TAXONOMY_XML_CHILD :
+        // A term relationship. 
+        // Translate each referred item from URI to its label or handle, 
+        // and save to be linked in later
+        foreach ($values as $i => $target_uri) {
+          $term->predicates[$predicate][$i] = $target_uri;
+        }
+        break;
+      case TAXONOMY_XML_HAS_SYNONYM :
+        $term->synonyms_array = isset($term->synonyms_array) ? array_merge($term->synonyms_array, $values) : $values;
+        $term->synonyms = join("\n", array_unique($term->synonyms_array) );
+        break;
+      case TAXONOMY_XML_IN_VOCABULARY :
+        /* currently not used very much - more than one vocab per input file is rare        */
+
+        // This term need to be in the vocabulary referred to by this URI
+        // check our known vocabs to see if they are recognised
+        // Do we know a vocab with an ID matching this 'isdefinedby' value?
+dpm(array('looking for vocab' => $values));
+        foreach ($values as $value) { // probably just one...
+          if (isset($vocabularies[$value])) {
+            // I know this vocab!
+            $term->vid = $vocabularies[$value]->vid;
+          } 
+        }
+        break;
+      case 'type' :
+        // These are already done. Ignore
+      case 'subPropertyOf' :
+        // Useless, ignore also
+      case TAXONOMY_XML_UNUSED :
+        // Explicitly ignore these
+        break;
+      default:
+        drupal_set_message(t("Dunno what to do with '%predicate' value of the subject '%subject', value(s) are: %values found in input", array('%predicate' => $predicate, '%subject' => $term->name, '%values' => print_r($values, 1))));
+    }
+    
+  }
+  #dpm(array('transformed predicates are' => $term->predicates));
+}
+
+
+/**
+ * If the currently processing term refers to other terms by URI, set up a
+ * process to retrieve them recursively later.
+ *
+ * For all unknown $term->predicates[TAXONOMY_XML_CHILD] URIs, add a job to the
+ * batch queue.
+ *  
+ * Helper function for parser routines
+ */
+function taxonomy_xml_add_all_children_to_queue($term) {
+  if (variable_get('taxonomy_xml_recurse_down', TRUE) && !empty($term->predicates[TAXONOMY_XML_CHILD]) ) {
+    // Add child items to the import queue.
+    $children = $term->predicates[TAXONOMY_XML_CHILD];
+    #dpm(array('Queuing children' => $children));
+drupal_set_message("Agaric test:  we haz children");
+    foreach ((array)$children as $child_ref) {
+
+      // Check that it looks like a valid URL we can request
+      $url_parts = @parse_url($child_ref);
+      if ($url_parts['host']) {
+        // The ref is a URI.
+        
+        // Check we don't know it already.
+        if ($found_term = taxonomy_xml_get_term_by_uri($child_ref)) {
+          #dpm("Found known term by URI, $child_ref is ". $found_term->tid );
+          // This is cool, we have a handle on this term. Make a note in the global list
+          $terms =& taxonomy_xml_current_terms();
+          $terms[$child_ref] = $found_term;
+        }
+        else {
+          // Save the request as a batch job to do later. Our session queue will tuck this away and remember it.
+          // Create a placeholder so at least we know where this item is being imported to
+          // Beware memory. This should be lightweight, as the batch API seems to be treating it inefficiently.
+          $placeholder_term = (object) array(
+            'uri' => $child_ref,
+            'parent' => array($term->tid => $term->tid),
+          );
+          taxonomy_xml_add_term_to_batch_queue($placeholder_term);
+          #drupal_set_message(t("While processing %term_name, did not immediately recognise external reference to child term !child_ref . Queuing it for later retrieval and import", array('%term_name' => $term->name, '!child_ref' => l($child_ref, $child_ref))));
+        }
+      }
+      else {
+        // The referred term is not a URI, nor do we recognise its identifier so far.
+        // It's a dangling reference. What can we do?
+        // Handle URI/GUID lookup services?
+        // Should do this with a hook rather than built into this module.
+        drupal_set_message(t('Cannot yet resolve non-URI references. %child_ref', array('%child_ref' => $child_ref)));
+      }
+    }
+  }
+}
+
+
+/**
+ * Merge all predicate data into a simpler array, re-tagging
+ * the attributes as needed
+ * 
+ * @param $object - an object containing a 'predicates' array. For each
+ * predicate, a cannonically named attribute will be attached to the object.
+ */
+function taxonomy_xml_merge_predicates_into_attributes(&$object) {
+  $predicate_synonyms = taxonomy_xml_relationship_synonyms();
+  foreach ($object->predicates as $predicate => $vals) {
+    $predicate = isset($predicate_synonyms[$predicate]) ? $predicate_synonyms[$predicate] : $predicate;
+    $object->$predicate = array_pop($vals);
+  }
+  if (empty($object->description) && isset($object->{TAXONOMY_XML_DESCRIPTION})) {
+    $object->description = $object->{TAXONOMY_XML_DESCRIPTION};
+  }
+  return $object;
+}
+
+
+/** 
+ * Either fetch the named term if it exists, or return a useful placeholder.
+ * 
+ * The returned term has a 'synonyms_array' because that's easier to work with
+ * than string concats in odd places.
+ */
+function _taxonomy_xml_get_term_placeholder($name, $vid = 0) {
+   #dpm("Getting placeholder '$name' vocab:$vid");
+  if ($name) {
+    $term = taxonomy_xml_get_term_by_name_from_vocab($name, $vid);
+  }
+  else {
+    // Assert input is OK. Just paranoia
+    drupal_set_message(t("Asked to make a term with no name ... are you sure?"), 'error');
+  }
+
+  if (!($term)) {
+    $term = (object)array(
+      'name' => $name,
+      'vid'  => $vid,
+      'description' => '',
+      'weight' => 0,
+      'predicates' => array(),
+      'synonyms_array' => array(),
+    );
+  }
+  else {
+    #drupal_set_message(t("A term called '!name' already exists. We will just update information onto it.", array('!name' => l($term->name, 'admin/content/taxonomy/edit/term/'. $term->tid) )), 'trace');
+  }
+  return $term;
+}
+
+
+/**
+ * Given a list of terms, set  the related-terms and structure, and save again
+ * 
+ * Helper function for bulk processes.
+ * 
+ * The terms are currently indexed by either URI or name. The reference arrays
+ * refer to either the URI or name. Scan the current array for the objects
+ * (terms) being linked to.
+ * 
+ * Input would look (in part) like this:
+ * 
+ * $terms = array(
+ *   '#123' => (
+ *      'name' => 'hotels',
+ *      'tid' => 23, 
+ *      'predicates' => (
+ *        'See Also' => ['#135', 'camping']
+ *        'Broader Term' => ['accomodation']
+ *      )
+ *    )
+ *   '#135' => ( 'name' => 'motels', 'tid' => 35 )
+ *   '#145' => ( 'name' => 'camping', 'tid' => 37 )
+ *   'accomodation' => ( 'name' => 'accomodation', 'tid' => 11 )
+ * )
+ * 
+ * The process will read the 'predicates', figure out what they mean, figure out
+ * which other term is being referenced, and create properties on the term
+ * object.
+ * 
+ * And will return the term objects with appropriate Drupal attributes
+ *
+ *   '#123' => (
+ *      'name' => 'hotels',
+ *      'nid' => 23,
+ *      'parent' => 11,
+ *      'relations' => array(35, 37),
+ *    )
+ * 
+ * Note that the key need have no relation with the nid, 
+ * and may be a full string, which will work just as well.
+ * The above shows an example of both, although that would be rare in the one import.
+ *
+ * 
+ * Relationships cannot be created if the target term is not included in the
+ * $terms list itself. If we are adding to an existing vocab, doing a partial
+ * merge, the target terms should have already been retrieved from the database
+ * and included in the complete list.
+ * 
+ * 
+ * @param $terms an indexed array of existing taxonomy term objects, possibly
+ * referring to each other by id.
+ * It's possible for the same term to be in the list twice, under different
+ * keys, (indexed by tid, name or URL) but these should be HANDLES on the same
+ * object by reference, so changes will stick.
+ */
+function taxonomy_xml_set_term_relations(&$terms) {
+  #drupal_set_message(t("Now connecting all known term relations and hierarchy links between this group of %count related terms.", array('%count' => count($terms) )), 'trace');
+  
+  foreach ($terms as $uri => &$term) {
+
+    // Avoid doing this again if we are stuck in a recursive loop, 
+    // batch, or working with duplicate handles
+    if (isset($term->taxonomy_xml_linked)) continue;
+
+    // The predicates (relationships) array may contain actual handles on terms, term ids,
+    // or it may still contain URIs representing terms not yet loaded in this phase.
+    // We need to resolve those external references into term handles (or at least tids) if possible.
+    if (is_array($term->predicates)) {
+      foreach ($term->predicates as $predicate => &$targets) {
+        foreach ($targets as $targetid => &$target) {
+          #dpm(t("Term %termname references %targetid as a %predicate", array('$termname' => $term->name, '%targetid' => $targetid, '%predicate' => $predicate )));
+          // Here we first try to find the referred term in the list of recently-made terms
+          if (! isset($terms[$targetid])) {
+            #drupal_set_message(t("Referenced term %targetid seems unknown so far, need to try a bigger lookup for it", array('%targetid' => $targetid)));
+            // taxonomy_enhancer.module, if available, may have more data about our terms. Hopefully including a GUID.
+            if ($found_term = taxonomy_xml_get_term_by_uri($targetid)) {
+              $terms[$targetid] = $found_term;
+            }
+            else {
+              #drupal_set_message(t("We so far have no knowledge of the referenced term - ". $term->name ." '$predicate' !targetid. It should be imported later and linked in.", array('!targetid' => l($targetid, $targetid))));
+            }
+          }
+        }
+      }
+    }
+
+    // Go through all and add relationships
+    // Note that a modification was made by flagging $term->taxonomy_xml_relinked = TRUE;
+    //
+    // The linking earlier may have given us some duplicates if the source had redundant info, so filter for uniques
+    if (isset($term->predicates[TAXONOMY_XML_PARENT]) && is_array($term->predicates[TAXONOMY_XML_PARENT])) {
+      foreach (array_unique($term->predicates[TAXONOMY_XML_PARENT]) as $key => $othertermname) {
+        if ($othertermname) {
+          // Here we try to find the referred term in the list of recently-made terms
+          if ($othertermname == $uri) {
+            drupal_set_message(t("Not setting %name as a child of itself", array('%name' => $term->name)));
+            continue;
+          }
+          if (isset($terms[$othertermname])) {
+            $parent = $terms[$othertermname];
+            if ($parent && isset($parent->tid) && ($parent->tid != $term->tid) ) {
+              drupal_set_message(t("!name # %tid is a child of !parent # %ptid", array('!name' => l($term->name, 'admin/content/taxonomy/edit/term/'. $term->tid), '%tid' => $term->tid, '!parent' => l($parent->name, 'admin/content/taxonomy/edit/term/'. $parent->tid), '%ptid' => $parent->tid)));
+              $term->parent[$parent->tid] = $parent->tid;
+            }
+          }
+          else { 
+            #drupal_set_message(t("Couldn't find the parent identified as %termname for %name # %tid", array('%termname' => $othertermname, '%name' => $term->name, '%tid' => $term->tid) )); 
+          }
+        }
+      }
+      $term->taxonomy_xml_relinked = TRUE;
+    }
+    #else{drupal_set_message(" $name ". $term->tid ." has no parent term");}
+
+    if (isset($term->predicates[TAXONOMY_XML_RELATED]) && is_array($term->predicates[TAXONOMY_XML_RELATED])) {
+      foreach (array_unique($term->predicates[TAXONOMY_XML_RELATED]) as $key => $othertermname) {
+        if ($othertermname) {
+          $related = $terms[$othertermname];
+          if ($related) {
+            $term->relations[] = $related->tid;
+            #drupal_set_message("Term ". $term->name ." ". $term->tid ." is related to $related->name ". $related->tid);
+          }
+          else {
+            drupal_set_message(t("Couldn't find the term called '%termname' to link to '%name' as being related. This relationship will be discarded. ", array('%name' => $term->name, '%termname' => $othertermname, '%debug' => print_r(array_keys($terms), 1) ) ));
+            #dpm(array('available terms' => array_keys($terms)));
+          }
+        }
+      }
+      $term->taxonomy_xml_relinked = TRUE;
+    }
+    if (! empty($term->synonyms_array)) {
+      $term->synonyms = join("\n", array_unique($term->synonyms_array) );
+      $term->taxonomy_xml_relinked = TRUE;
+    }
+    #dpm(array('Saving' => $term));
+    $term->taxonomy_xml_linked = TRUE;
+    
+    // for efficiency, only re-save terms that really need it
+    if ( $term->taxonomy_xml_relinked ) {
+      $save_term = (array) $term;
+      taxonomy_save_term($save_term);
+    }
+  }
+}
+
+/**
+ * Special lookup for terms if they are saved with a URI or GUID
+ * 
+ * Very specific to certain ways of serializing terms, requires
+ * taxonomy_enhancer and a field called field_URI
+ */
+function taxonomy_xml_get_term_by_uri($uri) {
+  if (! $uri) return NULL;
+  // taxonomy_enhancer.module, if available, may have more data about our terms. Hopefully including a GUID.
+  if (module_exists('taxonomy_enhancer')) {
+    $searchterm = (object) array('field_uri' => $uri);
+    $results = taxonomy_enhancer_get_term($searchterm);
+    if (! empty($results)) {
+      #drupal_set_message(t("Successfully found a known target term indexed by external <a href='!uri'>URI</a>.", array('!uri' => $uri)));
+      $term = array_pop($results);
+    }
+    else {
+      #dpm("Couldn't find a known item with a URI = $uri ");
+    }
+  }
+  return isset($term) ? $term : NULL;
+}
+
+/**
+ * A caching version of file_get_contents.
+ * Used to try and minimize remote URL lookups.
+ */
+function taxonomy_xml_cached_get_contents($url, $flush = FALSE) {
+  $cachedir = file_directory_path() .'/url_cache';
+  $save_as = $cachedir .'/'. md5($url);
+  if (file_exists($save_as)) {
+    $content = file_get_contents($save_as);
+    if ($content) { // Occasionally got zero-length reponses?
+      return $content; 
+    }
+  }
+  // else
+  file_check_directory($cachedir, FILE_CREATE_DIRECTORY);
+  $contents = file_get_contents($url);
+  file_put_contents($save_as, $contents);
+  return $contents;  
+}
+
+
+/**
+ * Fetch a vocabulary by name.
+ * Utility Func extending taxonomy.module
+ * 
+ * @return Vocabulary object. NULL if not found
+ */
+function taxonomy_xml_get_vocabulary_by_name($name) {
+  $vs = taxonomy_get_vocabularies();
+  foreach ($vs as $voc) {
+    if ($voc->name == $name) return $voc;
+  }
+}
+
+
+/**
+ * Get a term by name from the given vocab.
+ * 
+ * Loads the related terms and parent links as well.
+ *
+ * @return Term object. NULL if not found
+ */
+function taxonomy_xml_get_term_by_name_from_vocab($name, $vid) {
+  $matched_terms = taxonomy_get_term_by_name($name);
+  // Check it's the right vocab
+  while ( ($term = array_pop($matched_terms)) && ($term->vid != $vid) ) continue;
+  if (! $term) return NULL;
+
+  // What? there is no full taxonomy_term_load()?
+  if ( $parent_list = array_keys(taxonomy_get_parents($term->tid)) ) {
+    $term->parent = array_combine($parent_list, $parent_list);
+  }
+  if ( $relation_list = array_keys(taxonomy_get_related($term->tid)) ) {
+    $term->relations = array_combine($relation_list, $relation_list);
+  }
+  $term->synonyms_array = taxonomy_get_synonyms($term->tid);
+  
+  if (module_exists('taxonomy_enhancer')) {
+    // A full term load
+    taxonomy_enhancer_load_term($term);
+  }
+  
+  return $term;  
+}
+
+/**
+ * Helper function to check if a given string looks like an LSID.
+ * If so, it returns it in an array of componant bits. 
+ * If not, returns NULL.
+ * 
+ * LSID is a "Life Sciences Identifier" GUID used to identify Taxonomic
+ * concepts.
+ * It's not great, and it's probably not goping to carry on living, but it's out
+ * there in metadata and web services.
+ * 
+ * For convenience, it also returns a namespaced 'type' so we can quickly see
+ * what 'type' of resource the LSID is referring to. 
+ * eg an LSID starting with 'urn:lsid:ubio.org:classificationbank' is the type
+ * of entity that Drupal will call a term, and TCS would call a TaxonConcept.
+ */
+function taxonomy_xml_parse_lsid($id) {
+  $bits = split(":", $id);
+  if (count($bits) < 5) return NULL;
+  $lsid = array(
+    'urn' => $bits[0],
+    'schema' => $bits[1],
+    'authority' => $bits[2],
+    'namespace' => $bits[3],
+    'identifier' => $bits[4],
+    'version' =>  $bits[5],
+    'type' => join(':', array($bits[0], $bits[1], $bits[2], $bits[3])),
+  );
+  if ((count($bits) > 4) && $lsid['urn'] == 'urn' && $lsid['schema'] == 'lsid' ) {
+    return $lsid;
+  }
+  return NULL;
+}
+
+
+/**
+ * Manage batch queues by dividing them into recursive 'rounds'.
+ * 
+ * Given a placeholder term item, make a note that it should be retrieved and
+ * analysed when possible.
+ * 
+ * @param $term a template term object, must include at least a URI that
+ * indicates where the rest of the information should be sourced from.
+ * 
+ * If no $term is given, this function RETURNS the remaining queue so far, in
+ * the form of a batch configuration object that can be batch_set().
+ * 
+ * Retrieving the queue empties the static list held here, so it can only be
+ * done once.
+ * 
+ * The returned queue will include a rider at the end of the operations that
+ * will trigger a recursion if it finds that new terms have been added to this
+ * list in the most recent round.
+ * 
+ */
+function taxonomy_xml_add_term_to_batch_queue($term = NULL) {
+  if ($term) {
+    $_SESSION['taxonomy_xml_batch_queue'][$term->uri] = array('taxonomy_xml_import_from_url', array($term));
+    #drupal_set_message(t("Batch Queued %term for import later...", array('%term' => $term->URI)), 'trace');
+
+    // To avoid overruns, ensure that batches are not too big
+    if (count($_SESSION['taxonomy_xml_batch_queue']) >= TAXONOMY_XML_MAX_BATCH_SIZE) {
+      batch_set(taxonomy_xml_add_term_to_batch_queue());
+    }
+
+  } 
+  else {
+    // Called with no arg, 
+    // this means we want to return the queue so far, and flush it from here.
+    if ( ! empty($_SESSION['taxonomy_xml_batch_queue']) ) { 
+      $_SESSION['taxonomy_xml_batch_count'] ++;
+
+      // Prepare a batch config
+      $batch_settings = array(
+        'finished' => 'taxonomy_xml_batch_import_finished',
+        'title' => t('Processing all queued import requests.'),
+        'init_message' => t('Starting Batch Taxonomy Import.'),
+        'progress_message' => t(' Round %round. Processed @current out of @total. (May require further recursion)', array('%round' => $_SESSION['taxonomy_xml_batch_count'])),
+        'error_message' => t('Batch Taxonomy Import has encountered an error.'),
+      );
+
+      // Queue up our ops, and flush them from here.
+      $batch_settings['operations'] = $_SESSION['taxonomy_xml_batch_queue'];
+      unset($_SESSION['taxonomy_xml_batch_queue']);
+  
+      drupal_set_message(t("Retrieving the next batch queue, batch %batch_number. %operations_count operations in this batch . ", array('%batch_number' => $_SESSION['taxonomy_xml_batch_count'], '%operations_count' => count($batch_settings['operations']))) );
+
+      // The last thing each round should do is queue up the next round. Add this callback to the operations.
+      $batch_settings['operations']['final'] = array('taxonomy_xml_batch_requeue_more' , array());
+
+      return $batch_settings;
+    } 
+    else {
+      // If the queue is empty, return NULL so the caller won't get confused by an empty batch
+      return NULL; 
+    }
+  }
+}
+
+
+/**
+ * Import one URL. Function used by the batch operation
+ * 
+ * $param $term_placeholder A term object that is expected to be provided with
+ * at least a URI to go fetch data from. May have other context info (like the
+ * parent attribute) already set. This data should be merged onto that which is
+ * absobed.
+ * 
+ * @ingroup  batch_operations
+ */
+function taxonomy_xml_import_from_url($term_placeholder, &$context) {
+  $text = taxonomy_xml_cached_get_contents($term_placeholder->uri);
+  #drupal_set_message(t('Retrieved Queued URL %url. Now processing it.', array('%url' => $term_placeholder->URI)));
+  $format = variable_get('taxonomy_xml_format', 'xml');
+  $vid = variable_get('taxonomy_xml_vid', 0);
+  
+  // Invoke the appropriate format library, file already included on submit.
+  $format_name = preg_replace('/_format$/', '', $format);
+  $funcname = "taxonomy_xml_${format_name}_parse";
+  if ( function_exists($funcname) ) {
+    $terms = $funcname($text, $vid, $term_placeholder->uri);
+    // $terms is an array, as one URL may produce several terms,
+    // It also contains all the known terms, not just the new one.
+  }
+
+  #dpm(array('placeholder was' => $term_placeholder, 'terms are' => $terms));
+
+  $context['message'] = "Imported from ". $term_placeholder->uri;
+  if ($this_term = $terms[$term_placeholder->uri]) {
+    $context['results'][$this_term->tid] = $this_term->name;
+    $context['message'] .= "<br/>Result: ". $this_term->name;
+  }
+
+  return $terms;
+}  
+
+
+/**
+ * Batch callback action that should happen at the end of each round of
+ * processing.
+ * 
+ * The last thing that happens in a batch 'round' is the next round gets added
+ * to the queue.
+ * 
+ * @ingroup  batch_operations
+ */
+function taxonomy_xml_batch_requeue_more(&$context) {
+  if ($new_jobs = taxonomy_xml_add_term_to_batch_queue()) {
+    $context['message'] = t("Finished one round of imports, but n the process found still more to do. Restarting to process a further %remaining_count items.", array('%remaining_count' => count($new_jobs['operations'])));
+    batch_set($new_jobs);
+  }
+}
+
+
+/**
+ * Finalization callback when a round is done.
+ * 
+ * @ingroup batch_operations
+ */
+function taxonomy_xml_batch_import_finished($success, $results, $operations) {
+
+  if ($success) {
+    $message = t("Completed a batch round #%batch_count. %count items processed." , array('%count' => count($results), '%batch_count' => $_SESSION['taxonomy_xml_batch_count'] ));
+    foreach ($results as $tid => $term_name) {
+      $message .= " ". l( $term_name, 'taxonomy/term/'. $tid);
+    }
+  }
+  else {
+    // An error occurred.
+    // $operations contains the operations that remained unprocessed.
+    $error_operation = reset($operations);
+    $message = 'An error occurred while processing '. $error_operation[0] .' with arguments :'. print_r($error_operation[1], TRUE);
+    dpm(array("Batch error" => array($success, $results, $operations)));
+  }
+  drupal_set_message($message);
+}
+
+
+/**
+ * Return a list of known taxonomy services. Optionally filtered by type,
+ * or formatted for re-use.
+ * 
+ * @return A structured array describing each service and how it can be invoked
+ * 
+ * @param $type if set, return only services of the named type. currently
+ * 'search' or 'lookup'
+ * 
+ * @param $mode either 'full', 'options' or 'links'
+ * full returns the whole description,
+ * options returns an array suitable for use in select box,
+ * links may return a list linked to more information about the service. TODO
+ */ 
+function taxonomy_xml_lookup_services($type = NULL, $mode = 'full') {
+  // Use a hook lookup to allow any later modules to provide new search services
+  static $services;
+  if (empty($services)) {
+    $services = module_invoke_all('taxonomy_servers');
+  }
+  $requested = $services;
+  
+  if ($type) {
+    // filter out unwanted
+    foreach ($requested as $id => $service) {
+      if ($service['servicetype'] != $type) unset($requested[$id]);
+    }
+  }
+
+  if ($mode == 'options') {
+    $options = array();
+    foreach ($requested as $id => $service) {
+      $options[$id] = $service['provider'] ." - ". $service['servicename'];
+    }
+    return $options;
+  }
+  return $requested;
+
+}
+
+
+
+/**
+ * Replace URL patterns containing placeholders for data values.
+ * 
+ * Used when invoking GET URL services
+ * 
+ * Given a pattern like http://example.com/lookup?id=!id&rank=!rank and array
+ * ('rank' => 'Genus', 'id' => 55596) those values will be placed into the URL.
+ * Note that we add '!' before doing the sub, to avoid incorrect placements,
+ * otherwise we'd just use strtr()
+ */
+function taxonomy_xml_sub_placeholders_into_pattern($pattern, $values) {
+  $subs = array();
+  foreach ($values as $var => $val) {
+    $subs['!'. $var] = $val;
+  } 
+  return strtr($pattern, $subs);
+}
+
+/**
+ * Return a list of known lookup and search services, and some instructions on
+ * how they may be invoked
+ */
+function taxonomy_xml_taxonomy_servers() {
+  $services = array(
+    'twdg' => array(
+      'provider' => 'Biodiversity Information Standards (TDWG)',
+      'servicename' => 'LSID Web Resolver',
+      'servicetype' => 'lookup',
+      'identifier' => 'LSID',
+      'protocol' => 'URI',
+      'pattern' => 'http://lsid.tdwg.org/!identifier',
+      'format' => 'rdf_format',
+    ),
+  ); 
+  return $services;  
+}
+
+/**
+ * htmlentities doesn't actually encode strings to anything XML-safe.
+ * This is a slightly laborious emulation that does decimal entities not fancy
+ * character ones.
+ * Taken from http://nz.php.net/manual/en/function.htmlentities.php
+ * 
+ * @ingroup Utility
+ */
+function xmlentities($str) {
+  return $str;
+  return preg_replace('/[^\x00-\x7F]/e', '"@#".ord("$0").";"', $str);
+}
+
+/**
+ * Returns a HANDLE on the current working list of terms.
+ * Basically behaving like a global, so we can cache and share the working list.
+ * 
+ * Remember to fetch the list by handle, eg $terms =&
+ * taxonoomy_xml_current_terms() if you are planning on modifying the list.
+ */
+function &taxonomy_xml_current_terms() {
+  static $terms;
+  if (! isset($terms)) $terms = array(); 
+  return $terms;
+}
+
+/**
+ * Return an array of alternative wordings that may be used in the input files.
+ * 
+ * Add to this as needed, Referring to the globals defined at the top of the
+ * module.
+ * Different input files use different words to express the same concept. This
+ * array tries to translate the meanings down into the core concepts used
+ * internally.
+ * The reason that this list is so big and messy is because all the different
+ * academic sources I've researched just use different terminology to say the
+ * same thing.
+ * 
+ * See ISO 2788 for notes on expressing thesauri.
+ * or SKOS http://www.w3.org/2004/02/skos/vocabs
+ * 
+ * or an alternative glossary:
+ * "http://www.boxesandarrows.com/view/controlled_vocabularies_a_glosso_thesaurus"
+ * 
+ * Each of these terms are predicates that would make up a 'triple' statement.
+ * For a geographical taxonomy, a sample could be:
+ * 
+ * Subject, Predicate, Object
+ * 
+ * "United States of America", "Narrower", "Iowa"
+ * "United States of America", "Broader", "North America"
+ * "United States of America", "AKA", "USA"
+ * "The States", "See", "United States of America"
+ */
+function taxonomy_xml_relationship_synonyms() {
+  static $synonyms;
+  if (! isset($synonyms)) {
+    $synonyms = array(
+    'Related Terms'   => TAXONOMY_XML_RELATED,
+    'Related'         => TAXONOMY_XML_RELATED,
+    'related'         => TAXONOMY_XML_RELATED, # SKOS
+    'RT'              => TAXONOMY_XML_RELATED, # ISO2788
+    'seeAlso'         => TAXONOMY_XML_RELATED,
+    'Broader Terms'   => TAXONOMY_XML_PARENT,
+    'Broader'         => TAXONOMY_XML_PARENT,
+    'broader'         => TAXONOMY_XML_PARENT, # SKOS
+    'Broad Term'      => TAXONOMY_XML_PARENT,
+    'BT'              => TAXONOMY_XML_PARENT, # ISO2788
+    'subClassOf'      => TAXONOMY_XML_PARENT, # rdfs
+    'SubClassOf'      => TAXONOMY_XML_PARENT, # contentlabel
+    'ChildOf'         => TAXONOMY_XML_PARENT,
+    'hypernym'        => TAXONOMY_XML_PARENT,
+    'hyponymOf'       => TAXONOMY_XML_PARENT,
+    'parent'          => TAXONOMY_XML_PARENT, // lsid.zoology.gla.ac.uk
+    'is child taxon of' => TAXONOMY_XML_PARENT, # TCS
+    'Narrower Terms'  => TAXONOMY_XML_CHILD,
+    'Narrower'        => TAXONOMY_XML_CHILD,
+    'narrower'        => TAXONOMY_XML_CHILD, # SKOS
+    'NT'              => TAXONOMY_XML_CHILD, # ISO2788
+    'ParentOf'        => TAXONOMY_XML_CHILD,
+    'hasChild'        => TAXONOMY_XML_CHILD, # uBio
+    'hyponym'         => TAXONOMY_XML_CHILD,
+    'is parent taxon of' => TAXONOMY_XML_CHILD, # TCS
+    'Description'     => TAXONOMY_XML_DESCRIPTION,
+    'description'     => TAXONOMY_XML_DESCRIPTION, # DC
+    'definition'      => TAXONOMY_XML_DESCRIPTION, # SKOS
+    'Definition'      => TAXONOMY_XML_DESCRIPTION,
+    'comment'         => TAXONOMY_XML_DESCRIPTION,
+    'gloss'           => TAXONOMY_XML_DESCRIPTION,
+    'Scope Note'      => TAXONOMY_XML_DESCRIPTION,
+    'note'            => TAXONOMY_XML_DESCRIPTION, # SKOS
+    'SN'              => TAXONOMY_XML_DESCRIPTION, # ISO2788
+    'Used for'        => TAXONOMY_XML_HAS_SYNONYM,
+    'AKA'             => TAXONOMY_XML_HAS_SYNONYM,
+    'synonym'         => TAXONOMY_XML_HAS_SYNONYM,
+    'altLabel'        => TAXONOMY_XML_HAS_SYNONYM, # SKOS
+    'equivalentClass' => TAXONOMY_XML_HAS_SYNONYM,
+    'has synonym'     => TAXONOMY_XML_HAS_SYNONYM, #TCS
+    'has vernacular'  => TAXONOMY_XML_HAS_SYNONYM, #TCS
+    'See'             => TAXONOMY_XML_SYNONYM_OF,
+    'USE'             => TAXONOMY_XML_SYNONYM_OF, # ISO2788
+    'Use'             => TAXONOMY_XML_SYNONYM_OF, 
+    'related'         => TAXONOMY_XML_RELATED,
+    'seeAlso'         => TAXONOMY_XML_RELATED,
+    'memberMeronymOf' => TAXONOMY_XML_RELATED,
+    'Part of'         => TAXONOMY_XML_IN_VOCABULARY,
+    'belongs-to-facet' => TAXONOMY_XML_IN_VOCABULARY,
+    'isDefinedBy'     => TAXONOMY_XML_IN_VOCABULARY, # rdfs
+    'inScheme'        => TAXONOMY_XML_IN_VOCABULARY, # SKOS
+    'name'            => TAXONOMY_XML_NAME,
+    'title'           => TAXONOMY_XML_NAME, # DC
+    'lexicalForm'     => TAXONOMY_XML_NAME,
+    'label'           => TAXONOMY_XML_NAME,
+    'scientific name' => TAXONOMY_XML_NAME,
+    'prefLabel'       => TAXONOMY_XML_NAME, #SKOS
+    'hasDescriptor'   => TAXONOMY_XML_UNUSED,
+    // OBO.  'synonym' already covered above
+    'def'     => TAXONOMY_XML_DESCRIPTION,
+    'is_a'        => TAXONOMY_XML_PARENT,
+    );
+  }
+  // By listing the deliberately unused attributes the parser finds, 
+  // we can still be alerted to other unrecognised tags found in the input. 
+  // Perhaps they could be used. Otherwise the unused ones cause too much noise.
+  return $synonyms;
+}
+
+
+/**
+ * Identify which format importers can handle file-based batch jobs.
+ */
+function taxonomy_xml_implements_file_batching($format) {
+  // if we use a third time, factor function name generation into a function
+  $format_name = preg_replace('/_format$/', '', $format);
+drupal_set_message($format_name);  
+  $funcname = "taxonomy_xml_${format_name}_batch_parse_file";
+  return function_exists($funcname);
+}
