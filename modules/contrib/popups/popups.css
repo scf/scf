@@ -1,66 +1,52 @@
 /*
-** Popups Dialog box styles
+** Ajax popups dialog box styles
 */
 
 #popups-overlay {
-  position: fixed;
-  width: 100%;
-  height: 100%;
-/*  opacity: 0.4; */
+  position: absolute;
   background: black;
   z-index: 9;  
   top: 0;
 }
-
 #popups-loading {
   z-index: 10;  
   opacity: 0.75;
   position: relative;
 }  
-#popups-loading div{
-  position: fixed;	
+#popups-loading div {
+  position: absolute;  
 }
-
-
 #popups {
   border: 1px solid black;
   background: white;
   position: absolute;
-  opacity: 1.0;
   z-index: 10;  
-  color: black;
   padding: 0.5em;
-/*  visibility: hidden; */
+  width: 600px;
+  overflow: auto;  
 }
-
 #popups-title {
-  background: #222;
-  color: white;
-  padding: 0.2em;
-  margin: 0.2em;
+  font-weight: bold;
+  margin-bottom: 0.25em;
 }
-
 #popups-title div.title {
-  float:left;
+  float: left;
 }
-
 #popups-title #popups-close {
-  float:right;
+  float: right;
 }
 #popups-title #popups-close a {
-    color: red;  
+  font-weight: normal;  
 }
+/*
 #popups-title div.clear {
-  clear:both;
-}  
-
-#popups input {
-  margin: 0.1em;
+  clear: both;
 }
-
+*/
+/* Allow messages to be used as the title of the popups */
 #popups div.messages {
-	background: #222;
-	border: none;
-	padding: 0;
-	margin: 0;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
 }

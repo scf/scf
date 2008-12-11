@@ -1,9 +1,113 @@
 <?php
 
 /**
+ * Minimum supported version of PHP.
+ */
+define('SCF_MINIMUM_PHP',    '5.2.0');
+
+/**
+ * Minimum recommended value of PHP memory_limit.
+ */
+define('SCF_MINIMUM_PHP_MEMORY_LIMIT',    '32');
+
+/**
+ * Minimum supported version of MySQL, if it is used.
+ */
+define('SCF_MINIMUM_MYSQL',  '5.0.0');
+
+/**
+ * Minimum supported version of PostgreSQL, if it is used.
+ */
+define('SCF_PGSQL',  FALSE);
+
+/**
+ * Test and report SCF installation requirements.
+ *
+ * @param $phase
+ *   The current system installation phase.
+ * @return
+ *   An array of system requirements.
+ */
+function scf_requirements($phase) {
+  $requirements = array();
+  // Ensure translations don't break at install time
+  $t = get_t();
+
+  // Test PHP version
+  $requirements['php'] = array(
+    'title' => $t('PHP'),
+    'value' => ($phase == 'runtime') ? l(phpversion(), 'admin/reports/status/php') : phpversion(),
+  );
+  if (version_compare(phpversion(), SCF_MINIMUM_PHP) < 0) {
+    $requirements['php']['description'] = $t('Your PHP installation is too old. SCF Drupal requires at least PHP %version.', array('%version' => SCF_MINIMUM_PHP));
+    $requirements['php']['severity'] = REQUIREMENT_ERROR;
+  }
+
+  // Test PHP memory_limit
+  $memory_limit = ini_get('memory_limit');
+  $requirements['php_memory_limit'] = array(
+    'title' => $t('PHP memory limit'),
+    'value' => $memory_limit,
+  );
+
+  if ($memory_limit && parse_size($memory_limit) < parse_size(SCF_MINIMUM_PHP_MEMORY_LIMIT)) {
+    $description = '';
+    if ($phase == 'install') {
+      $description = $t('Consider increasing your PHP memory limit to %memory_minimum_limit to help prevent errors in the installation process.', array('%memory_minimum_limit' => SCF_MINIMUM_PHP_MEMORY_LIMIT));
+    }
+    elseif ($phase == 'update') {
+      $description = $t('Consider increasing your PHP memory limit to %memory_minimum_limit to help prevent errors in the update process.', array('%memory_minimum_limit' => SCF_MINIMUM_PHP_MEMORY_LIMIT));
+    }
+    if (!empty($description)) {
+      if ($php_ini_path = get_cfg_var('cfg_file_path')) {
+        $description .= ' '. $t('Increase the memory limit by editing the memory_limit parameter in the file %configuration-file and then restart your web server (or contact your system administrator or hosting provider for assistance).', array('%configuration-file' => $php_ini_path));
+      }
+      else {
+        $description .= ' '. $t('Contact your system administrator or hosting provider for assistance with increasing your PHP memory limit.');
+      }
+
+      $requirements['php_memory_limit']['description'] = $description .' '. $t('See the <a href="@url">Drupal requirements</a> for more information.', array('@url' => 'http://drupal.org/requirements'));
+      $requirements['php_memory_limit']['severity'] = REQUIREMENT_WARNING;
+    }
+  }
+  
+  // Test DB version
+  global $db_type;
+  if (! SCF_PGSQL && $db_type == 'pgsql') {
+    $requirements['pgsql'] = array(
+      'title' => $t('PostgreSQL'),
+      'value' => $db_type,
+      'severity' => REQUIREMENT_WARNING,
+      'description' => $t('SCF Drupal has not been tested with PostgreSQL'),
+    );
+  }
+  else {  // if (function_exists('db_status_report')) {
+    // this deviates from the simple function call in system.install
+    // for some reason, no db files are loaded and nothing in $db_type variable
+    // so no db_status_report() and no db_version().
+    //    $requirements += db_status_report($phase);
+  
+    //  $version = db_version();
+    list($version) = explode('-', mysql_get_server_info());
+    $requirements['mysql'] = array(
+      'title' => $t('MySQL database'),
+      'value' => ($phase == 'runtime') ? l($version, 'admin/reports/status/sql') : $version,
+    );
+  
+    if (version_compare($version, SCF_MINIMUM_MYSQL) < 0) {
+      $requirements['mysql']['severity'] = REQUIREMENT_ERROR;
+      $requirements['mysql']['description'] = $t('Your MySQL Server is too old. SCF Drupal requires at least MySQL %version.', array('%version' => SCF_MINIMUM_MYSQL));
+    }
+  }
+  
+  return $requirements;
+}
+
+
+/**
  * Implementation of hook_install().
  */
-function scf_install () {
+function scf_install() {
   // Set the weight of the scf.module to 1 so it is loaded after
   // the taxonomy and oo modules
   db_query("UPDATE {system} SET weight = 1 WHERE name = 'scf'");
