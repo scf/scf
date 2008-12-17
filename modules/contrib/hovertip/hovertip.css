@@ -1,0 +1,126 @@
+/* classes for tooltips */
+
+.hovertip, .hoverinfo {
+	position: relative;
+    display: none; /* in case javascript is disabled */
+	width: 240px;
+	background-color: #d3e3f6;
+	font-size: 12px;
+	z-index: 100;
+	margin-left: 5px;
+	margin-top: 10px;
+}
+.hovertip_wrap0 .hovertip,
+.hovertip_wrap0 .hoverinfo {
+			   margin: 0;
+}
+.hovertip_wrap0 {
+	margin-left: 5px;
+	margin-top: 10px;			   
+	z-index: 100;
+}
+
+.clicktip {
+	position: relative;
+    display: none; /* in case javascript is disabled */
+	background-color: rgb(255, 255, 234);
+	border: 1px solid black;
+	padding: 3px;
+	font-size: 12px;
+	margin: 1em;
+	z-index: 10;
+}
+
+.clicktip h1, .hovertip h1, .hoverinfo h1 {
+	height: auto;
+	margin-top: 0px;
+	margin-left: 0px;
+	background-color: #336699;
+	color: white !important;
+	font-size: 14px;
+	font-weight: bold;
+	margin: 0;
+	z-index: 10;
+	padding: 2px !important;
+	text-align: center;
+}
+
+.clicktip p, .hovertip p {
+	padding: 2px;
+	margin-top: 0.5em;
+	line-height: 1.2em;
+	z-index: 10;
+}
+.clicktip p {
+		  margin-right: 1em;
+}
+.clicktip_targetXXX {
+				 background-image: url(information.png);
+				 background-repeat:no-repeat;
+				 background-position: top right;				 
+				 padding-right: 20px;
+}
+
+.hovertip_target, .clicktip_target {
+				 font-style: italic;
+}
+.clicktip_target {
+				text-decoration: underline;
+}
+.clicktip_target:hover, .hovertip_target:hover {
+						text-decoration: none;
+					  cursor:help;
+}
+a.clicktip_close {
+				 display: block;
+				 position: absolute;
+				 bottom: 0px;
+				 right: 3px;
+				 cursor: pointer;
+				 /*text-decoration: underline;*/
+}
+a.clicktip_close span {
+}
+
+/* drop shadow based on http://jquery.com/test/zomg.html 
+   and also http://www.positioniseverything.net/articles/sidepages/dropshadow/dropshadow.html
+*/
+
+html body .hovertip_wrap0 {
+		  display: none;
+  background:url(corner_tr.png) right top no-repeat;
+}
+html body .hovertip_wrap1 {
+		  display: block;
+  background:url(corner_bl.png) left bottom no-repeat;
+  padding-top: 8px;
+  padding-left: 8px;
+}
+html body .hovertip_wrap2 {
+		  display: block;
+  background:url(shadow.png) bottom right no-repeat;
+}
+html body .hovertip_wrap3 {
+        display:block;
+		position: relative;
+		left: -8px;
+		top: -8px;
+	background-color: #d3e3f6;
+}
+.hovertip_wrap3 {
+        border:1px solid #ccc;
+		/*border-color:#efefef #ccc #ccc #efefef;*/
+		padding: 5px;
+}
+span {
+	 display: inline;
+}
+
+.hoverinfo_target {
+  background: transparent url(hoverinfo.png) no-repeat center center;
+  padding: 8px;
+  margin: 0 .2em;
+  display: inline;
+  position: relative;
+  top: -.5em;
+}

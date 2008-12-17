@@ -1,0 +1,31 @@
+As well as attaching popup behavior to links, 
+Popups API provides javascript function for creating in-window popup messages.
+
+TODO: Add more togglable options like non-modal & auto-close.
+
+
+Drupal.popups.message(title, message)
+  Produces a simple modal box with the title, message and "OK", "Cancel" buttons.
+  
+Drupal.popups.open(title, body, buttons, width)
+  More powerful, allows you to specify what the buttons are and what they do.
+  buttons is a hash of hash, with button title and function.
+  * Example:
+  Drupal.popups.open( 
+    Drupal.t('Warning: Please Confirm'), 
+    Drupal.t("There are unsaved changes on this page, which you will lose if you continue."),
+    { 
+      'popup_save': {
+        title: Drupal.t('Save Changes'), 
+        func: function(){Drupal.popups.savePage(element, options);}
+      },
+      'popup_submit': {
+        title: Drupal.t('Continue'), 
+        func: function(){Drupal.popups.removePopup(); Drupal.popups.openPath(element, options);}
+      },
+      'popup_cancel': {
+        title: Drupal.t('Cancel'), func: Drupal.popups.close;
+      } 
+    }
+  );
+  

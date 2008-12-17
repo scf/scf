@@ -1,0 +1,98 @@
+<?php
+// $Id: popups_reference.module,v 1.1.2.4 2008/10/25 02:25:31 starbow Exp $
+
+/**
+ * @file
+ * Modify the Node Reference widget to use a popup to add a new node.
+ */ 
+
+function _popups_reference_counter() {
+  static $count = 0;
+  return $count++;
+}
+
+/**
+ * Generates 'Add new...' link
+ * for each allowed content type
+ */
+function _popups_reference_links($field, $src_type, $id=null) {
+  if ($id) { // Creating link to select box.
+    $pclass = $id;
+    // Target just the select box for replacing.
+    popups_add_popups(array('.'.$pclass=>array('targetSelectors'=>array('#'.$id))));
+  }
+  else { // Creating link to autofill box.
+    $pclass = 'popups';
+    popups_add_popups();
+  }
+  $options = array(
+    'attributes' => array(
+      'class' => $pclass, 
+    ),
+    'query' => array('destination' => 'node/add/' . str_replace('_', '-', $src_type)),  
+  );
+  $links = array();
+  $all_types = node_get_types();
+  foreach ($field['referenceable_types'] as $type => $value) {
+    if (!empty($value) && user_access("create $type content")) {
+      $path = 'node/add/' . str_replace('_', '-', $type);
+      $links[] = l("Add $type", $path, $options);
+    }
+  }
+  return $links;
+}
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function popups_reference_form_alter(&$form, $form_state, $form_id) {
+  if (isset($form['type'])) {
+    $node = $form['#node'];
+    if ($form['type']['#value'] .'_node_form' == $form_id) {  
+      $fields = content_fields();
+      foreach ($form as $key => $item) {
+        if (is_array($item)) {
+        //  firep($item['#type'], $key);
+          $type = $item['#type'];
+          if ($type == 'fieldset') { // loop through all the subitems.
+            foreach ($form[$key] as $subkey => $subitem) {
+              popups_reference_alter_item($form[$key], $subkey, $subitem, $fields);
+            }
+          }
+          else {
+            popups_reference_alter_item($form, $key, $item, $fields);
+          }
+        }
+        
+      }
+    }
+  }
+}
+
+function popups_reference_alter_item(&$form, $key, $item, $fields) {  
+  $field_name = strstr($key, 'field_');
+  if (isset($fields[$field_name]) && $fields[$field_name]['type'] == 'nodereference') {
+    $type = $form['type']['#value'];
+    $field = content_fields($field_name, $form['type']['#value']);
+    
+    if ($field['widget']['type'] == 'nodereference_select') {
+      $id = 'popups-reference-' . _popups_reference_counter();
+      $links = _popups_reference_links($field, $type, $id);
+      if ($links) {
+        // Need wrapped with id for ahah replacement.
+        $form[$key]['#prefix'] = '<div id="'. $id .'">';
+        $form[$key]['#suffix'] = '<div>Add New: ' . implode(', ', $links) .'</div></div>';
+      }
+    }
+
+    else if ($field['widget']['type'] == 'nodereference_autocomplete') {
+      $links = _popups_reference_links($field, $type, $id);
+      if ($links) {
+        $form[$key]['#suffix'] = '<div>Add New: ' . implode(', ', $links) .'</div>';
+      }
+    }
+    
+  }
+}
+      
+

@@ -1,0 +1,30 @@
+#popups {
+  border: 2px solid #EDF5FA;
+  -moz-border-radius: 8px;
+  -webkit-border-radius: 8px;
+  opacity: 0.9;
+}
+#popups-title {
+  border-bottom: 1px solid #b4d7f0;
+  background-color: #d4e7f3;
+  color: #455067;
+  margin-bottom: 0.25em;
+  padding: 0.25em;
+  -moz-border-radius-topleft: 5px;
+  -webkit-border-radius-topleft: 5px;
+}
+#popups-title #popups-close a {
+  color: red;  
+}
+#popups input {
+  margin: 0.1em;
+}
+#popups input[type="text"]:focus, #popups input[type="password"]:focus, #popups textarea:focus {
+  background-color: #FFA;
+  outline: thin solid grey;
+}
+a.popups-processed:after {
+  content: "\25A1";
+  vertical-align: super;
+  font-size: smaller; 
+}

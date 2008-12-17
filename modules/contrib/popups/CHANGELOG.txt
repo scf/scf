@@ -1,0 +1,86 @@
+6.x--1-1
+ * Removed a couple non-working links from popups_admin.module.
+
+6.x--1-1-RC8
+New Features
+ * http://drupal.org/node/336058 by quicksketch: use drupal_match_path() to allow wildcards in url path.
+ * Automatically set the url's destination to return to the original page (if forceReturn is not used).
+ * Added an agressive alert if the theme's content selector is incorrect.
+Pre-release Clean up
+ * noReload renamed noUpdate (for now noReload still works).
+ * class popups-form-noreload renamed popups-form-noupdate (for now popups-form-noreload still works).
+ * Popup testing code moved into popups_test module.
+ * Improved documentation in Readme.
+ 
+6.x--1-1-RC7
+Bug Fixes
+ * http://drupal.org/node/335506: Fix popups not closing b/c of page aliasing.
+
+6.x--1-1-RC6
+New Features
+  * Added class=popups-form-noreload.
+  * Added wildcard, '*', that adds popup rule to every page (http://drupal.org/node/241504).  
+Bug Fixes
+  * noReload=TRUE now works coorectly for forms (http://drupal.org/node/333343).
+
+6.x--1-1-RC5
+New Features
+ * new option: reloadWhenDone - better way to cold reload the page, b/c form will stay in popup 
+   on validation errors (http://drupal.org/node/330608)
+ * new class: popups-form-reload - adds popup behavior to link, with option reloadWhenDone = TRUE.
+ * new option: reloadOnError - don't show "Unable to load page" error. Specifically for "logout" link, 
+   because loging out erases session and so can't return json. 
+
+6.x--1-1-RC4
+Bug Fixes
+  * The 'popit' feature was broken.
+
+6.x--1-1-RC3
+New Features
+ * "Scan all pages" setting.
+ * popit: if there is an element on the page with an id="popit" that element will be opened in a popup
+   message box when the page is first loaded (http://drupal.org/node/325806)
+Bug Fixes
+ * Documentation used to lie like a dog about including popups in the theme layer.  Need to use new scan all checkbox.
+ 
+6.x--1-1-RC2
+New Feature
+ * updateTitle changed to titleSelectors, now an array of selectors.
+ * New test added for titleSelectors.
+ * targetSelector -> targetSelectors.
+ * Can now force page reload of page by setting noReoad => true on a popup with a form.
+ * more documentation
+Bug Fixes
+ * Per-theme content selector fixed.
+ * http://drupal.org/node/324742 (lowkee) - don't use "if(string)" tests in javascript. Use if(str.length)
+ * Replaced for loops with jQuery.each
+ * Killing bogus Drupal.behaviors.teaser
+ 
+6.x--1-1-RC1
+New Features
+ * options.targetSelector is now a hash.
+ * Better error handling in Drupal.popups.openPath
+ * New test for popups_add_popups($rules)
+ * Better README - now recommends popups_add_popups($rules)
+ * Seperated the Popups API from the hook that adds popups to admin pages.
+Bug Fixes
+ * Using $(document).height instead of $('body').height.
+Known Issues
+ * Not working with CCK-rc10.
+
+6.x--1-1-beta5 (released in conjunction with Popups: Add and Reference).
+New Features
+ * Moving content selector settings to per-theme.
+ * Removed page title select (until I get it working better).
+ * targetSelector now working properly.
+ * Final messages now auto-close by default.
+ * More tests added to /popups/test
+ * Added some fun CSS3 effects to the default skin.
+Bug Fixes
+ * class='popups' was reloading entire content area.
+ * forceReload wasn't testing correctly.
+ * Popup chaining triggers warning message, instead of ugly mess.
+TODO
+ * Better handling for "access denied" messages. 
+ * Get popup chaining working.
+ 

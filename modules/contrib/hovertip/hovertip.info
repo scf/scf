@@ -1,0 +1,10 @@
+name = Hovertip
+description = Support for tooltips, via the jquery hovertip plugin.
+core = 6.x
+
+; Information added by drupal.org packaging script on 2008-05-16
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "hovertip"
+datestamp = "1210896423"
+

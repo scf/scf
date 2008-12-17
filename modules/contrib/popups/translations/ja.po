@@ -1,0 +1,116 @@
+# $Id$
+# -----------------------------------------------------------------------------
+# Japanese translation of Drupal (modules-popups)
+#
+# Copyright (c) 2008       Drupal Japan  ( http://drupal.jp/ )  /
+#                          Takafumi      ( jp.drupal@imagine **reverse order**)
+#
+# Generated from file:
+#  popups-popup.tpl.php,v 1.1.2.4 2008/09/15 01:48:52 starbow
+#  popups.module,v 1.11.2.5 2008/09/15 01:48:53 starbow
+#  popups.info,v 1.4 2008/03/11 16:56:08 starbow
+#  popups.js,v 1.9.2.6 2008/09/15 01:48:52 starbow
+#
+# -----------------------------------------------------------------------------
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2008-09-15 18:30+0900\n"
+"Last-Translator: Takafumi <jp.drupal@imagine **reverse order**>\n"
+"Language-Team: Drupal Japan\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+
+#: popups-popup.tpl.php:6
+msgid "Close"
+msgstr "閉じる"
+
+#: popups.module:153
+msgid "Popup Settings"
+msgstr "ポップアップの設定"
+
+#: popups.module:158
+msgid "Content Selector"
+msgstr "コンテンツセレクタ"
+
+#: popups.module:160
+msgid "jQuery selector to define the page's content area on this theme."
+msgstr "このテーマでページのコンテンツ領域を定義するための、jQueryセレクタを入力します。"
+
+#: popups.module:306
+msgid "edit vocabulary"
+msgstr "ボキャブラリの編集"
+
+#: popups.module:307
+msgid "list terms"
+msgstr "タームのリスト"
+
+#: popups.module:311
+msgid "add terms"
+msgstr "タームの追加"
+
+#: popups.module:329;346
+msgid "edit"
+msgstr "編集"
+
+#: popups.module:427
+msgid "Do NOT auto-close final message."
+msgstr "最後のメッセージを自動で閉じない"
+
+#: popups.module:44 popups.info:0
+msgid "Popups"
+msgstr "Popups"
+
+#: popups.module:46
+msgid "Configure the page-in-a-dialog behavior."
+msgstr "ダイアログでのページの振る舞いを設定します。"
+
+#: popups.module:51;57
+msgid "Popup Test"
+msgstr "ポップアップのテスト"
+
+#: popups.module:0
+msgid "popups"
+msgstr "popups"
+
+#: popups.info:0
+msgid "General dialog creation utilities"
+msgstr "全般的なダイアログ生成ユーティリティ"
+
+#: popups.info:0
+msgid "User interface"
+msgstr "ユーザインターフェイス"
+
+#: popups.js:0
+msgid "[Popup]"
+msgstr "［ポップアップ］"
+
+#: popups.js:0
+msgid "There are unsaved changes on this page, which you will lose if you continue."
+msgstr "このページに保存されていない変更があります。 継続した場合、その変更は失われます。"
+
+#: popups.js:0
+msgid "Save Changes"
+msgstr "変更を保存"
+
+#: popups.js:0
+msgid "Continue"
+msgstr "継続"
+
+#: popups.js:0
+msgid "Cancel"
+msgstr "キャンセル"
+
+#: popups.js:0
+msgid "Warning: Please Confirm"
+msgstr "警告：確認してください"
+
+#: popups.js:0
+msgid "OK"
+msgstr "OK"
+
+#: popups.js:0
+msgid "Sorry, there is no additional help for this page"
+msgstr "このページの補足ヘルプはありません"
+
