@@ -1,10 +1,13 @@
 <?php
-// $Id: views_ui.module,v 1.98 2008/04/24 21:59:14 merlinofchaos Exp $
+// $Id: views_ui.module,v 1.108 2008/12/03 02:39:45 merlinofchaos Exp $
 /**
  * @file views_ui.module
  * Provide structure for the administrative interface to Views.
  */
 
+/*
+ * Implementation of hook_menu()
+ */
 function views_ui_menu() {
   $items = array();
 
@@ -132,11 +135,6 @@ function views_ui_menu() {
   );
 
   // autocompletes for handlers and such
-  // Path is not admin/build/views due to menu complications with the wildcards from
-  // the generic ajax callback.
-  $items['admin/views/ajax/autocomplete/user'] = $callback + array(
-    'page callback' => 'views_ui_autocomplete_user',
-  );
   $items['admin/views/ajax/autocomplete/tag'] = $callback + array(
     'page callback' => 'views_ui_autocomplete_tag',
   );
@@ -152,7 +150,10 @@ function views_ui_menu() {
   return $items;
 }
 
-function views_ui_help($path, $arg) {
+/*
+ * Implementation of hook_help()
+ */
+function views_ui_help($path, $arg = '') {
   switch ($path) {
     case 'admin/build/views/tools/convert':
       return '<p>' . t('The converter will make a best-effort attempt to convert a Views 1 view to Views 2. This conversion is not reliable; you will very likely have to make adjustments to your view to get it to match. You can import Views 1 views through the normal Import tab.') . '</p>';
@@ -160,12 +161,8 @@ function views_ui_help($path, $arg) {
 }
 
 /*
- * Implementation of hook_perm()
+ * Implementation of hook_theme()
  */
-function views_ui_perm() {
-  return array('administer views');
-}
-
 function views_ui_theme() {
   $path = drupal_get_path('module', 'views');
   require_once "./$path/includes/admin.inc";
@@ -183,7 +180,7 @@ function views_ui_theme() {
       'path' => "$path/theme",
     ),
     'views_ui_edit_item' => array(
-      'arguments' => array('type' => NULL, 'view' => NULL, 'display' => NULL),
+      'arguments' => array('type' => NULL, 'view' => NULL, 'display' => NULL, 'no_fields' => FALSE),
       'template' => 'views-ui-edit-item',
       'path' => "$path/theme",
     ),
@@ -215,6 +212,7 @@ function views_ui_theme() {
     // On behalf of a plugin
     'views_ui_style_plugin_table' => array(
       'arguments' => array('form' => NULL),
+      'file' => 'includes/admin.inc',
     ),
   );
 }
@@ -257,7 +255,7 @@ function views_ui_check_lock($view) {
  */
 function views_ui_cache_set(&$view) {
   if (!empty($view->locked)) {
-    drupal_set_message('Changes cannot be made to a locked view.', 'error');
+    drupal_set_message(t('Changes cannot be made to a locked view.'), 'error');
     return;
   }
   views_include('cache');

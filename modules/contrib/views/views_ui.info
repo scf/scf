@@ -4,3 +4,10 @@ description = Administrative interface to views. Without this module, you cannot
 package = Views
 core = 6.x
 dependencies[] = views
+
+; Information added by drupal.org packaging script on 2008-12-16
+version = "6.x-2.2"
+core = "6.x"
+project = "views"
+datestamp = "1229455242"
+

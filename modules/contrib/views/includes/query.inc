@@ -1,5 +1,5 @@
 <?php
-// $Id: query.inc,v 1.17 2008/05/17 19:46:03 merlinofchaos Exp $
+// $Id: query.inc,v 1.32 2008/10/28 20:08:10 merlinofchaos Exp $
 /**
  * @file query.inc
  * Defines the query object which is the underlying layer in a View.
@@ -189,8 +189,6 @@ class views_query {
       $alias = $alias_base . '_' . $count++;
     }
 
-    $join = $this->adjust_join($join, $link_point);
-
     if ($alias = $this->add_table($join->table, $link_point, $join, $alias)) {
       $this->relationships[$alias] = array(
         'link' => $link_point,
@@ -269,7 +267,7 @@ class views_query {
   function queue_table($table, $relationship = NULL, $join = NULL, $alias = NULL) {
     // If the alias is set, make sure it doesn't already exist.
     if (isset($this->table_queue[$alias])) {
-      return TRUE;
+      return $alias;
     }
 
     if (empty($relationship)) {
@@ -278,6 +276,16 @@ class views_query {
 
     if (!array_key_exists($relationship, $this->relationships)) {
       return FALSE;
+    }
+
+    if (!$alias && $join && $relationship && !empty($join->adjusted) && $table != $join->table) {
+      $alias = $table;
+    }
+
+    // Check this again to make sure we don't blow up existing aliases for already
+    // adjusted joins.
+    if (isset($this->table_queue[$alias])) {
+      return $alias;
     }
 
     $alias = $this->mark_table($table, $relationship, $alias);
@@ -289,7 +297,7 @@ class views_query {
 
     // If this is a relationship based table, add a marker with
     // the relationship as a primary table for the alias.
-    if ($table!= $alias) {
+    if ($table != $alias) {
       $this->mark_table($alias, $this->base_table, $alias);
     }
 
@@ -378,12 +386,22 @@ class views_query {
       return $relationship;
     }
 
-    if (!empty($join)) {
-      $join = $this->adjust_join($join, $relationship);
+    // If we do not have join info, fetch it.
+    if (!isset($join)) {
+      $join = $this->get_join_data($table, $this->relationships[$relationship]['base']);
     }
 
-    if ($this->ensure_path($table, $relationship, $join)) {
+    // If it can't be fetched, this won't work.
+    if (empty($join)) {
+      return;
+    }
 
+    // Adjust this join for the relationship, which will ensure that the 'base'
+    // table it links to is correct. Tables adjoined to a relationship
+    // join to a link point, not the base table.
+    $join = $this->adjust_join($join, $relationship);
+
+    if ($this->ensure_path($table, $relationship, $join)) {
       // Attempt to eliminate redundant joins.  If this table's
       // relationship and join exactly matches an existing table's
       // relationship and join, we do not have to join to it again;
@@ -397,33 +415,20 @@ class views_query {
       // example, a view that filters on 3 taxonomy terms using AND
       // needs to join term_data 3 times with the same join.
 
-      // If we do not have join info, get it the same way queue_table
-      // will get it.
-      if (!isset($join)) {
-        $join = $this->get_join_data($table, $this->relationships[$relationship]['base']);
-      }
+      // scan through the table queue to see if a matching join and
+      // relationship exists.  If so, use it instead of this join.
 
-      // If we have join info, scan through the table queue to see if
-      // a matching join and relationship exists.  If so, use it.
-      if (isset($join)) {
-        // adjust_join() will be called again inside queue_table() and may
-        // not be safe to call multiple times on the same object.  It
-        // returns a copy, though, so just keep the copy separate
-        // instead of assigning it to $join.
-        $join_copy = $this->adjust_join($join, $relationship);
-
-        // TODO: Scanning through $this->table_queue results in an
-        // O(N^2) algorithm, and this code runs every time the view is
-        // instantiated (Views 2 does not currently cache queries).
-        // There are a couple possible "improvements" but we should do
-        // some performance testing before picking one.
-        foreach ($this->table_queue as $queued_table) {
-          // In PHP 4 and 5, the == operation returns TRUE for two objects
-          // if they are instances of the same class and have the same
-          // attributes and values.
-          if ($queued_table['relationship'] == $relationship && $queued_table['join'] == $join_copy) {
-            return $queued_table['table'];
-          }
+      // TODO: Scanning through $this->table_queue results in an
+      // O(N^2) algorithm, and this code runs every time the view is
+      // instantiated (Views 2 does not currently cache queries).
+      // There are a couple possible "improvements" but we should do
+      // some performance testing before picking one.
+      foreach ($this->table_queue as $queued_table) {
+        // In PHP 4 and 5, the == operation returns TRUE for two objects
+        // if they are instances of the same class and have the same
+        // attributes and values.
+        if ($queued_table['relationship'] == $relationship && $queued_table['join'] == $join) {
+          return $queued_table['alias'];
         }
       }
 
@@ -457,8 +462,8 @@ class views_query {
       ($join && $join->left_table == $this->relationships[$relationship]['table'])) {
 
       // Make sure that we're linking to the correct table for our relationship.
-      foreach (array_reverse($add) as $table => $join) {
-        $this->queue_table($table, $relationship, $this->adjust_join($join, $relationship));
+      foreach (array_reverse($add) as $table => $path_join) {
+        $this->queue_table($table, $relationship, $this->adjust_join($path_join, $relationship));
       }
       return TRUE;
     }
@@ -485,6 +490,10 @@ class views_query {
    * based upon what relationship items are joined in on.
    */
   function adjust_join($join, $relationship) {
+    if (!empty($join->adjusted)) {
+      return $join;
+    }
+
     if (empty($relationship) || empty($this->relationships[$relationship])) {
       return $join;
     }
@@ -496,6 +505,13 @@ class views_query {
 
       // Safety! Don't modify an original here.
       $join = drupal_clone($join);
+
+      // Do we need to try to ensure a path?
+      if ($join->left_table != $this->relationships[$relationship]['table'] &&
+          $join->left_table != $this->relationships[$relationship]['base'] &&
+          !isset($this->tables[$relationship][$join->left_table]['alias'])) {
+        $this->ensure_table($join->left_table, $relationship);
+      }
 
       // First, if this is our link point/anchor table, just use the relationship
       if ($join->left_table == $this->relationships[$relationship]['table']) {
@@ -510,6 +526,8 @@ class views_query {
         $join->left_table = $this->table_queue[$relationship]['alias'];
       }
     }
+
+    $join->adjusted = TRUE;
     return $join;
   }
 
@@ -579,7 +597,7 @@ class views_query {
       $alias = $this->base_field;
     }
 
-    if ($table) {
+    if ($table && empty($this->table_queue[$table])) {
       $this->ensure_table($table);
     }
 
@@ -690,7 +708,9 @@ class views_query {
     // Add the clause and the args.
     if (is_array($args)) {
       $this->where[$group]['clauses'][] = $clause;
-      $this->where[$group]['args'] = array_merge($this->where[$group]['args'], $args);
+      // we use array_values() here to prevent array_merge errors as keys from multiple
+      // sources occasionally collide.
+      $this->where[$group]['args'] = array_merge($this->where[$group]['args'], array_values($args));
     }
   }
 
@@ -736,7 +756,7 @@ class views_query {
     // Add the clause and the args.
     if (is_array($args)) {
       $this->having[$group]['clauses'][] = $clause;
-      $this->having[$group]['args'] = array_merge($this->having[$group]['args'], $args);
+      $this->having[$group]['args'] = array_merge($this->having[$group]['args'], array_values($args));
     }
   }
 
@@ -757,9 +777,6 @@ class views_query {
    *   must also be in the SELECT portion. If an $alias isn't specified
    *   one will be generated for from the $field; however, if the
    *   $field is a formula, this alias will likely fail.
-   *
-   * @return $alias
-   *   The alias created.
    */
   function add_orderby($table, $field, $order, $alias = '') {
     if ($table) {
@@ -782,8 +799,9 @@ class views_query {
     $this->orderby[] = "$as " . strtoupper($order);
 
     // If grouping, all items in the order by must also be in the
-    // group by clause.
-    if ($this->groupby) {
+    // group by clause. Check $table to ensure that this is not a
+    // formula.
+    if ($this->groupby && $table) {
       $this->add_groupby($as);
     }
   }
@@ -836,11 +854,32 @@ class views_query {
    *   Provide a countquery if this is true, otherwise provide a normal query.
    */
   function query($get_count = FALSE) {
+
     // Check query distinct value.
     if (empty($this->no_distinct) && $this->distinct && !empty($this->fields)) {
       if (!empty($this->fields[$this->base_field])) {
         $this->fields[$this->base_field]['distinct'] = TRUE;
       }
+    }
+
+    /**
+     * An optimized count query includes just the base field instead of all the fields.
+     * Determine of this query qualifies by checking for a groupby or distinct.
+     */
+    $fields_array = $this->fields;
+    if ($get_count && !$this->groupby) {
+      foreach ($fields_array as $field) {
+        if (isset($field['distinct'])) {
+          $get_count_optimized = FALSE;
+          break;
+        }
+      }
+    }
+    else {
+      $get_count_optimized = FALSE;
+    }
+    if (!isset($get_count_optimized)) {
+      $get_count_optimized = TRUE;
     }
 
     $joins = $fields = $where = $having = $orderby = $groupby = '';
@@ -851,8 +890,7 @@ class views_query {
       }
     }
 
-    // If it's not a count query, add our fields
-    $fields_array = $this->fields;
+
     foreach ($fields_array as $field) {
       if ($fields) {
         $fields .= ",\n   ";
@@ -872,6 +910,11 @@ class views_query {
         $string .= " AS $field[alias]";
       }
       $fields .= $string;
+
+      if ($get_count_optimized) {
+        // We only want the first field in this case.
+        break;
+      }
     }
 
     if ($this->groupby) {
@@ -881,7 +924,7 @@ class views_query {
       }
     }
 
-    if (!$get_count) {
+    if (!$get_count_optimized) {
       // we only add the groupby if we're not counting.
       if ($this->orderby) {
         $orderby = "ORDER BY " . implode(', ', $this->orderby) . "\n";
@@ -891,10 +934,6 @@ class views_query {
     $where = $this->condition_sql();
 
     $query = "SELECT $fields\n FROM {" . $this->base_table . "} $this->base_table \n$joins $where $groupby $having $orderby";
-
-    if ($get_count) {
-      $query = "SELECT COUNT(*) FROM ($query) count_alias";
-    }
 
     $replace = array('&gt;' => '>', '&lt;' => '<');
     $query = strtr($query, $replace);

@@ -1,5 +1,5 @@
 <?php
-// $Id: statistics.views.inc,v 1.5 2008/05/07 22:37:27 merlinofchaos Exp $
+// $Id: statistics.views.inc,v 1.9 2008/10/28 20:21:37 merlinofchaos Exp $
 /**
  * @file
  * Provide views data and handlers for statistics.module
@@ -73,6 +73,9 @@ function statistics_views_data() {
     'field' => array(
       'handler' => 'views_handler_field_date',
       'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_date',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -244,47 +247,20 @@ function statistics_views_data() {
 }
 
 /**
- * Field handler to provide simple renderer that turns a URL into a clickable link.
- *
- * @ingroup views_field_handlers
+ * Implementation of hook_views_handlers() to register all of the basic handlers
+ * views uses.
  */
-class views_handler_field_accesslog_path extends views_handler_field {
-  /**
-   * Override init function to provide generic option to link to node.
-   */
-  function init(&$view, &$data) {
-    parent::init($view, $data);
-    if (isset($data['display_as_link'])) {
-      $this->additional_fields[] = 'path';
-    }
-  }
-
-  function options(&$options) {
-    parent::options($options);
-    $options['display_as_link'] = FALSE;
-  }
-
-  /**
-   * Provide link to the page being visited.
-   */
-  function options_form(&$form, &$form_state) {
-    parent::options_form($form, $form_state);
-    $form['display_as_link'] = array(
-      '#title' => t('Display as link'),
-      '#type' => 'checkbox',
-      '#default_value' => !empty($this->options['display_as_link']),
-    );
-  }
-
-  function render($values) {
-    $title = check_plain($values->{$this->field_alias});
-    if (!empty($this->options['display_as_link'])) {
-      return l($title, $values->{$this->aliases['path']}, array('html' => TRUE));
-    }
-    else {
-      return $title;
-    }
-  }
+function statistics_views_handlers() {
+  return array(
+    'info' => array(
+      'path' => drupal_get_path('module', 'views') . '/modules/statistics',
+    ),
+    'handlers' => array(
+      'views_handler_field_accesslog_path' => array(
+        'parent' => 'views_handler_field',
+      ),
+    ),
+  );
 }
 
 /**

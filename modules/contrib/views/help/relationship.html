@@ -1,7 +1,7 @@
-<!-- $Id: relationship.html,v 1.2 2008/05/16 01:37:14 merlinofchaos Exp $ -->
-Relationships allow you to expand the query to include objects other than the base query. This is actually made more difficult to understand by the fact that Views actually includes a few relationships by default, and doesn't tell you they're there. For historical reasons, it would be inconvenient to remove these default relationships.
+<!-- $Id: relationship.html,v 1.5 2008/10/14 18:13:21 merlinofchaos Exp $ -->
+Relationships allow you to expand the query to include objects other than the base query. This is actually made more difficult to understand by the fact that Views actually includes a few relationships by default, and doesn't tell you they're there. For historical reasons, it would be inconvenient to remove these default relationships. When relationships are present, all fields (including relationships) will gain a new form item to let you select which relationship they will use. They will default to using no relationship at all.
 
-The main example of the relationship that is there by default is the node --> user relationship; every node has an author, and if a node is in the query, the user who wrote that node is automatically made available.
+The main example of the relationship that is there by default is the node --&gt; user relationship; every node has an author, and if a node is in the query, the user who wrote that node is automatically made available. [Note: the author considers it an error that this relationship is automatic, but by the time it was realized this was in error, it was too late to change it.]
 
 A similar relationship that is <b>not</b> automatically made available is for node revisions. Each revision has its own author, which is the user who made the revision. By adding the "Node revision: User" relationship, all of the 'user' fields, sorts, filters and arguments available to a user will now be available for the revision author.
 

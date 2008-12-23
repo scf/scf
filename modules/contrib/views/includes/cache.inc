@@ -1,5 +1,5 @@
 <?php
-// $Id: cache.inc,v 1.16 2008/04/25 15:40:34 merlinofchaos Exp $
+// $Id: cache.inc,v 1.21 2008/11/19 22:33:55 merlinofchaos Exp $
 /**
  * @file cache.inc
  *
@@ -27,7 +27,7 @@ function _views_include_default_views() {
 function _views_fetch_data($table = NULL) {
   static $cache = NULL;
   if (!isset($cache)) {
-    $start = microtime();
+    $start = views_microtime();
     // NOTE: This happens whether we retrieve them from cache or otherwise.
     views_include_handlers();
 
@@ -46,7 +46,7 @@ function _views_fetch_data($table = NULL) {
       views_cache_set('views_data', $cache, TRUE);
     }
 
-    vpr('Views data build time: ' . (microtime() - $start) * 1000 . ' ms');
+    vpr('Views data build time: ' . (views_microtime() - $start) * 1000 . ' ms');
   }
 
   if (!$table) {
@@ -66,13 +66,12 @@ function _views_fetch_data($table = NULL) {
 function _views_fetch_plugin_data($type = NULL, $plugin = NULL) {
   static $cache = NULL;
   if (!isset($cache)) {
-    $start = microtime();
-    views_include('plugins');
+    $start = views_microtime();
     views_include_handlers();
 
     $cache = views_discover_plugins();
 
-    vpr('Views plugins build time: ' . (microtime() - $start) * 1000 . ' ms');
+    vpr('Views plugins build time: ' . (views_microtime() - $start) * 1000 . ' ms');
   }
 
   if (!$type && !$plugin) {
@@ -103,7 +102,7 @@ function _views_discover_default_views() {
   if (!isset($cache)) {
     $data = views_cache_get('views_default_views', TRUE);
 
-    if (isset($data->data)) {
+    if (isset($data->data) && is_array($data->data)) {
       $cache = $data->data;
     }
     else {
@@ -144,8 +143,9 @@ function views_cache_set($cid, $data, $use_language = FALSE) {
     return;
   }
   if ($use_language) {
-    $cid .= ':'. $language->language;
+    $cid .= ':' . $language->language;
   }
+
   cache_set($cid, $data, 'cache_views');
 }
 
@@ -166,7 +166,7 @@ function views_cache_get($cid, $use_language = FALSE) {
     return 0;
   }
   if ($use_language) {
-    $cid .= ':'. $language->language;
+    $cid .= ':' . $language->language;
   }
 
   return cache_get($cid, 'cache_views');
@@ -209,7 +209,7 @@ function views_object_cache_get($obj, $name, $skip_cache = FALSE) {
   if (!array_key_exists($key, $cache)) {
     $data = db_fetch_object(db_query("SELECT * FROM {views_object_cache} WHERE sid = '%s' AND obj = '%s' AND name = '%s'", session_id(), $obj, $name));
     if ($data) {
-      $cache[$key] = unserialize($data->data);
+      $cache[$key] = unserialize(db_decode_blob($data->data));
     }
   }
   return isset($cache[$key]) ? $cache[$key] : NULL;
@@ -228,7 +228,7 @@ function views_object_cache_get($obj, $name, $skip_cache = FALSE) {
  */
 function views_object_cache_set($obj, $name, $cache) {
   views_object_cache_clear($obj, $name);
-  db_query("INSERT INTO {views_object_cache} (sid, obj, name, data, updated) VALUES ('%s', '%s', '%s', '%s', %d)", session_id(), $obj, $name, serialize($cache), time());
+  db_query("INSERT INTO {views_object_cache} (sid, obj, name, data, updated) VALUES ('%s', '%s', '%s', %b, %d)", session_id(), $obj, $name, serialize($cache), time());
 }
 
 /**

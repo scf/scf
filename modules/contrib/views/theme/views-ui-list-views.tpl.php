@@ -1,5 +1,5 @@
 <?php
-// $Id: views-ui-list-views.tpl.php,v 1.5 2008/05/08 05:29:30 merlinofchaos Exp $
+// $Id: views-ui-list-views.tpl.php,v 1.6 2008/10/28 18:11:43 merlinofchaos Exp $
 /**
  * @file
  *
@@ -9,7 +9,7 @@
 <p><?php print $help; ?></p>
 <?php print $widgets; ?>
 <?php foreach ($views as $view): ?>
-  <table class="views-entry">
+  <table class="views-entry <?php print $view->classes; ?>">
     <tbody>
       <tr>
         <td class="view-name">

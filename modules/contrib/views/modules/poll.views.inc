@@ -1,5 +1,5 @@
 <?php
-// $Id: poll.views.inc,v 1.2 2008/03/12 04:32:07 merlinofchaos Exp $
+// $Id: poll.views.inc,v 1.4 2008/12/03 19:10:21 merlinofchaos Exp $
 /**
  * @file
  * Provide views data and handlers for poll.module
@@ -17,35 +17,32 @@
  */
 function poll_views_data() {
   // Basic table information.
-
-  // Define the base group of this table. Fields that don't
-  // have a group defined will go into this field by default.
   $data['poll']['table']['group']  = t('Poll');
 
-  // For other base tables, explain how we join
+  // Join to 'node' as a base table.
   $data['poll']['table']['join'] = array(
     'node' => array(
-      'handler' => 'views_join', // this is actually optional
-      'arguments' => array('poll', 'node', 'nid', 'nid'),
-     ),
+      'left_field' => 'nid',
+      'field' => 'nid',
+    ),
   );
 
   // ----------------------------------------------------------------
   // Fields
 
-  // title
+  // poll active status
   $data['poll']['active'] = array(
-    'title' => t('Active'), // The item it appears as on the UI,
-    'help' => t('Whether the poll is open for voting.'), // The help that appears on the UI,
-     // Information for displaying a title as a field
+    'title' => t('Active'),
+    'help' => t('Whether the poll is open for voting.'),
     'field' => array(
       'handler' => 'views_handler_field_boolean',
       'click sortable' => TRUE,
-     ),
-     'filter' => array(
-       'handler' => 'views_handler_filter_boolean_operator',
-       'label' => t('Active'),
-       ),
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_boolean_operator',
+      'label' => t('Active'),
+      'type' => 'yes-no',
+    ),
     'sort' => array(
       'handler' => 'views_handler_sort',
     ),

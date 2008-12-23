@@ -1,493 +1,305 @@
 <?php
-// $Id: statistics.views_default.inc,v 1.3 2008/05/23 17:49:38 merlinofchaos Exp $
+// $Id: statistics.views_default.inc,v 1.5 2008/07/21 21:05:12 merlinofchaos Exp $
 /**
  * @file
  * Contains default views on behalf of the statistics module.
  */
 
 /**
- * Implementation of hook views_default_views().
+ * Implementation of hook_default_view_views().
  */
 function statistics_views_default_views() {
   $view = new view;
   $view->name = 'popular';
-  $view->description = t('Shows the most-viewed nodes on the site. This requires the statistics to be enabled at administer >> site configuration >> statistics.');
-  $view->tag = t('default');
+  $view->description = 'Shows the most-viewed nodes on the site. This requires the statistics to be enabled at administer >> reports >> access log settings.';
+  $view->tag = 'default';
   $view->view_php = '';
   $view->base_table = 'node';
   $view->is_cacheable = '0';
   $view->api_version = 2;
-  $view->disabled = TRUE; // Edit this to true to make a default view disabled initially
-  $view->display = array();
-    $display = new views_display;
-    $display->id = 'default';
-    $display->display_title = t('Defaults');
-    $display->display_plugin = 'default';
-    $display->position = '1';
-    $display->display_options = array(
-    'style_plugin' => 'table',
-    'style_options' => array(
-      'override' => 0,
-      'order' => 'desc',
-      'columns' => array(
-        'type' => 'type',
-        'title' => 'title',
-        'name' => 'name',
-        'timestamp' => 'title',
-        'totalcount' => 'totalcount',
-      ),
-      'info' => array(
-        'type' => array(
-          'sortable' => 0,
-          'separator' => '',
-        ),
-        'title' => array(
-          'sortable' => 0,
-          'separator' => '',
-        ),
-        'name' => array(
-          'sortable' => 0,
-          'separator' => '',
-        ),
-        'timestamp' => array(
-          'separator' => '',
-        ),
-        'totalcount' => array(
-          'sortable' => 0,
-          'separator' => '',
-        ),
-      ),
-      'default' => '-1',
+  $view->disabled = TRUE; /* Edit this to true to make a default view disabled initially */
+  $handler = $view->new_display('default', 'Defaults', 'default');
+  $handler->override_option('fields', array(
+    'type' => array(
+      'id' => 'type',
+      'table' => 'node',
+      'field' => 'type',
+      'label' => 'Type',
     ),
-    'row_plugin' => 'fields',
-    'row_options' => array(),
-    'relationships' => array(),
-    'fields' => array(
+    'title' => array(
+      'id' => 'title',
+      'table' => 'node',
+      'field' => 'title',
+      'label' => 'Title',
+      'link_to_node' => TRUE,
+    ),
+    'name' => array(
+      'id' => 'name',
+      'table' => 'users',
+      'field' => 'name',
+      'label' => 'Author',
+      'link_to_user' => TRUE,
+    ),
+    'timestamp' => array(
+      'id' => 'timestamp',
+      'table' => 'history_user',
+      'field' => 'timestamp',
+      'label' => '',
+      'comments' => 1,
+      'relationship' => 'none',
+      'link_to_node' => 0,
+      'comment' => 1,
+    ),
+  ));
+  $handler->override_option('sorts', array(
+    'totalcount' => array(
+      'id' => 'totalcount',
+      'table' => 'node_counter',
+      'field' => 'totalcount',
+      'order' => 'DESC',
+      'relationship' => 'none',
+    ),
+  ));
+  $handler->override_option('filters', array(
+    'status' => array(
+      'id' => 'status',
+      'table' => 'node',
+      'field' => 'status',
+      'operator' => '=',
+      'value' => '1',
+      'group' => 0,
+      'exposed' => FALSE,
+      'expose' => array(
+        'operator' => FALSE,
+        'label' => '',
+      ),
+    ),
+    'totalcount' => array(
+      'id' => 'totalcount',
+      'table' => 'node_counter',
+      'field' => 'totalcount',
+      'operator' => '>',
+      'value' => array(
+        'value' => '0',
+        'min' => '',
+        'max' => '',
+      ),
+      'group' => 0,
+      'exposed' => FALSE,
+      'expose' => array(
+        'operator' => FALSE,
+        'label' => '',
+      ),
+      'relationship' => 'none',
+    ),
+  ));
+  $handler->override_option('access', array(
+    'type' => 'none',
+    'role' => array(),
+    'perm' => '',
+  ));
+  $handler->override_option('title', 'Popular content');
+  $handler->override_option('items_per_page', '25');
+  $handler->override_option('use_pager', TRUE);
+  $handler->override_option('use_more', 1);
+  $handler->override_option('style_plugin', 'table');
+  $handler->override_option('style_options', array(
+    'override' => 0,
+    'order' => 'desc',
+    'columns' => array(
+      'type' => 'type',
+      'title' => 'title',
+      'name' => 'name',
+      'timestamp' => 'title',
+      'totalcount' => 'totalcount',
+    ),
+    'info' => array(
       'type' => array(
-        'id' => 'type',
-        'table' => 'node',
-        'field' => 'type',
-        'label' => t('Type'),
+        'sortable' => 0,
+        'separator' => '',
       ),
       'title' => array(
-        'id' => 'title',
-        'table' => 'node',
-        'field' => 'title',
-        'label' => t('Title'),
-        'link_to_node' => TRUE,
+        'sortable' => 0,
+        'separator' => '',
       ),
       'name' => array(
-        'id' => 'name',
-        'table' => 'users',
-        'field' => 'name',
-        'label' => t('Author'),
-        'link_to_user' => TRUE,
+        'sortable' => 0,
+        'separator' => '',
       ),
       'timestamp' => array(
-        'id' => 'timestamp',
-        'table' => 'history_user',
-        'field' => 'timestamp',
-        'label' => '',
-        'comments' => 1,
-        'relationship' => 'none',
-        'link_to_node' => 0,
-        'comment' => 1,
-      ),
-    ),
-    'sorts' => array(
-      'totalcount' => array(
-        'id' => 'totalcount',
-        'table' => 'node_counter',
-        'field' => 'totalcount',
-        'order' => 'DESC',
-        'relationship' => 'none',
-      ),
-    ),
-    'arguments' => array(),
-    'filters' => array(
-      'status' => array(
-        'id' => 'status',
-        'table' => 'node',
-        'field' => 'status',
-        'operator' => '=',
-        'value' => '1',
-        'group' => 0,
-        'exposed' => FALSE,
-        'expose' => array(
-          'operator' => FALSE,
-          'label' => '',
-        ),
+        'separator' => '',
       ),
       'totalcount' => array(
-        'id' => 'totalcount',
-        'table' => 'node_counter',
-        'field' => 'totalcount',
-        'operator' => '>',
-        'value' => array(
-          'value' => '0',
-          'min' => '',
-          'max' => '',
-        ),
-        'group' => 0,
-        'exposed' => FALSE,
-        'expose' => array(
-          'operator' => FALSE,
-          'label' => '',
-        ),
-        'relationship' => 'none',
+        'sortable' => 0,
+        'separator' => '',
       ),
     ),
-    'items_per_page' => '25',
-    'title' => t('Popular content'),
-    'header' => NULL,
-    'header_format' => NULL,
-    'footer' => NULL,
-    'footer_format' => NULL,
-    'empty' => NULL,
-    'empty_format' => NULL,
-    'use_pager' => TRUE,
-    'pager_element' => 0,
-    'offset' => 0,
-    'access' => array(
-      'type' => 'none',
-      'role' => array(),
-      'perm' => '',
+    'default' => '-1',
+  ));
+  $handler = $view->new_display('page', 'Popular (page)', 'page');
+  $handler->override_option('path', 'popular/all');
+  $handler->override_option('menu', array(
+    'type' => 'default tab',
+    'title' => 'Popular content',
+    'weight' => '-1',
+  ));
+  $handler->override_option('tab_options', array(
+    'type' => 'normal',
+    'title' => 'Popular content',
+    'weight' => '',
+  ));
+  $handler = $view->new_display('page', 'Today (page)', 'page_1');
+  $handler->override_option('fields', array(
+    'type' => array(
+      'id' => 'type',
+      'table' => 'node',
+      'field' => 'type',
+      'label' => 'Type',
     ),
-    'use_more' => 1,
-  );
-  $view->display['default'] = $display;
-    $display = new views_display;
-    $display->id = 'page';
-    $display->display_title = t('Popular (page)');
-    $display->display_plugin = 'page';
-    $display->position = '2';
-    $display->display_options = array(
-    'defaults' => array(
-      'access' => TRUE,
-      'title' => TRUE,
-      'header' => TRUE,
-      'header_format' => TRUE,
-      'header_empty' => TRUE,
-      'footer' => TRUE,
-      'footer_format' => TRUE,
-      'footer_empty' => TRUE,
-      'empty' => TRUE,
-      'empty_format' => TRUE,
-      'use_ajax' => TRUE,
-      'items_per_page' => TRUE,
-      'offset' => TRUE,
-      'use_pager' => TRUE,
-      'pager_element' => TRUE,
-      'use_more' => TRUE,
-      'distinct' => TRUE,
-      'link_display' => TRUE,
-      'style_plugin' => TRUE,
-      'style_options' => TRUE,
-      'row_plugin' => TRUE,
-      'row_options' => TRUE,
-      'relationships' => TRUE,
-      'fields' => TRUE,
-      'sorts' => TRUE,
-      'arguments' => TRUE,
-      'filters' => TRUE,
+    'title' => array(
+      'id' => 'title',
+      'table' => 'node',
+      'field' => 'title',
+      'label' => 'Title',
+      'link_to_node' => TRUE,
     ),
-    'relationships' => array(),
-    'fields' => array(),
-    'sorts' => array(),
-    'arguments' => array(),
-    'filters' => array(),
-    'path' => 'popular/all',
-    'menu' => array(
-      'type' => 'default tab',
-      'title' => t('Popular content'),
-      'weight' => '-1',
+    'name' => array(
+      'id' => 'name',
+      'table' => 'users',
+      'field' => 'name',
+      'label' => 'Author',
+      'link_to_user' => TRUE,
     ),
-    'tab_options' => array(
-      'type' => 'normal',
-      'title' => t('Popular content'),
-      'weight' => '',
+    'timestamp' => array(
+      'id' => 'timestamp',
+      'table' => 'history_user',
+      'field' => 'timestamp',
+      'label' => '',
+      'comments' => 1,
+      'relationship' => 'none',
+      'link_to_node' => 0,
+      'comment' => 1,
     ),
-  );
-  $view->display['page'] = $display;
-    $display = new views_display;
-    $display->id = 'page_1';
-    $display->display_title = t('Today (page)');
-    $display->display_plugin = 'page';
-    $display->position = '3';
-    $display->display_options = array(
-    'defaults' => array(
-      'access' => TRUE,
-      'title' => TRUE,
-      'header' => TRUE,
-      'header_format' => TRUE,
-      'header_empty' => TRUE,
-      'footer' => TRUE,
-      'footer_format' => TRUE,
-      'footer_empty' => TRUE,
-      'empty' => TRUE,
-      'empty_format' => TRUE,
-      'use_ajax' => TRUE,
-      'items_per_page' => TRUE,
-      'offset' => TRUE,
-      'use_pager' => TRUE,
-      'pager_element' => TRUE,
-      'use_more' => TRUE,
-      'distinct' => TRUE,
-      'link_display' => TRUE,
-      'style_plugin' => TRUE,
-      'style_options' => TRUE,
-      'row_plugin' => TRUE,
-      'row_options' => TRUE,
-      'relationships' => TRUE,
-      'fields' => FALSE,
-      'sorts' => FALSE,
-      'arguments' => TRUE,
-      'filters' => TRUE,
+    'daycount' => array(
+      'id' => 'daycount',
+      'table' => 'node_counter',
+      'field' => 'daycount',
+      'label' => 'Views today',
+      'set_precision' => FALSE,
+      'precision' => 0,
+      'decimal' => '.',
+      'separator' => ',',
+      'prefix' => '',
+      'suffix' => '',
+      'relationship' => 'none',
     ),
-    'relationships' => array(),
-    'sorts' => array(
-      'daycount' => array(
-        'id' => 'daycount',
-        'table' => 'node_counter',
-        'field' => 'daycount',
-        'order' => 'DESC',
-        'relationship' => 'none',
-      ),
+  ));
+  $handler->override_option('sorts', array(
+    'daycount' => array(
+      'id' => 'daycount',
+      'table' => 'node_counter',
+      'field' => 'daycount',
+      'order' => 'DESC',
+      'relationship' => 'none',
     ),
-    'arguments' => array(),
-    'filters' => array(),
-    'path' => 'popular/today',
-    'menu' => array(
-      'type' => 'tab',
-      'title' => t('Today\'s popular content'),
-      'weight' => '0',
+  ));
+  $handler->override_option('path', 'popular/today');
+  $handler->override_option('menu', array(
+    'type' => 'tab',
+    'title' => 'Today\'s popular content',
+    'weight' => '0',
+  ));
+  $handler->override_option('tab_options', array(
+    'type' => 'normal',
+    'title' => 'Popular content',
+    'weight' => '0',
+  ));
+  $handler = $view->new_display('block', 'Popular (block)', 'block');
+  $handler->override_option('fields', array(
+    'title' => array(
+      'id' => 'title',
+      'table' => 'node',
+      'field' => 'title',
+      'label' => '',
+      'link_to_node' => 1,
+      'relationship' => 'none',
     ),
-    'fields' => array(
-      'type' => array(
-        'id' => 'type',
-        'table' => 'node',
-        'field' => 'type',
-        'label' => t('Type'),
-      ),
-      'title' => array(
-        'id' => 'title',
-        'table' => 'node',
-        'field' => 'title',
-        'label' => t('Title'),
-        'link_to_node' => TRUE,
-      ),
-      'name' => array(
-        'id' => 'name',
-        'table' => 'users',
-        'field' => 'name',
-        'label' => t('Author'),
-        'link_to_user' => TRUE,
-      ),
-      'timestamp' => array(
-        'id' => 'timestamp',
-        'table' => 'history_user',
-        'field' => 'timestamp',
-        'label' => '',
-        'comments' => 1,
-        'relationship' => 'none',
-        'link_to_node' => 0,
-        'comment' => 1,
-      ),
-      'daycount' => array(
-        'id' => 'daycount',
-        'table' => 'node_counter',
-        'field' => 'daycount',
-        'label' => t('Views today'),
-        'set_precision' => FALSE,
-        'precision' => 0,
-        'decimal' => '.',
-        'separator' => ',',
-        'prefix' => '',
-        'suffix' => '',
-        'relationship' => 'none',
-      ),
+    'totalcount' => array(
+      'id' => 'totalcount',
+      'table' => 'node_counter',
+      'field' => 'totalcount',
+      'label' => '',
+      'set_precision' => FALSE,
+      'precision' => 0,
+      'decimal' => '.',
+      'separator' => ',',
+      'prefix' => ' (',
+      'suffix' => ')',
+      'relationship' => 'none',
     ),
-    'tab_options' => array(
-      'type' => 'normal',
-      'title' => t('Popular content'),
-      'weight' => '0',
+  ));
+  $handler->override_option('items_per_page', 5);
+  $handler->override_option('style_plugin', 'list');
+  $handler->override_option('style_options', array(
+    'type' => 'ul',
+  ));
+  $handler->override_option('row_options', array(
+    'inline' => array(
+      'title' => 'title',
+      'totalcount' => 'totalcount',
     ),
-  );
-  $view->display['page_1'] = $display;
-    $display = new views_display;
-    $display->id = 'block';
-    $display->display_title = t('Popular (block)');
-    $display->display_plugin = 'block';
-    $display->position = '4';
-    $display->display_options = array(
-    'defaults' => array(
-      'access' => TRUE,
-      'title' => TRUE,
-      'header' => TRUE,
-      'header_format' => TRUE,
-      'header_empty' => TRUE,
-      'footer' => TRUE,
-      'footer_format' => TRUE,
-      'footer_empty' => TRUE,
-      'empty' => TRUE,
-      'empty_format' => TRUE,
-      'use_ajax' => TRUE,
-      'items_per_page' => FALSE,
-      'offset' => FALSE,
-      'use_pager' => FALSE,
-      'pager_element' => FALSE,
-      'use_more' => TRUE,
-      'distinct' => TRUE,
-      'link_display' => TRUE,
-      'style_plugin' => FALSE,
-      'style_options' => FALSE,
-      'row_plugin' => FALSE,
-      'row_options' => FALSE,
-      'relationships' => TRUE,
-      'fields' => FALSE,
-      'sorts' => TRUE,
-      'arguments' => TRUE,
-      'filters' => TRUE,
+    'separator' => '',
+  ));
+  $handler->override_option('block_description', 'Popular content');
+  $handler = $view->new_display('block', 'Today (block)', 'block_1');
+  $handler->override_option('fields', array(
+    'title' => array(
+      'id' => 'title',
+      'table' => 'node',
+      'field' => 'title',
+      'label' => '',
+      'link_to_node' => 1,
+      'relationship' => 'none',
     ),
-    'relationships' => array(),
-    'fields' => array(
-      'title' => array(
-        'id' => 'title',
-        'table' => 'node',
-        'field' => 'title',
-        'label' => '',
-        'link_to_node' => 1,
-        'relationship' => 'none',
-      ),
-      'totalcount' => array(
-        'id' => 'totalcount',
-        'table' => 'node_counter',
-        'field' => 'totalcount',
-        'label' => '',
-        'set_precision' => FALSE,
-        'precision' => 0,
-        'decimal' => '.',
-        'separator' => ',',
-        'prefix' => ' (',
-        'suffix' => ')',
-        'relationship' => 'none',
-      ),
+    'daycount' => array(
+      'id' => 'daycount',
+      'table' => 'node_counter',
+      'field' => 'daycount',
+      'label' => '',
+      'set_precision' => FALSE,
+      'precision' => 0,
+      'decimal' => '.',
+      'separator' => ',',
+      'prefix' => ' (',
+      'suffix' => ')',
+      'relationship' => 'none',
     ),
-    'sorts' => array(),
-    'arguments' => array(),
-    'filters' => array(),
-    'style_plugin' => 'list',
-    'style_options' => array(
-      'type' => 'ul',
+  ));
+  $handler->override_option('sorts', array(
+    'daycount' => array(
+      'id' => 'daycount',
+      'table' => 'node_counter',
+      'field' => 'daycount',
+      'order' => 'DESC',
+      'relationship' => 'none',
     ),
-    'row_plugin' => 'fields',
-    'row_options' => array(
-      'inline' => array(
-        'title' => 'title',
-        'totalcount' => 'totalcount',
-      ),
-      'separator' => '',
+  ));
+  $handler->override_option('title', 'Today\'s popular content');
+  $handler->override_option('items_per_page', 5);
+  $handler->override_option('link_display', 'page_1');
+  $handler->override_option('style_plugin', 'list');
+  $handler->override_option('style_options', array(
+    'type' => 'ul',
+  ));
+  $handler->override_option('row_options', array(
+    'inline' => array(
+      'title' => 'title',
+      'daycount' => 'daycount',
     ),
-    'items_per_page' => 5,
-    'offset' => 0,
-    'use_pager' => '0',
-    'pager_element' => 0,
-    'block_description' => t('Popular content'),
-    'title' => t('Popular content'),
-  );
-  $view->display['block'] = $display;
-    $display = new views_display;
-    $display->id = 'block_1';
-    $display->display_title = t('Today (block)');
-    $display->display_plugin = 'block';
-    $display->position = '5';
-    $display->display_options = array(
-    'defaults' => array(
-      'access' => TRUE,
-      'title' => FALSE,
-      'header' => TRUE,
-      'header_format' => TRUE,
-      'header_empty' => TRUE,
-      'footer' => TRUE,
-      'footer_format' => TRUE,
-      'footer_empty' => TRUE,
-      'empty' => TRUE,
-      'empty_format' => TRUE,
-      'use_ajax' => TRUE,
-      'items_per_page' => FALSE,
-      'offset' => FALSE,
-      'use_pager' => FALSE,
-      'pager_element' => FALSE,
-      'use_more' => TRUE,
-      'distinct' => TRUE,
-      'link_display' => FALSE,
-      'style_plugin' => FALSE,
-      'style_options' => FALSE,
-      'row_plugin' => FALSE,
-      'row_options' => FALSE,
-      'relationships' => TRUE,
-      'fields' => FALSE,
-      'sorts' => FALSE,
-      'arguments' => TRUE,
-      'filters' => TRUE,
-    ),
-    'relationships' => array(),
-    'fields' => array(
-      'title' => array(
-        'id' => 'title',
-        'table' => 'node',
-        'field' => 'title',
-        'label' => '',
-        'link_to_node' => 1,
-        'relationship' => 'none',
-      ),
-      'daycount' => array(
-        'id' => 'daycount',
-        'table' => 'node_counter',
-        'field' => 'daycount',
-        'label' => '',
-        'set_precision' => FALSE,
-        'precision' => 0,
-        'decimal' => '.',
-        'separator' => ',',
-        'prefix' => ' (',
-        'suffix' => ')',
-        'relationship' => 'none',
-      ),
-    ),
-    'sorts' => array(
-      'daycount' => array(
-        'id' => 'daycount',
-        'table' => 'node_counter',
-        'field' => 'daycount',
-        'order' => 'DESC',
-        'relationship' => 'none',
-      ),
-    ),
-    'arguments' => array(),
-    'filters' => array(),
-    'link_display' => 'page_1',
-    'style_plugin' => 'list',
-    'style_options' => array(
-      'type' => 'ul',
-    ),
-    'row_plugin' => 'fields',
-    'row_options' => array(
-      'inline' => array(
-        'title' => 'title',
-        'daycount' => 'daycount',
-      ),
-      'separator' => '',
-    ),
-    'items_per_page' => 5,
-    'offset' => 0,
-    'use_pager' => '0',
-    'pager_element' => 0,
-    'block_description' => t('Today\'s popular content'),
-    'title' => t('Today\'s popular content'),
-  );
-  $view->display['block_1'] = $display;
-
+    'separator' => '',
+  ));
+  $handler->override_option('block_description', 'Today\'s popular content');
   $views[$view->name] = $view;
+
   return $views;
 }

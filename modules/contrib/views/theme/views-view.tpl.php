@@ -1,10 +1,11 @@
 <?php
-// $Id: views-view.tpl.php,v 1.9 2008/04/16 18:50:49 merlinofchaos Exp $
+// $Id: views-view.tpl.php,v 1.11 2008/12/02 18:35:50 merlinofchaos Exp $
 /**
  * @file views-view.tpl.php
  * Main view template
  *
  * Variables available:
+ * - $css_name: A css-safe version of the view name.
  * - $header: The view header
  * - $footer: The view footer
  * - $rows: The results of the view query, if any
@@ -19,7 +20,7 @@
  * @ingroup views_templates
  */
 ?>
-<div class="view view-<?php print $css_name; ?> view-id-<?php print $name; ?> view-display-id-<?php print $display_id; ?>">
+<div class="view view-<?php print $css_name; ?> view-id-<?php print $name; ?> view-display-id-<?php print $display_id; ?> view-dom-id-<?php print $dom_id; ?>">
   <?php if ($admin_links): ?>
     <div class="views-admin-links views-hide">
       <?php print $admin_links; ?>

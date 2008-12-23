@@ -1,5 +1,5 @@
 <?php
-// $Id: node.views.inc,v 1.68 2008/05/20 00:46:02 merlinofchaos Exp $
+// $Id: node.views.inc,v 1.91 2008/12/02 22:17:41 merlinofchaos Exp $
 /**
  * @file
  * Provide views data and handlers for node.module
@@ -64,6 +64,7 @@ function node_views_data() {
     // Information for accepting a nid as an argument
     'argument' => array(
       'handler' => 'views_handler_argument_node_nid',
+      'parent' => 'views_handler_argument_numeric', // make sure parent is included
       'name field' => 'title', // the field to display in the summary.
       'numeric' => TRUE,
       'validate type' => 'nid',
@@ -142,6 +143,9 @@ function node_views_data() {
       'handler' => 'views_handler_field_node_type',
       'click sortable' => TRUE,
     ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
     'filter' => array(
       'handler' => 'views_handler_filter_node_type',
     ),
@@ -153,7 +157,7 @@ function node_views_data() {
   // published status
   $data['node']['status'] = array(
     'title' => t('Published'),
-    'help' => t('The published status of the node.'),
+    'help' => t('Whether or not the node is published.'),
     'field' => array(
       'handler' => 'views_handler_field_boolean',
       'click sortable' => TRUE,
@@ -161,6 +165,7 @@ function node_views_data() {
     'filter' => array(
       'handler' => 'views_handler_filter_boolean_operator',
       'label' => t('Published'),
+      'type' => 'yes-no',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -174,14 +179,14 @@ function node_views_data() {
     'filter' => array(
       'field' => 'status',
       'handler' => 'views_handler_filter_node_status',
-      'label' => t('Published'),
+      'label' => t('Published or admin'),
     ),
   );
 
   // promote status
   $data['node']['promote'] = array(
     'title' => t('Promoted to front page'),
-    'help' => t('The front page of the node.'),
+    'help' => t('Whether or not the node is promoted to the front page.'),
     'field' => array(
       'handler' => 'views_handler_field_boolean',
       'click sortable' => TRUE,
@@ -189,6 +194,26 @@ function node_views_data() {
     'filter' => array(
       'handler' => 'views_handler_filter_boolean_operator',
       'label' => t('Promoted to front page'),
+      'type' => 'yes-no',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
+
+  // moderate
+  $data['node']['moderate'] = array(
+    'title' => t('Moderated'), // The item it appears as on the UI,
+    'help' => t('Whether or not the node is moderated.'), // The help that appears on the UI,
+     // Information for displaying a title as a field
+    'field' => array(
+      'handler' => 'views_handler_field_boolean',
+      'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_boolean_operator',
+      'label' => t('Moderated'),
+      'type' => 'yes-no',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -207,6 +232,7 @@ function node_views_data() {
     'filter' => array(
       'handler' => 'views_handler_filter_boolean_operator',
       'label' => t('Sticky'),
+      'type' => 'yes-no',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -238,24 +264,6 @@ function node_views_data() {
       'handler' => 'views_handler_field_node_link_delete',
     ),
   );
-
-  // Language field if translation module enabled
-  if (module_exists('translation')) {
-    $data['node']['language'] = array(
-      'title' => t('Language'),
-      'help' => t('The language the content is in.'),
-      'field' => array(
-        'handler' => 'views_handler_field_node_language',
-        'click sortable' => TRUE,
-      ),
-      'filter' => array(
-        'handler' => 'views_handler_filter_node_language',
-      ),
-      'argument' => array(
-        'handler' => 'views_handler_argument_node_language',
-      ),
-    );
-  }
 
   // Bogus fields for aliasing purposes.
 
@@ -292,6 +300,15 @@ function node_views_data() {
     'argument' => array(
       'field' => 'created',
       'handler' => 'views_handler_argument_node_created_month',
+    ),
+  );
+
+  $data['node']['created_day'] = array(
+    'title' => t('Created day'),
+    'help' => t('In the form of DD (01 - 31).'),
+    'argument' => array(
+      'field' => 'created',
+      'handler' => 'views_handler_argument_node_created_day',
     ),
   );
 
@@ -375,12 +392,13 @@ function node_views_data() {
     'help' => t('The revision ID of the node revision.'), // The help that appears on the UI,
     // Information for displaying the nid
     'field' => array(
-      'handler' => 'views_handler_field',
+//      'handler' => 'views_handler_field',
       'click sortable' => TRUE,
     ),
     // Information for accepting a nid as an argument
     'argument' => array(
       'handler' => 'views_handler_argument_node_vid',
+      'parent' => 'views_handler_argument_numeric', // make sure parent is included
       'click sortable' => TRUE,
       'numeric' => TRUE,
     ),
@@ -497,654 +515,98 @@ function node_views_data() {
 }
 
 /**
- * Field handler to provide simple renderer that allows linking to a node.
- *
- * @ingroup views_field_handlers
+ * Implementation of hook_views_handlers() to register all of the basic handlers
+ * views uses.
  */
-class views_handler_field_node extends views_handler_field {
-  /**
-   * Constructor to provide additional field to add.
-   */
-  function construct() {
-    parent::construct();
-    $this->additional_fields['nid'] = 'nid';
-  }
-
-  /**
-   * Provide link to node option
-   */
-  function options_form(&$form, &$form_state) {
-    parent::options_form($form, $form_state);
-    $form['link_to_node'] = array(
-      '#title' => t('Link this field to its node'),
-      '#type' => 'checkbox',
-      '#default_value' => !empty($this->options['link_to_node']),
-    );
-  }
-
-  /**
-   * Render whatever the data is as a link to the node.
-   *
-   * Data should be made XSS safe prior to calling this function.
-   */
-  function render_link($data, $values) {
-    if (!empty($this->options['link_to_node'])) {
-      return l($data, "node/" . $values->{$this->aliases['nid']}, array('html' => TRUE));
-    }
-    else {
-      return $data;
-    }
-  }
-
-  function render($values) {
-    return $this->render_link(check_plain($values->{$this->field_alias}), $values);
-  }
-}
-
-/**
- * Field handler to translate a language into its readable form.
- *
- * @ingroup views_field_handlers
- */
-class views_handler_field_node_language extends views_handler_field_node {
-  function render($values) {
-    $languages = locale_language_list();
-    $value = $languages[$values->{$this->field_alias}];
-    return $this->render_link($value, $values);
-  }
-}
-
-/**
- * Field handler to translate a node type into its readable form.
- *
- * @ingroup views_field_handlers
- */
-class views_handler_field_node_type extends views_handler_field_node {
-  function render($values) {
-    $value = node_get_types('name', $values->{$this->field_alias});
-    return $this->render_link(check_plain($value), $values);
-  }
-}
-
-/**
- * Field handler to present a link to the node.
- *
- * @ingroup views_field_handlers
- */
-class views_handler_field_node_link extends views_handler_field {
-  function construct() {
-    parent::construct();
-    $this->additional_fields['nid'] = 'nid';
-  }
-
-  function options(&$options) {
-    parent::options($options);
-    $options['text'] = '';
-  }
-
-  function options_form(&$form, &$form_state) {
-    parent::options_form($form, $form_state);
-    $form['text'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Text to display'),
-      '#default_value' => $this->options['text'],
-    );
-  }
-
-  function query() {
-    $this->ensure_my_table();
-    $this->add_additional_fields();
-  }
-
-  function render($values) {
-    $text = !empty($this->options['text']) ? $this->options['text'] : t('view');
-    $nid = $values->{$this->aliases['nid']};
-    return l($text, "node/$nid");
-  }
-}
-
-/**
- * Field handler to present a link node edit.
- *
- * @ingroup views_field_handlers
- */
-class views_handler_field_node_link_edit extends views_handler_field_node_link {
-  function construct() {
-    parent::construct();
-    $this->additional_fields['uid'] = 'uid';
-    $this->additional_fields['type'] = 'type';
-    $this->additional_fields['format'] = array('table' => 'node_revisions', 'field' => 'format');
-  }
-
-  function render($values) {
-    // ensure user has access to edit this node.
-    $node = new stdClass();
-    $node->nid = $values->{$this->aliases['nid']};
-    $node->uid = $values->{$this->aliases['uid']};
-    $node->type = $values->{$this->aliases['type']};
-    $node->format = $values->{$this->aliases['format']};
-    $node->status = 1; // unpublished nodes ignore access control
-    if (!node_access('update', $node)) {
-      return;
-    }
-
-    $text = !empty($this->options['text']) ? $this->options['text'] : t('edit');
-    return l($text, "node/$node->nid/edit", array('query' => drupal_get_destination()));
-  }
-}
-
-/**
- * Field handler to present a link to delete a node.
- *
- * @ingroup views_field_handlers
- */
-class views_handler_field_node_link_delete extends views_handler_field_node_link {
-  function construct() {
-    parent::construct();
-    $this->additional_fields['type'] = 'type';
-    $this->additional_fields['uid'] = 'uid';
-    $this->additional_fields['format'] = array('table' => 'node_revisions', 'field' => 'format');
-  }
-
-  function render($values) {
-    // ensure user has access to edit this node.
-    $node = new stdClass();
-    $node->nid = $values->{$this->aliases['nid']};
-    $node->uid = $values->{$this->aliases['uid']};
-    $node->type = $values->{$this->aliases['type']};
-    $node->format = $values->{$this->aliases['format']};
-    $node->status = 1; // unpublished nodes ignore access control
-    if (!node_access('delete', $node)) {
-      return;
-    }
-
-    $text = !empty($this->options['text']) ? $this->options['text'] : t('delete');
-    return l($text, "node/$node->nid/delete", array('query' => drupal_get_destination()));
-  }
-}
-
-/**
- * Field handler to present a link to revert a node to a revision
- *
- * @ingroup views_field_handlers
- */
-class views_handler_field_node_revision_link_revert extends views_handler_field_node_link {
-  function construct() {
-    parent::construct();
-    $this->additional_fields['uid'] = array('table' => 'node', 'field' => 'uid');
-    $this->additional_fields['node_vid'] = array('table' => 'node', 'field' => 'vid');
-    $this->additional_fields['vid'] = 'vid';
-    $this->additional_fields['format'] = 'format';
-  }
-
-  function access() {
-    return user_access('revert revisions') || user_access('administer nodes');
-  }
-
-  function render($values) {
-    // ensure user has access to edit this node.
-    $node = new stdClass();
-    $node->nid = $values->{$this->aliases['nid']};
-    $node->vid = $values->{$this->aliases['vid']};
-    $node->uid = $values->{$this->aliases['uid']};
-    $node->format = $values->{$this->aliases['format']};
-    $node->status = 1; // unpublished nodes ignore access control
-    if (!node_access('update', $node)) {
-      return;
-    }
-
-    // Current revision cannot be reverted.
-    if ($node->vid == $values->{$this->aliases['node_vid']}) {
-      return;
-    }
-
-    $text = !empty($this->options['text']) ? $this->options['text'] : t('revert');
-    return l($text, "node/$node->nid/revisions/$node->vid/revert", array('query' => drupal_get_destination()));
-  }
-}
-
-/**
- * Field handler to present delete a node revision.
- *
- * @ingroup views_field_handlers
- */
-class views_handler_field_node_revision_link_delete extends views_handler_field_node_link {
-  function construct() {
-    parent::construct();
-    $this->additional_fields['uid'] = array('table' => 'node', 'field' => 'uid');
-    $this->additional_fields['node_vid'] = array('table' => 'node', 'field' => 'vid');
-    $this->additional_fields['vid'] = 'vid';
-    $this->additional_fields['format'] = 'format';
-  }
-
-  function access() {
-    return user_access('delete revisions') || user_access('administer nodes');
-  }
-
-  function render($values) {
-    // ensure user has access to edit this node.
-    $node = new stdClass();
-    $node->nid = $values->{$this->aliases['nid']};
-    $node->vid = $values->{$this->aliases['vid']};
-    $node->uid = $values->{$this->aliases['uid']};
-    $node->format = $values->{$this->aliases['format']};
-    $node->status = 1; // unpublished nodes ignore access control
-    if (!node_access('delete', $node)) {
-      return;
-    }
-
-    // Current revision cannot be deleted.
-    if ($node->vid == $values->{$this->aliases['node_vid']}) {
-      return;
-    }
-    $text = !empty($this->options['text']) ? $this->options['text'] : t('delete');
-    return l($text, "node/$node->nid/revisions/$node->vid/delete", array('query' => drupal_get_destination()));
-  }
-}
-
-/**
- * Field handler to display the marker for new content.
- *
- * @ingroup views_argument_handlers
- */
-class views_handler_field_history_user_timestamp extends views_handler_field_node {
-  function init(&$view, $options) {
-    parent::init($view, $options);
-    global $user;
-    if ($user->uid) {
-      $this->additional_fields['created'] = array('table' => 'node', 'field' => 'created');
-      $this->additional_fields['changed'] = array('table' => 'node', 'field' => 'changed');
-      if (module_exists('comment') && !empty($this->options['comments'])) {
-        $this->additional_fields['last_comment'] = array('table' => 'node_comment_statistics', 'field' => 'last_comment_timestamp');
-      }
-    }
-  }
-
-  function options(&$options) {
-    parent::options($options);
-    $options['comments'] = FALSE;
-  }
-
-  function options_form(&$form, &$form_state) {
-    parent::options_form($form, $form_state);
-    if (module_exists('comment')) {
-      $form['comments'] = array(
-        '#type' => 'checkbox',
-        '#title' => t('Check for new comments as well'),
-        '#default_value' => !empty($this->options['comments']),
-      );
-    }
-  }
-
-  function query() {
-    // Only add ourselves to the query if logged in.
-    global $user;
-    if (!$user->uid) {
-      return;
-    }
-    parent::query();
-  }
-
-  function render($values) {
-    // Let's default to 'read' state.
-    // This code shadows node_mark, but it reads from the db directly and
-    // we already have that info.
-    $mark = MARK_READ;
-    global $user;
-    if ($user->uid) {
-      $last_read = $values->{$this->field_alias};
-      $created = $values->{$this->aliases['created']};
-      $changed = $values->{$this->aliases['changed']};
-
-      $last_comment = module_exists('comment') && !empty($this->options['comments']) ? $values->{$this->aliases['last_comment']} : 0;
-
-      if (!$last_read && $created > NODE_NEW_LIMIT) {
-        $mark = MARK_NEW;
-      }
-      elseif ($changed > $last_read && $changed > NODE_NEW_LIMIT) {
-        $mark = MARK_UPDATED;
-      }
-      elseif ($last_comment > $last_read && $last_comment > NODE_NEW_LIMIT) {
-        $mark = MARK_UPDATED;
-      }
-    }
-
-    return $this->render_link(theme('mark', $mark), $values);
-  }
-}
-
-/**
- * Argument handler to accept a node type.
- *
- * @ingroup views_argument_handlers
- */
-class views_handler_argument_node_type extends views_handler_argument {
-  function construct() {
-    parent::construct('type');
-  }
-
-  /**
-   * Override the behavior of summary_name(). Get the user friendly version
-   * of the node type.
-   */
-  function summary_name($data) {
-    return $this->node_type($data->{$this->name_alias});
-  }
-
-  /**
-   * Override the behavior of title(). Get the user friendly version of the
-   * node type.
-   */
-  function title() {
-    return $this->node_type($this->argument);
-  }
-
-  function node_type($type) {
-    $output = node_get_types('name', $type);
-    if (empty($output)) {
-      $output = t('Unknown node type');
-    }
-    return check_plain($output);
-  }
-}
-
-/**
- * Argument handler to accept a node id.
- *
- * @ingroup views_argument_handlers
- */
-class views_handler_argument_node_nid extends views_handler_argument_numeric {
-  /**
-   * Override the behavior of title(). Get the title of the node.
-   */
-  function title_query() {
-    $titles = array();
-    $placeholders = implode(', ', array_fill(0, sizeof($this->value), '%d'));
-
-    $result = db_query("SELECT n.title FROM {node} n WHERE n.nid IN ($placeholders)", $this->value);
-    while ($term = db_fetch_object($result)) {
-      $titles[] = check_plain($term->title);
-    }
-    return $titles;
-  }
-}
-
-/**
- * Argument handler to accept a node revision id.
- *
- * @ingroup views_argument_handlers
- */
-class views_handler_argument_node_vid extends views_handler_argument_numeric {
-  // No constructor is necessary.
-
-  /**
-   * Override the behavior of title(). Get the title of the revision.
-   */
-  function title_query() {
-    $titles = array();
-    $placeholders = implode(', ', array_fill(0, sizeof($this->value), '%d'));
-
-    $result = db_query("SELECT n.title FROM {node_revisions} n WHERE n.nid IN ($placeholders)", $this->value);
-    while ($term = db_fetch_object($result)) {
-      $titles[] = check_plain($term->title);
-    }
-    return $titles;
-  }
-}
-
-/**
- * Argument handler for a full date (CCYYMMDD)
- *
- * @ingroup views_argument_handlers
- */
-class views_handler_argument_node_created_fulldate extends views_handler_argument_formula {
-  /**
-   * Constructor implementation
-   */
-  function construct() {
-    $this->formula = views_date_sql_format('Ymd', "***table***.$this->real_field");
-    $this->format = 'F j, Y';
-  }
-
-  /**
-   * Provide a link to the next level of the view
-   */
-  function summary_name($data) {
-    $created = $data->{$this->name_alias};
-    return format_date(strtotime($created), 'custom', $this->format, 0);
-  }
-
-  /**
-   * Provide a link to the next level of the view
-   */
-  function title() {
-    return format_date(strtotime($this->argument), 'custom', $this->format, 0);
-  }
-}
-
-/**
- * Argument handler for a year (CCYY)
- *
- * @ingroup views_argument_handlers
- */
-class views_handler_argument_node_created_year extends views_handler_argument_formula {
-  /**
-   * Constructor implementation
-   */
-  function construct() {
-    $this->formula = views_date_sql_extract('YEAR', "***table***.$this->real_field");
-  }
-}
-
-/**
- * Argument handler for a year plus month (CCYYMM)
- *
- * @ingroup views_argument_handlers
- */
-class views_handler_argument_node_created_year_month extends views_handler_argument_formula {
-  /**
-   * Constructor implementation
-   */
-  function construct() {
-    $this->formula = views_date_sql_format('Ym', "***table***.$this->real_field");
-    $this->format = 'F, Y';
-  }
-
-  /**
-   * Provide a link to the next level of the view
-   */
-  function summary_name($data) {
-    $created = $data->{$this->name_alias};
-    return format_date(strtotime($created . "15"), 'custom', $this->format, 0);
-  }
-
-  /**
-   * Provide a link to the next level of the view
-   */
-  function title() {
-    return format_date(strtotime($this->argument . "15"), 'custom', $this->format, 0);
-  }
-}
-
-/**
- * Argument handler for a month (MM)
- *
- * @ingroup views_argument_handlers
- */
-class views_handler_argument_node_created_month extends views_handler_argument_formula {
-  /**
-   * Constructor implementation
-   */
-  function construct() {
-    $this->formula = views_date_sql_extract('MONTH', "***table***.$this->real_field");
-    $this->format = 'F';
-  }
-
-  /**
-   * Provide a link to the next level of the view
-   */
-  function summary_name($data) {
-    $month = str_pad($data->{$this->name_alias}, 2, '0', STR_PAD_LEFT);
-    return format_date(strtotime("2005" . $month . "15"), 'custom', $this->format);
-  }
-
-  /**
-   * Provide a link to the next level of the view
-   */
-  function title() {
-    $month = str_pad($this->argument, 2, '0', STR_PAD_LEFT);
-    return format_date(strtotime("2005" . $month . "15"), 'custom', $this->format, 0);
-  }
-
-  function summary_argument($data) {
-    // Make sure the argument contains leading zeroes.
-    return str_pad($data->{$this->base_alias}, 2, '0', STR_PAD_LEFT);
-  }
-}
-
-/**
- * Argument handler for a full date (CCYYMMDD)
- *
- * @ingroup views_argument_handlers
- */
-class views_handler_argument_node_created_week extends views_handler_argument_formula {
-  /**
-   * Constructor implementation
-   */
-  function construct() {
-    $this->formula = views_date_sql_extract('WEEK', "***table***.$this->real_field");
-  }
-
-  /**
-   * Provide a link to the next level of the view
-   */
-  function summary_name($data) {
-    $created = $data->{$this->name_alias};
-    return t('Week @week', array('@week' => $created));
-  }
-}
-
-/**
- * Filter by node type
- *
- * @ingroup views_filter_handlers
- */
-class views_handler_filter_node_type extends views_handler_filter_in_operator {
-  function get_value_options() {
-    if (!isset($this->value_options)) {
-      $this->value_title = t('Node type');
-      $types = node_get_types();
-      foreach ($types as $type => $info) {
-        $options[$type] = $info->name;
-      }
-      $this->value_options = $options;
-    }
-  }
-}
-
-/**
- * Filter for new content
- *
- * @ingroup views_filter_handlers
- */
-class views_handler_filter_history_user_timestamp extends views_handler_filter {
-  function query() {
-    global $user;
-    // This can only work if we're logged in.
-    if (!$user || !$user->uid) {
-      return;
-    }
-
-    // Hey, Drupal kills old history, so nodes that haven't been updated
-    // since NODE_NEW_LIMIT are bzzzzzzzt outta here!
-
-    $limit = time() - NODE_NEW_LIMIT;
-
-    $this->ensure_my_table();
-    $field = "$this->table_alias.$this->real_field";
-    $node = $this->query->ensure_table('node');
-
-    if (module_exists('comment')) {
-      $ncs = $this->query->ensure_table('node_comment_statistics');
-      $clause = ("OR $ncs.last_comment_timestamp > (***CURRENT_TIME*** - $limit)");
-      $clause2 = "OR $field < $ncs.last_comment_timestamp";
-    }
-
-    // NULL means a history record doesn't exist. That's clearly new content.
-    // Unless it's very very old content. Everything in the query is already
-    // type safe cause none of it is coming from outside here.
-    $this->query->add_where($this->options['group'], "($field IS NULL AND ($node.changed > (***CURRENT_TIME*** - $limit) $clause)) OR $field < $node.changed $clause2");
-  }
-
-  /**
-   * Blank this, because there is nothing to say about this one.
-   */
-  function admin_summary() { }
-}
-
-
-
-/**
- * Filter by language
- *
- * @ingroup views_filter_handlers
- */
-class views_handler_filter_node_language extends views_handler_filter_in_operator {
-  function get_value_options() {
-    if (!isset($this->value_options)) {
-      $this->value_title = t('Language');
-      $languages = array('***CURRENT_LANGUAGE***' => t("Current user's language"), '***NO_LANGUAGE***' => t('No language'));
-      $languages = array_merge($languages, locale_language_list());
-      $this->value_options = $languages;
-    }
-  }
-}
-
-/**
- * Filter by published status
- *
- * @ingroup views_filter_handlers
- */
-class views_handler_filter_node_status extends views_handler_filter {
-  function admin_summary() { }
-  function operator_form() { }
-
-  function query() {
-    $table = $this->ensure_my_table();
-    $this->query->add_where($this->options['group'], "$table.status <> 0 OR $table.uid = ***CURRENT_USER*** or ***ADMINISTER_NODES*** = 1");
-  }
-}
-
-/**
- * Argument handler to accept a language.
- *
- * @ingroup views_argument_handlers
- */
-class views_handler_argument_node_language extends views_handler_argument {
-  function construct() {
-    parent::construct('language');
-  }
-
-  /**
-   * Override the behavior of summary_name(). Get the user friendly version
-   * of the language.
-   */
-  function summary_name($data) {
-    return $this->node_language($data->{$this->name_alias});
-  }
-
-  /**
-   * Override the behavior of title(). Get the user friendly version of the
-   * node type.
-   */
-  function title() {
-    return $this->node_language($this->argument);
-  }
-
-  function node_language($langcode) {
-    $languages = locale_language_list();
-    return isset($languages[$langcode]) ? $languages[$langcode] : t('Unknown language');
-  }
+function node_views_handlers() {
+  return array(
+    'info' => array(
+      'path' => drupal_get_path('module', 'views') . '/modules/node',
+    ),
+    'handlers' => array(
+      // field handlers
+      'views_handler_field_node' => array(
+        'parent' => 'views_handler_field',
+      ),
+      'views_handler_field_node_type' => array(
+        'parent' => 'views_handler_field_node',
+      ),
+      'views_handler_field_node_link' => array(
+        'parent' => 'views_handler_field',
+      ),
+      'views_handler_field_node_type' => array(
+        'parent' => 'views_handler_field_node',
+      ),
+      'views_handler_field_node_link_edit' => array(
+        'parent' => 'views_handler_field_node_link',
+      ),
+      'views_handler_field_node_link_delete' => array(
+        'parent' => 'views_handler_field_node_link',
+      ),
+      'views_handler_field_node_revision_link_revert' => array(
+        'parent' => 'views_handler_field_node_link',
+      ),
+      'views_handler_field_node_revision_link_delete' => array(
+        'parent' => 'views_handler_field_node_link',
+      ),
+      'views_handler_field_history_user_timestamp' => array(
+        'parent' => 'views_handler_field_node',
+      ),
+
+      // argument handlers
+      'views_handler_argument_node_type' => array(
+        'parent' => 'views_handler_argument',
+      ),
+      'views_handler_argument_node_nid' => array(
+        'parent' => 'views_handler_argument_numeric',
+      ),
+      'views_handler_argument_node_vid' => array(
+        'parent' => 'views_handler_argument_numeric',
+      ),
+      'views_handler_argument_node_created_fulldate' => array(
+        // put several handlers in the same file
+        'file' => 'views_handler_argument_dates_various.inc',
+        'parent' => 'views_handler_argument_date',
+      ),
+      'views_handler_argument_node_created_year' => array(
+        // put several handlers in the same file
+        'file' => 'views_handler_argument_dates_various.inc',
+        'parent' => 'views_handler_argument_date',
+      ),
+      'views_handler_argument_node_created_year_month' => array(
+        // put several handlers in the same file
+        'file' => 'views_handler_argument_dates_various.inc',
+        'parent' => 'views_handler_argument_date',
+      ),
+      'views_handler_argument_node_created_month' => array(
+        // put several handlers in the same file
+        'file' => 'views_handler_argument_dates_various.inc',
+        'parent' => 'views_handler_argument_date',
+      ),
+      'views_handler_argument_node_created_day' => array(
+        // put several handlers in the same file
+        'file' => 'views_handler_argument_dates_various.inc',
+        'parent' => 'views_handler_argument_date',
+      ),
+      'views_handler_argument_node_created_week' => array(
+        // put several handlers in the same file
+        'file' => 'views_handler_argument_dates_various.inc',
+        'parent' => 'views_handler_argument_date',
+      ),
+
+      // filters
+      'views_handler_filter_node_type' => array(
+        'parent' => 'views_handler_filter_in_operator',
+      ),
+      'views_handler_filter_history_user_timestamp' => array(
+        'parent' => 'views_handler_filter',
+      ),
+      'views_handler_filter_node_status' => array(
+        'parent' => 'views_handler_filter',
+      ),
+
+    ),
+  );
 }
 
 /**
@@ -1158,60 +620,41 @@ function node_views_plugins() {
         'title' => t('Node'),
         'help' => t('Display the node with standard node view.'),
         'handler' => 'views_plugin_row_node_view',
+        'path' => drupal_get_path('module', 'views') . '/modules/node', // not necessary for most modules
         'theme' => 'views_view_row_node',
         'base' => array('node'), // only works with 'node' as base.
         'uses options' => TRUE,
         'type' => 'normal',
+        'help topic' => 'style-node',
       ),
       'node_rss' => array(
         'title' => t('Node'),
         'help' => t('Display the node with standard node view.'),
         'handler' => 'views_plugin_row_node_rss',
+        'path' => drupal_get_path('module', 'views') . '/modules/node', // not necessary for most modules
+        'theme' => 'views_view_row_rss',
         'base' => array('node'), // only works with 'node' as base.
         'uses options' => TRUE,
         'type' => 'feed',
+        'help topic' => 'style-node-rss',
       ),
     ),
     'argument validator' => array(
       'node' => array(
         'title' => t('Node'),
         'handler' => 'views_plugin_argument_validate_node',
+        'path' => drupal_get_path('module', 'views') . '/modules/node', // not necessary for most modules
       ),
     ),
     'argument default' => array(
       'node' => array(
         'title' => t('Node ID from URL'),
         'handler' => 'views_plugin_argument_default_node',
+        'path' => drupal_get_path('module', 'views') . '/modules/node', // not necessary for most modules
+        'parent' => 'fixed', // so that the parent class is included
       ),
     ),
   );
-}
-
-/**
- * Plugin which performs a node_view on the resulting object.
- *
- * Most of the code on this object is in the theme function.
- *
- * @ingroup views_plugin_rows
- */
-class views_plugin_row_node_view extends views_plugin_row {
-  function options(&$options) {
-    $options['teaser'] = TRUE;
-    $options['links'] = TRUE;
-  }
-
-  function options_form(&$form, &$form_state) {
-    $form['teaser'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Display only teaser'),
-      '#default_value' => $this->options['teaser'],
-    );
-    $form['links'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Display links'),
-      '#default_value' => $this->options['links'],
-    );
-  }
 }
 
 /**
@@ -1233,244 +676,9 @@ function template_preprocess_views_view_row_node(&$vars) {
   }
 
   $vars['node'] = node_view($node, $options['teaser'], FALSE, $options['links']);
-}
-
-/**
- * Automatically allow view-based node templates if called from a view.
- */
-function views_preprocess_node($vars) {
-  if (!empty($vars['node']->view) && !empty($vars['node']->view->name)) {
-    $vars['template_files'][] = 'node-view-' . $vars['node']->view->name;
-  }
-}
-
-/**
- * Plugin which performs a node_view on the resulting object
- * and formats it as an RSS item.
- *
- * @ingroup views_plugin_rows
- */
-class views_plugin_row_node_rss extends views_plugin_row {
-  function options(&$options) {
-    $options['item_length'] = 'default';
-  }
-
-  function options_form(&$form, &$form_state) {
-    $form['item_length'] = array(
-      '#type' => 'select',
-      '#title' => t('Display type'),
-      '#options' => array(
-        'fulltext' => t('Full text'),
-        'teaser' => t('Title plus teaser'),
-        'title' => t('Title only'),
-        'default' => t('Use default RSS settings'),
-      ),
-      '#default_value' => $this->options['item_length'],
-    );
-  }
-
-  function render($row) {
-    // For the most part, this code is taken from node_feed() in node.module
-    global $base_url;
-
-    $item_length = $this->options['item_length'];
-    if ($item_length == 'default') {
-      $item_length = variable_get('feed_item_length', 'teaser');
-    }
-
-    if (empty($this->view->style_plugin->namespaces)) {
-      $this->view->style_plugin->namespaces['xmlns:dc'] = 'http://purl.org/dc/elements/1.1/';
-    }
-
-    // Load the specified node:
-    $item = node_load($row->nid);
-    $item->build_mode = NODE_BUILD_RSS;
-    $item->link = url("node/$row->nid", array('absolute' => TRUE));
-
-    if ($item_length != 'title') {
-      $teaser = ($item_length == 'teaser') ? TRUE : FALSE;
-
-      // Filter and prepare node teaser
-      if (node_hook($item, 'view')) {
-        $item = node_invoke($item, 'view', $teaser, FALSE);
-      }
-      else {
-        $item = node_prepare($item, $teaser);
-      }
-
-      // Allow modules to change $node->teaser before viewing.
-      node_invoke_nodeapi($item, 'view', $teaser, FALSE);
-    }
-
-    // Allow modules to add additional item fields and/or modify $item
-    $extra = node_invoke_nodeapi($item, 'rss item');
-    $extra = array_merge($extra,
-      array(
-        array('key' => 'pubDate', 'value' => gmdate('r', $item->created)),
-        array('key' => 'dc:creator', 'value' => $item->name),
-        array(
-          'key' => 'guid',
-          'value' => $item->nid . ' at ' . $base_url,
-          'attributes' => array('isPermaLink' => 'false')
-        ),
-      )
-    );
-    foreach ($extra as $element) {
-      if (isset($element['namespace'])) {
-        $this->view->style_plugin->namespaces = array_merge($this->view->style_plugin->namespaces, $element['namespace']);
-      }
-    }
-
-    // Prepare the item description
-    switch ($item_length) {
-      case 'fulltext':
-        $item_text = $item->body;
-        break;
-      case 'teaser':
-        $item_text = $item->teaser;
-        if (!empty($item->readmore)) {
-          $item_text .= '<p>'. l(t('read more'), 'node/'. $item->nid, array('absolute' => TRUE, 'attributes' => array('target' => '_blank'))) .'</p>';
-        }
-        break;
-      case 'title':
-        $item_text = '';
-        break;
-    }
-
-    return format_rss_item($item->title, $item->link, $item_text, $extra);
-  }
-}
-
-/**
- * Validate whether an argument is an acceptable node.
- */
-class views_plugin_argument_validate_node extends views_plugin_argument_validate {
-  var $option_name = 'validate_argument_node_type';
-
-  function validate_form(&$form, &$form_state) {
-    $types = node_get_types();
-    foreach ($types as $type => $info) {
-      $options[$type] = $info->name;
-    }
-
-    $arg = $this->get_argument();
-    if (empty($arg)) {
-      $arg = array();
-    }
-
-    $form[$this->option_name] = array(
-      '#type' => 'checkboxes',
-      '#prefix' => '<div id="edit-options-validate-argument-node-type-wrapper">',
-      '#suffix' => '</div>',
-      '#title' => t('Types'),
-      '#options' => $options,
-      '#default_value' => $arg,
-      '#description' => t('If you wish to validate for specific node types, check them; if none are checked, all nodes will pass.'),
-      '#process' => array('expand_checkboxes', 'views_process_dependency'),
-      '#dependency' => array('edit-options-validate-type' => array($this->id)),
-    );
-
-    $form['validate_argument_node_access'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Validate user has access to the node'),
-      '#default_value' => !empty($this->argument->options['validate_argument_node_access']),
-      '#process' => array('views_process_dependency'),
-      '#dependency' => array('edit-options-validate-type' => array($this->id)),
-    );
-
-    $form['validate_argument_nid_type'] = array(
-      '#type' => 'select',
-      '#title' => t('Argument type'),
-      '#options' => array(
-        'nid' => t('Node ID'),
-        'nids' => t('Node IDs separated by , or +'),
-      ),
-      '#default_value' => isset($this->argument->options['validate_argument_nid_type']) ? $this->argument->options['validate_argument_nid_type'] : 'nid',
-      '#process' => array('views_process_dependency'),
-      '#dependency' => array('edit-options-validate-type' => array($this->id)),
-    );
-  }
-
-  function validate_argument($argument) {
-    $types = array_filter($this->argument->options[$this->option_name]);
-
-    $type = isset($this->argument->options['validate_argument_nid_type']) ? $this->argument->options['validate_argument_nid_type'] : 'nid';
-
-    switch ($type) {
-      case 'nid':
-        if (!is_numeric($argument)) {
-          return FALSE;
-        }
-        $node = node_load($argument);
-        if (!$node) {
-          return FALSE;
-        }
-
-        if (!empty($this->argument->options['validate_argument_node_access'])) {
-          if (!node_access('view', $node)) {
-            return FALSE;
-          }
-        }
-
-        // Save the title() handlers some work.
-        $this->argument->validated_title = check_plain($node->title);
-
-        if (empty($types)) {
-          return TRUE;
-        }
-
-        return isset($types[$node->type]);
-      break;
-      case 'nids':
-        $nids = new stdClass();
-        $nids->value = array($argument);
-        $nids = views_break_phrase($argument, $nids);
-        if ($nids->value == -1) {
-          return FALSE;
-        }
-
-        $placeholders = implode(', ', array_fill(0, sizeof($nids->value), '%d'));
-
-        $test = drupal_map_assoc($nids->value);
-        $titles = array();
-
-        $result = db_query("SELECT * FROM {node} WHERE nid IN ($placeholders)", $nids->value);
-        while ($node = db_fetch_object($result)) {
-          if ($types && empty($types[$node->type])) {
-            return FALSE;
-          }
-
-          if (!empty($this->argument->options['validate_argument_node_access'])) {
-            if (!node_access('view', $node)) {
-              return FALSE;
-            }
-          }
-
-          $titles[] = check_plain($node->title);
-          unset($test[$node->nid]);
-        }
-
-        $this->argument->validated_title = implode($nids->operator == 'or' ? ' + ' : ', ', $titles);
-        // If this is not empty, we did not find a nid.
-        return empty($test);
-    }
-  }
-}
-
-/**
- * Default argument plugin to extract a node via menu_get_object
- */
-class views_plugin_argument_default_node extends views_plugin_argument_default {
-  function argument_form(&$form, &$form_state) {
-  }
-
-  function get_argument() {
-    foreach (range(1, 3) as $i) {
-      $node = menu_get_object('node', $i);
-      if (!empty($node)) {
-        return $node->nid;
-      }
-    }
+  $vars['comments'] = NULL;
+  if (!empty($options['comments']) && function_exists('comment_render')) {
+    $vars['comments'] = comment_render($node);
   }
 }
 

@@ -1,5 +1,5 @@
 <?php
-// $Id: views-view-grid.tpl.php,v 1.1 2008/04/20 23:41:06 merlinofchaos Exp $
+// $Id: views-view-grid.tpl.php,v 1.3 2008/06/14 17:42:43 merlinofchaos Exp $
 /**
  * @file views-view-grid.tpl.php
  * Default simple view template to display a rows in a grid.
@@ -10,11 +10,14 @@
  * @ingroup views_templates
  */
 ?>
+<?php if (!empty($title)) : ?>
+  <h3><?php print $title; ?></h3>
+<?php endif; ?>
 <table class="views-view-grid">
   <tbody>
     <?php foreach ($rows as $row_number => $columns): ?>
       <?php
-        $row_class = 'row-'. ($row_number + 1);
+        $row_class = 'row-' . ($row_number + 1);
         if ($row_number == 0) {
           $row_class .= ' row-first';
         }

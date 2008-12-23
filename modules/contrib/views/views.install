@@ -1,12 +1,11 @@
 <?php
-// $Id: views.install,v 1.40 2008/05/17 01:13:58 merlinofchaos Exp $
+// $Id: views.install,v 1.42 2008/10/14 19:51:55 merlinofchaos Exp $
 /**
  * @file views.install
  * Contains install and update functions for Views.
  */
 
 function views_install() {
-  drupal_set_message('Installing views');
   drupal_install_schema('views');
   db_query("UPDATE {system} SET weight = 10 WHERE name = 'views'");
 }
@@ -192,5 +191,16 @@ function views_update_6000() {
   foreach ($schema as $name => $table) {
     db_create_table($ret, $name, $table);
   }
+  return $ret;
+}
+
+function views_update_6001() {
+  $ret = array();
+  $result = db_query("SELECT * FROM {blocks} WHERE module = 'views' AND delta LIKE '\$exp%'");
+  while ($block = db_fetch_object($result)) {
+    $new = strtr($block->delta, '$', '-');
+    $ret[] = update_sql("UPDATE {blocks} SET delta = '" . db_escape_string($new) . "' WHERE module = 'views' AND delta = '" . db_escape_string($block->delta) . "'");
+  }
+
   return $ret;
 }
