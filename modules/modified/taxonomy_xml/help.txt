@@ -1,0 +1,13 @@
+<p>
+If you want to add the terms to an existing vocabulary, use the "Target vocabulary" selector. 
+<br/>
+If you select "determined by source file", the target vocabulary will be specified by the XML document itself, if possible. Not all formats or inputs support this. 
+</p><p>
+Drupal-specific configurations (such as the related node types, or the free-tagging property) will probably not be imported form anything but the custom format, so you'll want to review the new vocabulary edit page when it's done.
+<br/>
+To avoid duplications, already-existing terms will not be added unless chosen in the settings. The normal behavior is to attempt to merge with existing vocabs.
+<br/>
+It's highly unlikely that term IDs can be meaningfully shared between systems, so the tid field is NOT retained. Instead, terms are looked up by name (string match) and vocabulary when looking for existing terms.
+Just because you've duplicated a vocabulary, does not mean it's identically numbered as the original. 
+They will usually get new, unique IDs.
+</p>

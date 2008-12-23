@@ -1,0 +1,23 @@
+/**
+ Small UI enhancements to the import form
+ */
+/* Hide unused options via js and css */
+#data_source.filtered #edit-upload-file-wrapper{
+  display:none;
+}
+#data_source.filtered #edit-url-wrapper{
+  display:none;
+}
+#data_source.filtered #edit-service-wrapper{
+  display:none;
+}
+
+#data_source.upload-file #edit-upload-file-wrapper,  #data_source.batch-upload-file #edit-upload-file-wrapper {
+  display:block;
+}
+#data_source.url #edit-url-wrapper{
+  display:block;
+}
+#data_source.service #edit-service-wrapper{
+  display:block;
+}

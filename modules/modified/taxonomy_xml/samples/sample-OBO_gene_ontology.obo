@@ -1,0 +1,117 @@
+format-version: 1.2
+date: 31:10:2008 15:18
+saved-by: dph
+auto-generated-by: OBO-Edit 1.101
+subsetdef: goslim_candida "Candida GO slim"
+subsetdef: goslim_generic "Generic GO slim"
+subsetdef: goslim_goa "GOA and proteome slim"
+subsetdef: goslim_pir "PIR GO slim"
+subsetdef: goslim_plant "Plant GO slim"
+subsetdef: goslim_yeast "Yeast GO slim"
+subsetdef: gosubset_prok "Prokaryotic GO subset"
+synonymtypedef: systematic_synonym "Systematic synonym" EXACT
+default-namespace: gene_ontology
+remark: cvs version: $Revision: 5.876 $
+
+[Term]
+id: GO:0000001
+name: mitochondrion inheritance
+namespace: biological_process
+def: "The distribution of mitochondria, including the mitochondrial genome, into daughter cells after mitosis or meiosis, mediated by interactions between mitochondria and the cytoskeleton." [GOC:mcc, PMID:10873824, PMID:11389764]
+synonym: "mitochondrial inheritance" EXACT []
+is_a: GO:0048308 ! organelle inheritance
+is_a: GO:0048311 ! mitochondrion distribution
+
+[Term]
+id: GO:0000002
+name: mitochondrial genome maintenance
+namespace: biological_process
+def: "The maintenance of the structure and integrity of the mitochondrial genome; includes replication and segregation of the mitochondrial chromosome." [GOC:ai, GOC:vw]
+is_a: GO:0007005 ! mitochondrion organization
+
+[Term]
+id: GO:0000003
+name: reproduction
+namespace: biological_process
+alt_id: GO:0019952
+alt_id: GO:0050876
+def: "The production by an organism of new individuals that contain some portion of their genetic material inherited from that organism." [GOC:go_curators, GOC:isa_complete, ISBN:0198506732 "Oxford Dictionary of Biochemistry and Molecular Biology"]
+subset: goslim_generic
+subset: goslim_pir
+subset: goslim_plant
+subset: gosubset_prok
+synonym: "reproductive physiological process" EXACT []
+is_a: GO:0008150 ! biological_process
+
+[Term]
+id: GO:0000005
+name: ribosomal chaperone activity
+namespace: molecular_function
+def: "OBSOLETE. Assists in the correct assembly of ribosomes or ribosomal subunits in vivo, but is not a component of the assembled ribosome when performing its normal biological function." [GOC:jl, PMID:12150913]
+comment: This term was made obsolete because it refers to a class of gene products and a biological process rather than a molecular function.
+is_obsolete: true
+consider: GO:0042254
+consider: GO:0051082
+
+[Term]
+id: GO:0033959
+name: deoxyribodipyrimidine endonucleosidase activity
+namespace: molecular_function
+def: "Catalysis of the reaction: cleaves the N-glycosidic bond between the 5'-pyrimidine residue in cyclobutadipyrimidine (in DNA) and the corresponding deoxy-D-ribose residue." [EC:3.2.2.17]
+synonym: "deoxy-D-ribocyclobutadipyrimidine polynucleotidodeoxyribohydrolase activity" EXACT [EC:3.2.2.17]
+synonym: "deoxyribonucleate pyrimidine dimer glycosidase activity" EXACT [EC:3.2.2.17]
+synonym: "endonuclease V activity" BROAD [EC:3.2.2.17]
+synonym: "PD-DNA glycosylase activity" EXACT [EC:3.2.2.17]
+synonym: "pyrimidine dimer DNA glycosylase activity" EXACT [EC:3.2.2.17]
+synonym: "pyrimidine dimer DNA-glycosylase activity" EXACT [EC:3.2.2.17]
+synonym: "T4-induced UV endonuclease activity" EXACT [EC:3.2.2.17]
+xref: EC:3.2.2.17
+is_a: GO:0016799 ! hydrolase activity, hydrolyzing N-glycosyl compounds
+
+[Term]
+id: GO:0033985
+name: acidocalcisome lumen
+namespace: cellular_component
+def: "The volume enclosed by the membranes of an acidocalcisome." [GOC:mah]
+is_a: GO:0044444 ! cytoplasmic part
+is_a: GO:0070013 ! intracellular organelle lumen
+relationship: part_of GO:0020022 ! acidocalcisome
+
+[Term]
+id: GO:0080025
+name: phosphatidylinositol-3,5-bisphosphate binding
+namespace: molecular_function
+def: "Interacting selectively with phosphatidylinositol-3,5-bisphosphate, a diphosphorylated derivative of phosphatidylinositol." [PMID:18397324]
+synonym: "PtdIns(3,5)P2 binding" EXACT []
+is_a: GO:0035091 ! phosphoinositide binding
+
+[Term]
+id: GO:0080026
+name: response to indolebutyric acid stimulus
+namespace: biological_process
+def: "A change in state or activity of a cell or an organism (in terms of movement, secretion, enzyme production, gene expression, etc.) as a result of an indolebutyric acid stimulus." [PMID:18725356]
+synonym: "response to IBA stimulus" EXACT []
+synonym: "response to indole-3-butyric acid stimulus" NARROW []
+is_a: GO:0009733 ! response to auxin stimulus
+
+[Typedef]
+id: negatively_regulates
+name: negatively_regulates
+is_a: regulates ! regulates
+
+[Typedef]
+id: part_of
+name: part_of
+xref: OBO_REL:part_of
+is_transitive: true
+
+[Typedef]
+id: positively_regulates
+name: positively_regulates
+is_a: regulates ! regulates
+
+[Typedef]
+id: regulates
+name: regulates
+transitive_over: part_of
+

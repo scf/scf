@@ -1,0 +1,78 @@
+<?php
+  // $Id: hovertip.module,v 1.4.4.1 2008/05/15 22:23:14 yogadex Exp $
+
+/**
+ * @file
+ * Hovertips and clicktips are kinds of tooltips that appear on mouseover or mouse click.
+ * See http://www.dave-cohen.com/node/1188 for more information.
+ * See also hovertip.js for examples of how to tag tooltips.
+ */
+
+/**
+ * This javascript is generally what is required to initialize hovertips, 
+ * but it is possible to customize.
+ */
+function _hovertip_get_javascript() {
+  $default =<<<END
+
+    // initialize tooltips in a separate thread
+    $(document).ready(function() {
+      window.setTimeout(hovertipInit, 1);
+    });
+
+END;
+  return variable_get('hovertip_javascript', $default);
+  }
+
+/**
+ * Implementation of hook_menu in which we declare the settings hook.
+ */
+function hovertip_menu() {
+  $items = array();
+  $items['admin/settings/hovertip'] = array(
+    'title' => 'Hovertip settings',
+    'description' => 'Configure the hovertip module',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hovertip_settings_form'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['hovertip/settings_js'] = array(
+   'title' => t('Hovertip'),
+   'page callback' => 'hovertip_settings_js',
+   'access arguments' => array('access content'),
+   'type' => MENU_CALLBACK
+  );
+  return $items;
+}
+
+function hovertip_settings_form() {
+  $form['hovertip_javascript'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Javascript to initialize hovertips'),
+    '#description' => t('The script here will be included in every page.'),
+    '#default_value' => _hovertip_get_javascript(),  
+  );
+  return system_settings_form($form);
+}
+
+/**
+ * Load the necessary javascript and stylesheet files.
+ * This was once an implimentation of hook_init, however one cannot
+ * reliably call drupal_add_css or drupal_add_js from that function.  So
+ * instead we call this function from hook_menu.
+ */
+function hovertip_init() {
+  drupal_add_css(drupal_get_path('module', 'hovertip') .'/hovertip.css');
+  drupal_add_js(drupal_get_path('module', 'hovertip') .'/hovertip.js');
+  if ($js = _hovertip_get_javascript())
+    drupal_add_js($js, 'inline');
+}
+
+function hovertip_settings_js() {
+  drupal_set_header('Content-Type: text/javascript');
+  print(_hovertip_get_javascript());
+  return;
+}
+
+?>
