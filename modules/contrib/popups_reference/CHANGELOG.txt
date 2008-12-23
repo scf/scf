@@ -1,0 +1,6 @@
+Drupal-6--1-0-BETA2
+* http://drupal.org/node/322600 - test if user has permission to do any adds before showing "Add new" text.
+* http://drupal.org/node/325720 (jhodgdon ) - fix for content types with '_'s in them.
+
+Drupal-6--1-0-BETA1
+* Working w/Popups Api RC2

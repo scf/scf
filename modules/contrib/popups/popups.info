@@ -1,6 +1,13 @@
-; $Id: popups.info,v 1.4 2008/03/11 16:56:08 starbow Exp $
-name = Popups
+; $Id: popups.info,v 1.4.2.1 2008/10/22 05:22:07 starbow Exp $
+name = Popups API
 description = General dialog creation utilities
 package = User interface
 core = 6.x
+
+
+; Information added by drupal.org packaging script on 2008-12-07
+version = "6.x-1.1"
+core = "6.x"
+project = "popups"
+datestamp = "1228673503"
 

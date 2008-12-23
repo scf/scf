@@ -1,0 +1,58 @@
+/* $Id: views-list.css,v 1.9 2008/10/28 18:11:42 merlinofchaos Exp $ */
+
+table.views-entry {
+  margin: 2px 0;
+  border: 1px solid #ccc;
+  background-color: white;
+  color: #494949; /* matches garland */
+  clear: left;
+  width: 100%;
+}
+
+table.views-entry tbody {
+  border: none;
+}
+
+table.views-entry td.view-ops {
+  width: 45%;
+  text-align: right;
+  background-color: #eee;
+}
+
+table.views-entry td.view-name {
+  background-color: #eee;
+}
+
+table.views-entry .description {
+  vertical-align: top;
+}
+
+body form#views-ui-list-views-form {
+  margin: 0 0 1.5em 0;
+}
+
+#views-ui-list-views-form .form-item {
+  padding-right: 1em;
+  float: left;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+#edit-order-wrapper {
+  clear: left;
+}
+
+#edit-views-apply {
+  margin-top: 1.65em;
+  float: left;
+}
+
+.views-entry .advanced-help-link {
+  position: relative;
+  top: 2px;
+  padding-right: 3px;
+}
+
+table.view-disabled {
+  color: #aaa;
+}

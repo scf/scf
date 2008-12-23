@@ -1,5 +1,9 @@
 <?php
-// $Id: popups.install,v 1.4 2008/03/06 20:32:50 starbow Exp $
+// $Id: popups.install,v 1.4.2.1 2008/11/04 00:39:48 starbow Exp $
+
+/**
+ * @file
+ */
 
 /**
  * Implementation of hook_install().

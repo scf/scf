@@ -1,572 +1,547 @@
-// $Id: popups.js,v 1.9 2008/03/06 20:32:50 starbow Exp $
+// $Id: popups.js,v 1.9.2.18 2008/11/20 21:18:57 starbow Exp $
 
 /**
  * Popup Modal Dialog API
  *
- * Provide an API for building and displaying JavaScript, in-page, popup modal dialogs.
- * Modality is provided by a fixed, semi-opaque div, positioned in front of the page contents 
- * TODO: I believe fixed positioning is not supported in IE6.
- * The dialog itself is positioned absolutely, which allows for scrolling if the dialog is bigger than the page.
- * Also, the dialog is created off-screen (left: -9999px) to allow for verticle centering without flicker. 
+ * Provide an API for building and displaying JavaScript, in-page, popups modal dialogs.
+ * Modality is provided by a fixed, semi-opaque div, positioned in front of the page contents.
  *
- * Here is an example of using this API to create a dialog:
- * 
- * Drupal.popups.prototype.open_unsaved = function( a ) {
- *   body = Drupal.t("There are unsaved changes on this page.");
- *   buttons = {
- *    'popups_save': { title: Drupal.t('Save Changes'), func: function(){$('#edit-submit').click()} },
- *    'popups_submit': { title: Drupal.t('Discard Changes and Continue'), func: function(){window.location = a.href} },
- *    'popups_cancel': { title: Drupal.t('Cancel'), func: this.close }
- *  };
- *  this.open( "Warning - Please Confirm", body, buttons );
- *  return false;
- * };
  */
-
 
 /**
- * Create the popups object, and set any defaults.
+ * Create the popups object/namespace.
  */
-Drupal.popups = function() {
-  this.default_width = 600;
+Drupal.popups = function() {};
+
+function isset(v) {
+  return (typeof(v) !== 'undefined');
+}
+
+/**
+ * Attach the popups bevior to the all the requested links on the page.
+ *
+ * @param context
+ *   The jQuery object to apply the behaviors to.
+ */
+Drupal.behaviors.popups = function(context) {
+  var $body = $('body');
+  if(!$body.hasClass('popups-processed')) {
+    $body.addClass('popups-processed');
+    $(document).bind('keydown', Drupal.popups.keyHandle);
+    $popit = $('#popit');
+    if ($popit.length) {
+      $popit.remove();
+      Drupal.popups.message($popit.html());
+    }
+  }
+  
+  // Add the popups-link-in-dialog behavior to links defined in Drupal.settings.popups.links array.
+  if (Drupal.settings.popups.links) {
+    jQuery.each(Drupal.settings.popups.links, function (link, options) { 
+      if (isset(options.noReload)) { // Using obsolete name.
+        options.noUpdate = options.noReload; // Don't break existing sites with name change.
+      }
+      Drupal.popups.attach(context, link, options);
+    });
+  }
+  
+  Drupal.popups.attach(context, '.popups', {noUpdate: true});  
+  Drupal.popups.attach(context, '.popups-form', {}); // ajax reload.
+  Drupal.popups.attach(context, '.popups-form-reload', {reloadWhenDone: true}); // whole page reload. 
+  Drupal.popups.attach(context, '.popups-form-noupdate', {noUpdate: true});  // no reload at all.
+  Drupal.popups.attach(context, '.popups-form-noreload', {noUpdate: true});  // Obsolete.
+  
 };
+
+/**
+ * Attach the popups behavior to a particular link.
+ *
+ * @param selector
+ *   jQuery selector for links to attach popups behavior to.
+ * @param options
+ *   Hash of options associated with these links.
+ */
+Drupal.popups.attach = function(context, selector, options) {
+  $(selector, context).not('.popups-processed').each(function() {
+    var $element = $(this);
+    // Mark the element as attached.    
+    var title = $element.attr('title') || '';
+    $element.attr('title', title + Drupal.t('[Popup]')); // Append note to link title.
+    $element.addClass('popups-processed');
+    
+    // Attach the on-click popup behavior to the element.
+    $element.click(function(e){ 
+      var element = this;
+
+      // If element is inside of a #popup div, show alert and bail out. 
+      if ($(element).parents('#popups').length) { 
+        alert("Sorry, popup chaining is not supported (yet).");
+        return false;
+      }
+
+      // If the element contains a on-popups-options attribute, use it instead of options param.
+      if ($(element).attr('on-popups-options')) {
+        options = eval('(' + $(element).attr('on-popups-options') + ')'); 
+      }
+
+      // If the option is distructive, check if the page is already modified, and offer to save.
+      var pageIsDirty = $('span.tabledrag-changed').size() > 0;
+      var willModifyOriginal = !options.noUpdate;
+      if (pageIsDirty && willModifyOriginal) {
+        // The user will lose modifications, so popups dialog offering to save current state.
+        var body = Drupal.t("There are unsaved changes on this page, which you will lose if you continue.");
+        var buttons = {
+         'popup_save': {title: Drupal.t('Save Changes'), func: function(){Drupal.popups.savePage(element, options);}},
+         'popup_submit': {title: Drupal.t('Continue'), func: function(){Drupal.popups.removePopup(); Drupal.popups.openPath(element, options);}},
+         'popup_cancel': {title: Drupal.t('Cancel'), func: Drupal.popups.close}
+        };
+        return Drupal.popups.open( Drupal.t('Warning: Please Confirm'), body, buttons );
+      }
+      else {
+        return Drupal.popups.openPath(element, options);
+      } 
+    });    
+  });
+};
+
+
 /**
  * Generic dialog builder.
  */
-Drupal.popups.prototype.open = function( title, body, buttons, width ) {
-  if( !width ) {
-    width = this.default_width;
+Drupal.popups.open = function(title, body, buttons, width) {
+  Drupal.popups.addOverlay(); // TODO - nonModal option.
+  var $popups = $(Drupal.theme('popupDialog', title, body, buttons));
+  // Start with dialog off the side. Making it invisible causes flash in FF2.
+  $popups.css('left', '-9999px');
+  if (width) {
+    $popups.css('width', width);
   }
-
-  var $overlay = Drupal.popups.get_overlay();
-  if ($overlay.size() == 0) {  
-    // overlay does not exist yet so create a new one.
-    $overlay = Drupal.popups.add_overlay();
-  }
-    
-  // center on the screen, add in offsets if the window has been scrolled
-  var overlay_width = $overlay.width();
-  var overlay_height = $overlay.height();
-  var left = (overlay_width / 2) - (width / 2) + Drupal.popups.f_scrollLeft();
-  var top = 0; // we will reposition after adding to page
-  // Start with dialog off the side. Making it invisible causes flash.
-  var popup = Drupal.theme('popupsDialog', -9999, top, width, title, body, buttons);
-
-  $overlay.before( popup ); // Dialog is added, but still hidden.  
+  $('body').append( $popups ); // Add the popups to the DOM.
 
   // Adding button functions
   if (buttons) {
-    for (var id in buttons) {
-      if (buttons[id]) { // to make jslint happy.
-        var func = buttons[id].func;
-        $('#'+id).click( func );
-      }
-    }
+    jQuery.each(buttons, function (id, button) { 
+      $('#'+id).click(button.func);
+    });  
+  
+//    for (var id in buttons) {
+//      if (buttons[id]) { // to make jslint happy.
+//        var func = buttons[id].func;
+//        $('#'+id).click( func );
+//      }
+//    }
   }
   $('#popups-close').click( Drupal.popups.close );
+  $('a.popups-close').click( Drupal.popups.close );
+    
+  // center on the screen, adding in offsets if the window has been scrolled
+  var popupWidth = $popups.width();  
+  var windowWidth = $(window).width();
+  var left = (windowWidth / 2) - (popupWidth / 2) + Drupal.popups.scrollLeft();
   
-  // Get popups's height on the page, and center vertically before showing.
-  var popups_height = $('#popups').height(); // Causes flash if not visible!
-  if (popups_height < overlay_height) {
-    top = (overlay_height / 2) - (popups_height / 2) + Drupal.popups.f_scrollTop();
-  }
-  else { // popups is too big to fit on screen
-    top = 20  + Drupal.popups.f_scrollTop();
-  }
+  // Get popups's height on the page.
+  // Causes flash in FF2 if popups is not visible!
+  var popupHeight = $popups.height(); 
+  var windowHeight = $(window).height();
+  if (popupHeight > (0.9 * windowHeight) ) { // Must fit in 90% of window.
+    popupHeight = 0.9 * windowHeight;
+    $popups.height(popupHeight);
+  }  
+  var top = (windowHeight / 2) - (popupHeight / 2) + Drupal.popups.scrollTop();
 
-  $('#popups').css('top', top).css('left', left); // Make the popup visible.
+  $popups.css('top', top).css('left', left); // Position the popups to be visible.
   
   this.refocus(); // TODO: capture the focus when it leaves the dialog.
-  Drupal.popups.remove_loading(); // Remove the loading img.
+  Drupal.popups.removeLoading(); // Remove the loading img.
    
   return false;
 };
 
-Drupal.popups.message = function (message, body) {
-  var popup = new Drupal.popups();
+/**
+ *  Simple popups that functions like the browser's alert box.
+ */
+Drupal.popups.message = function(title, message) {
+  message = message || '';
   var buttons = {
-    'popups_ok': { title: Drupal.t('OK'), func: Drupal.popups.close }
+    'popup_ok': {title: Drupal.t('OK'), func: Drupal.popups.close}
   };
-  popup.open( message, body, buttons );
+  Drupal.popups.open(title, message, buttons);
 };
 
-/************************************************************************************
- * Theme Functions ******************************************************************
+/**
+ * Handle any special keys when popups is active.
  */
+Drupal.popups.keyHandle = function(e) {
+  if (!e) {
+    e = window.event;
+  }
+  switch (e.keyCode) {
+    case 27: // esc
+      Drupal.popups.close();
+      break;
+    case 191: // '?' key, show help.
+      if (e.shiftKey && e.ctrlKey) {
+        var $help = $('a.popups.more-help');
+        if ($help.size()) {
+          $help.click();
+        }
+        else {
+          Drupal.popups.message(Drupal.t("Sorry, there is no additional help for this page"));
+        }
+      }
+      break;
+  }
+};
 
-Drupal.theme.prototype.popupsLoading = function (left, top) {
+/*****************************************************************************
+ * Appearence Functions (overlay, loading graphic, remove popups)     *********
+ *****************************************************************************/
+
+Drupal.popups.removePopup = function() {
+  $('#popups').remove();  
+}; 
+ 
+Drupal.popups.addOverlay = function() {
+  var $overlay = $('#popups-overlay');
+  if (!$overlay.size()) { // Overlay does not already exist, so create it.
+    $overlay = $(Drupal.theme('popupOverlay'));
+    $overlay.css('opacity', '0.4'); // for ie6(?)
+    // Doing absolute positioning, so make overlay's size equal the entire body.
+    $doc = $(document);
+    $overlay.width($doc.width()).height($doc.height()); 
+    $overlay.click(Drupal.popups.close);
+    $('body').prepend($overlay);
+  }
+};
+
+Drupal.popups.removeOverlay = function() {
+  $('#popups-overlay').remove();
+};
+
+Drupal.popups.addLoading = function() {
+  var $loading = $('#popups-loading');
+  if (!$loading.size()) { // Overlay does not already exist, so create it.
+    var waitImageSize = 100;
+    var left = ($(window).width() / 2) - (waitImageSize / 2)  + Drupal.popups.scrollLeft();
+    var top = ($(window).height() / 2) - (waitImageSize / 2)  + Drupal.popups.scrollTop();
+    $loading = $( Drupal.theme('popupLoading', left, top) );
+    $('body').prepend($loading);
+  }
+};
+
+Drupal.popups.removeLoading = function() {
+  $('#popups-loading').remove();
+};
+
+/**
+ * Remove everything.
+ */
+Drupal.popups.close = function() {
+  Drupal.popups.removePopup();
+  Drupal.popups.removeLoading();
+  Drupal.popups.removeOverlay();
+  return false;
+};
+
+/**
+ * Set the focus on the popups to the first visible form element, or the first button, or the close link.
+ */
+Drupal.popups.refocus = function() {
+  $focus = $('#popups input:visible:eq(0)');
+  if (!isset(focus)) {
+    $focus = $('#popups-close'); // Doesn't seem to work.
+  }
+  $focus.focus();
+};
+
+/****************************************************************************
+ * Theme Functions   ********************************************************
+ ****************************************************************************/
+
+Drupal.theme.prototype.popupLoading = function(left, top) {
   var loading = '<div id="popups-loading">';
   loading += '<div style="left:' + left +'px; top:' + top +'px;">';
-  // TODO - remove hardcoded path to image.
-  loading += '<img src="'+ Drupal.settings.basePath +'/sites/all/modules/popups/ajax-loader.gif" />';
-//  loading += '<img src="'+ Drupal.settings.basePath +'/misc/ajax-loader.gif" />';
+  loading += '<img src="'+ Drupal.settings.basePath + Drupal.settings.popups.modulePath + '/ajax-loader.gif" />';
   loading += '</div></div>';
   return loading;
 };
 
-Drupal.theme.prototype.popupsOverlay = function () {
+Drupal.theme.prototype.popupOverlay = function() {
   return '<div id="popups-overlay"></div>';
 };
 
-Drupal.theme.prototype.popupsDialog = function(left, top, width, title, body, buttons) {
-  var popups = '<div  id="popups" style="left:'+ left +'px; top:'+ top +'px;';
-  popups += ' width:'+ width +'px;';
-  popups += '" >';
-  popups += '<div id="popups-title">'+
-            '  <div id="popups-close"><a>close [X]</a></div>'+
-            '  <div class="title">' + title +'</div>'+
-            '  <div class="clear"></div>'+
-            '</div>';
-  if (body) {
-    popups += '<div id="popups-body">' + body +'</div>';
-  }
-  popups += '  <div id="popups-buttons">';
+Drupal.theme.prototype.popupButton = function(title, id) {
+  return '<input type="button" value="'+ title +'" id="'+ id +'" />';
+};
 
-  for ( var id in buttons) {
-    if (buttons[id]) {
-      var button = buttons[id];
-      popups += '<input type="button" value="'+ button.title +'" id="'+ id +'" />';
-    }
-  }
+Drupal.theme.prototype.popupDialog = function(title, body, buttons) {
+  var template = Drupal.settings.popups.template;
+  var popups = template.replace('%title', title).replace('%body', body);
   
-  popups += '  </div>'; // end buttons
-  popups +=  '</div>'; // close popups
+  var themedButtons = '';
+  if (buttons) {
+    jQuery.each(buttons, function (id, button) { 
+      themedButtons += Drupal.theme('popupButton', button.title, id);
+    });  
+  }  
+  popups = popups.replace('%buttons', themedButtons);  
   return popups;
 };
 
-/***************************************************************************************
- * Appearence Functions (overlay, loading graphic, remove popup) ***********************
- **************************************************************************************/
- 
-Drupal.popups.add_overlay = function() {
-  var $overlay = $( Drupal.theme('popupsOverlay') );
-
-  $overlay.css( 'opacity', '0.4' ); // for ie (?)
-  $('body').prepend( $overlay );
-  return $overlay;
+// Stolen jQuery offset
+Drupal.popups.scrollLeft = function() {
+  return Math.max(document.documentElement.scrollLeft, document.body.scrollLeft);
 };
 
-Drupal.popups.get_overlay = function() {
-  return $('#popups-overlay');
+// Stolen jQuery offset
+Drupal.popups.scrollTop = function() {
+  return Math.max(document.documentElement.scrollTop, document.body.scrollTop);
 };
-
-Drupal.popups.remove_overlay = function() {
-  $('#popups-overlay').remove();
-};
-
-Drupal.popups.add_loading = function() {
-  var $overlay = Drupal.popups.get_overlay();
-  var wait_image_size = 100;
-  var left = ( $overlay.width() / 2 ) - ( wait_image_size / 2 );
-  var top = ( $overlay.height() / 2 ) - ( wait_image_size / 2 );
-  var $loading = $( Drupal.theme('popupsLoading', left, top) );
-  $('body').prepend($loading);
-};
-
-Drupal.popups.remove_loading = function() {
-  $('#popups-loading').remove();
-};
-
-Drupal.popups.remove_popup = function() {
-  $('#popups').remove();
-};
-
-/**
- *  Remove everything.
- */
-Drupal.popups.close = function() {
-  Drupal.popups.remove_popup();
-  Drupal.popups.remove_loading();
-  Drupal.popups.remove_overlay();
-};
-
-/**
- *  Set the focus on the popup to the first visible form element, or the first button, or the close link.
- */
-Drupal.popups.prototype.refocus = function() {
-  $focus = $('#popups input:visible:eq(0)')
-  if (!focus) {
-    $focus = $('#popups-close');
-  }
-  $focus.focus()
-}
 
 /****************************************************************************
- * Utility functions
+ * Page & Form in popups functions                                         ***
  ****************************************************************************/
- 
-/**
- * Break the URL down into it's componant parts.
- * Might be worth turning into a core function.
- *  @param
- *    String version of URL.
- *  @return
- *    Object version of URL.
- */ 
-Drupal.popups.parseUrl = function(url) {
-  var params = [];
-  var temp = url.split('#');
-  url = temp[0];
-  var fragment = temp[1];
-  
-  // Convert the existing parameter string into an array.
-  if (url.indexOf('?') > -1) { 
-    temp = url.split('?');
-    url = temp[0];
-    if (temp[1]) {
-      params = temp[1].split('&');    
-    }
-  }
-  return { 'url': url, 'params': params, 'fragment': fragment};
-}
 
 /**
- *  Rebuild the url string from the obj returned by parseUrl.
- *  @param
- *    Object version of URL.
- *  @return
- *    String version of URL.
- */
-Drupal.popups.buildUrl = function(u) {
-  url = u.url + '?' + u.params.join('&');
-  if (u.fragment) {
-    url += '#' + u.fragment;
-  }
-  return url;
-}
-
-/***********************************************************************************************
- * Utility functions taken from http://www.softcomplex.com/docs/get_window_size_and_scrollbar_position.html
- */
-
-Drupal.popups.f_scrollLeft = function() {
-  return Drupal.popups.f_filterResults (
-    window.pageXOffset ? window.pageXOffset : 0,
-    document.documentElement ? document.documentElement.scrollLeft : 0,
-    document.body ? document.body.scrollLeft : 0 );
-};
-
-Drupal.popups.f_scrollTop = function() {
-  return Drupal.popups.f_filterResults (
-    window.pageYOffset ? window.pageYOffset : 0,
-    document.documentElement ? document.documentElement.scrollTop : 0,
-    document.body ? document.body.scrollTop : 0 );
-};
-
-Drupal.popups.f_filterResults = function(n_win, n_docel, n_body) {
-  var n_result = n_win ? n_win : 0;
-  if (n_docel && (!n_result || (n_result > n_docel))) {
-    n_result = n_docel;
-  }
-  return n_body && (!n_result || (n_result > n_body)) ? n_body : n_result;
-};
-
-/***************************************************************************************
- * Page-in-Popup Behavior
- **************************************************************************************/
-
-/**
- * This part uses the Popup API to build dialogs that show the content from a Drupal page.
- * 
- * It is assumed that the pages being returned from the Drupal server will be XML
- *  and have the following format:
+ * Use Ajax to open the link in a popups window.
  *
- * <popup>
- *  <title>Page Title</title>
- *   <messages>Error, warning and status messages, as HTML</messages>
- *   <path>The page's URL</path>
- *   <content>The content of the page, as HTML</content>
- * </popup>
+ * @param element
+ *   Element that was clicked to open the popups.
+ * @param options
+ *   Hash of options controlling how the popups interacts with the underlying page.
  */
-
-/**
- * Attach the popup bevior to the all the requested links on the page.
- *
- * @param context: The jQuery object to apply the behaviors to.
- */
-Drupal.behaviors.popups = function(context) {
-  var popups = new Drupal.popups();
-  
-  // Add the popup-link-in-dialog behavior to links defined in Drupal.settings.popups.links array.
-  // TODO: how to handle popups-in-popups?
-  if (Drupal.settings.popups) {
-    for (var link in Drupal.settings.popups.links) {
-      var options = Drupal.settings.popups.links[link];
-      popups.attach(context, link, options); // Needs to be seperate function for closure.
-    }
-  }
-    
-//  $('a.popups', context).click( function() {return popups.open_path(this, {});} );
-  popups.attach(context, 'a.popups', {});
-};
-
-/**
- * Attach the popup behavior to a particular link.
- *
- * @param link - link that was clicked.
- * @param options - options associated with the link.
- */
-Drupal.popups.prototype.attach = function(context, link, options) {
-  var popups = this;
-  $(link, context).not('.popups-processed').each( function() {
-    $(this).click( function(e){ 
-      var a = this;
-      // If the option is distructive, check if the page is already modified, and offer to save.
-      var page_is_dirty = $('span.tabledrag-changed').size() > 0;
-      var will_modify_original = !options.noReload && !options.singleRow;
-      if( page_is_dirty && will_modify_original ) {
-        // The user will lose modifications, so popup dialog offering to save current state.
-        var body = Drupal.t("There are unsaved changes on this page, which you will lose if you continue.");
-        var buttons = {
-         'popups_save': {title: Drupal.t('Save Changes'), func: function(){popups.save_page(a, options)}},
-         'popups_submit': {title: Drupal.t('Continue'), func: function(){Drupal.popups.close(); popups.open_path(a, options)}},
-         'popups_cancel': {title: Drupal.t('Cancel'), func: Drupal.popups.close}
-        };
-        return popups.open( Drupal.t('Warning: Please Confirm'), body, buttons );
-      }
-      else {
-        return popups.open_path(a, options);
-      } 
-    });
-    $(this).addClass('popups-processed');
-  });
-
-};
-
-
-/**
- * Deal with the param string of a url to make the response popup friendly.
- * Add 'page_override=popup' param.
- * 
- * @param url 
- *   String: The original url.
- * @return url 
- *   String: The url with the corrected parameters.
- */
-Drupal.popups.prepUrl = function(url) {
-  var u = Drupal.popups.parseUrl(url);  
-  // Add our param to the filtered array of existing params.
-  if (jQuery.inArray('page_override=popup', u.params) == -1) {
-    u.params.unshift('page_override=popup');
-  }  
-  // Rebuild the url with the new param, the old params and the old fragment.
-  return Drupal.popups.buildUrl(u);
-}
-
-/**
- * Use Ajax to open the link in a popup window.
- *
- * @param a - link that was clicked.
- * @param options - options associated with the link.
- */
-Drupal.popups.prototype.open_path = function( a, options ) {
-  var popup = this;
+Drupal.popups.openPath = function(element, options) {
   // let the user know something is happening
   $('body').css("cursor", "wait");
-  var $overlay = Drupal.popups.add_overlay(); 
-  Drupal.popups.add_loading();
+  
+  // TODO - get nonmodal working.
+  if (!options.nonModal) {
+    Drupal.popups.addOverlay(); 
+  }
+  Drupal.popups.addLoading();
+  
+  var href = options.href ? options.href : element.href;
+  var params = {};
+  
+  // Force the popups to return back to the orignal page when forms are done.
+  if (!options.forceReturn) { // If forceReturn, requestor wants data from different page.
+    href = href.replace(/destination=[^;&]*[;&]?/, ''); // Strip out any existing destination param.
+    params.destination = Drupal.settings.popups.originalPath; // Set the destination to the original page.    
+  }
 
-//  var type = options.type ? options.type : 'json'; // Default to json.
-  var url = Drupal.popups.prepUrl(a.href); 
-//  if (type=='html') { // Special handling for html.
-//    $.get(url, function(data) {  
-//      var $response = $('<div></div>');
-//      $response.html(data);
-//      var body = $response.html();
-//      popup.open_content(document.title, body, options, a);
-//       $('body').css("cursor", "auto"); // Return the cursor to normal state.
-//    });
-//  }
-//  else { // It is a json object from Drupal.
-  $.getJSON(url, function(json) {  
-    popup.open_content(json.title, json.messages + json.content, options, a);
-    $('body').css("cursor", "auto"); // Return the cursor to normal state.  
+  ajaxOptions = {
+    url: href,
+    dataType: 'json',
+    data: params,
+    beforeSend: Drupal.popups.beforeSend,
+    success: function(json) { 
+      Drupal.popups.openContent(json.title, json.messages + json.content, options);
+    },
+    complete: function() {
+      $('body').css("cursor", "auto"); // Return the cursor to normal state.      
+    }
+  };
+
+  if (options.reloadOnError) {
+    ajaxOptions.error = function() {
+//      Drupal.popups.close(); // close everything;
+//      console.log( "href = " + href + ", location = " + location.href );
+      location.reload(); // Reload on error ?
+    };    
+  }
+  else {
+   ajaxOptions.error = function() {
+      Drupal.popups.message("Unable to open: " + href);
+    };
+  }
+  $.ajax(ajaxOptions);
+/*
+  $.ajax({
+    url: href,
+    dataType: 'json',
+    beforeSend: Drupal.popups.beforeSend,
+    success: function(json) { 
+      Drupal.popups.openContent(json.title, json.messages + json.content, options);
+    },
+    error: function() {
+      Drupal.popups.message("Unable to open: " + href);
+    },
+    complete: function() {
+      $('body').css("cursor", "auto"); // Return the cursor to normal state.      
+    }
   });
-//  }
-/*  
-  $.get(url, function(data) {  
-    var $data = $(data);
-    if ($data.size() == 1) { // Expecting XML with single root.
-     var title = $data.find('title').text();
-     var messages = $data.find('messages').text();
-     var content = messages + $data.find('content').text();
-     popup.open_content(title, content, options, a);
-     $('body').css("cursor", "auto"); // Return the cursor to normal state.
-    }
-    else { // Not XML, so show entire HTML page in popup.
-      // Filter the html - There must be a there a better way?
-      var $response = $('<div></div>');
-      $response.html(data);
-      var body = $response.html();
-//      var msg = 'Messages: ' + $('.messages', $response).text();
-//      Drupal.popups.message('Error: Bad response.', msg);
-//      Drupal.popups.remove_loading();
-      var title = document.title;
-      popup.open_content(title, body, options, a);
-      $('body').css("cursor", "auto"); // Return the cursor to normal state.
-    }
-  });   
-*/     
+*/
+        
   return false;         
 };
 
-
-Drupal.popups.prototype.open_content = function(title, content, options, a) {
-  this.open(title, content); 
-  // Add behaviors to content in popup. 
+/**
+ * Open content in an ajax popups.
+ *
+ * @param title
+ *   String title of the popups.
+ * @param content
+ *   HTML to show in the popups.
+ * @param options
+ *   Hash of options controlling how the popups interacts with the underlying page.
+ */
+Drupal.popups.openContent = function(title, content, options) {
+  Drupal.popups.open(title, content, null, options.width); 
+  // Add behaviors to content in popups. 
   // TODO: d-n-d: need to click to let go of selection.
+  delete Drupal.behaviors.tableHeader; // Work-around for bug in tableheader.js (http://drupal.org/node/234377)
+  delete Drupal.behaviors.teaser; // Work-around for bug in teaser.js (sigh).
   Drupal.attachBehaviors($('#popups-body'));
   // Adding collapse moves focus.
-  this.refocus();
+  Drupal.popups.refocus();
 
-  // If the popup contains a form, capture submits.
+  // If the popups contains a form, capture submits.
   var $form = $('form', '#popups-body');
-  $form.ajaxForm({ 
-    dataType: 'json',     
+  $form.ajaxForm({   
+    dataType: 'json',   
     beforeSubmit: Drupal.popups.beforeSubmit,
-    success: function(response, status) { Drupal.popups.formSuccess(response, options, a) },
+    beforeSend: Drupal.popups.beforeSend,
+    success: function(response, status) {
+      Drupal.popups.formSuccess(response, options);
+    },
+    error: function() {
+      Drupal.popups.message("Bad Response form submission");
+    }
   });
-}
+};
 
-/**
- * Do before the form in the popup is submitted.
- *
- */
-Drupal.popups.beforeSubmit = function(form_data, $form, options) {
-  Drupal.popups.remove_popup(); // Remove just the dialog, but not the overlay.
-  Drupal.popups.add_loading();
-  // Send the original page back to Drupal with a flag to return the form results unthemed. 
-  options.url = Drupal.popups.prepUrl(options.url);
+Drupal.popups.beforeSend = function(xhr) {
+  xhr.setRequestHeader("X-Drupal-Render-Mode", 'json/popups');
 };
 
 /**
- * The form in the popup was successfully submitted
- * Update the originating page.
- * Show any messages in a popup (TODO - make this a configurable option).
- * 
- * @param response - specially formated page contents from server.
- * @param options - hash of per link options.
- * @param a - the link that was clicked.
+ * Do before the form in the popups is submitted.
  */
-Drupal.popups.formSuccess = function (response, options, a) {
-  var $data = $(response);
-  if ($data.size() > 1) { // Bad html response, show an error message.
-    var $response = $('<div></div>');
-    $response.html( response );
-    var msg = 'Messages: ' + $('.messages', $response).text();
-    Drupal.popups.message('Error: Bad response.', msg);
-    Drupal.popups.remove_loading();
+Drupal.popups.beforeSubmit = function(formData, $form, options) {
+  Drupal.popups.removePopup(); // Remove just the dialog, but not the overlay.
+  Drupal.popups.addLoading();
+//  console.log("Before Submit");
+};
+
+/**
+ * The form in the popups was successfully submitted
+ * Update the originating page.
+ * Show any messages in a popups (TODO - make this a configurable option).
+ * 
+ * @param response
+ *   JSON object from server with status of form submission.
+ * @param options
+ *   Hash of options controlling how the popups interacts with the underlying page.
+ *     noUpdate: bool, does the popups effect the underlying page.
+ *     nonModal: bool, does the popups block access to the underlying page.
+ *     targetSelectors: hash of jQuery selectors, overrides defaultTargetSelector.
+ *     titleSelectors: array of jQuery selectors, where to put the the new title of the page.
+ */
+Drupal.popups.formSuccess = function(data, options) {  
+  // Determine if we are at an end point, or just moving from one popups to another.
+  var done = (data.path === Drupal.settings.popups.originalPath) || (data.path === options.forceReturn);
+  if (!done) { // Not done yet, so show new page in new popups.
+    Drupal.popups.removeLoading();
+    Drupal.popups.openContent(data.title, data.messages + data.content, options);
   }
-  else { // Got a good response back from the server.
-    // Get into common format for testing.
-    var data = {
-      title: response.title, // $data.find('title').text();
-      messages: response.messages, // $data.find('messages').text();
-      path: response.path, // $data.find('path').text();
-      content: response.content // $data.find('content').text()
-    };
-  
-//    var messages = $data.find('messages').text();
-        
-    // Are we at an end point, or just moving from one popup to another?
-//    var path = $data.find('path').text();
-    if (!location.href.match(data.path)) { // Not done yet, so show results in new popup.
-//      var title = $data.find('title').text();
-//      var content = $data.find('content').text();
-      Drupal.popups.remove_loading();
-      var popups = new Drupal.popups();     
-      popups.open_content(data.title, data.messages + data.content, options, a);
+  else { // Done.
+    if (options.reloadWhenDone) { // Force a non-ajax, complete reload of the page.
+      location.reload(); 
     }
-    else { // Done, so show messages in dialog and embed the results in the original page.
-      if (data.messages) {
+    else { // Normal ajax reload behavior
+      // show messages in dialog and embed the results in the original page.
+      var showMessage = data.messages.length && !options.noMessage;
+      if (showMessage) {
         Drupal.popups.message(data.messages);
-        // Also insert the message into the page above the content.
+        if (!Drupal.settings.popups.popupFinalMessage) {
+          setTimeout(Drupal.popups.close, 2500); // Autoclose the message box in 2.5 seconds.
+        }
+  
+        // Insert the message into the page above the content.
         // Might not be the standard spot, but it is the easiest to find.
         var $next = $(Drupal.settings.popups.defaultTargetSelector);
         $next.parent().find('div.messages').remove(); // Remove the current messages.
         $next.before(data.messages);
       }
           
-      // Just update a single row out of a table (still expiremental). 
-      // Loop through, with special case for first element.
-      if (options.singleRow) {
-        var href = $(a).attr('href');
-        var selector = 'table a[href=' + href + ']';
-        var $new_row = $data.find(selector).parents('tr'); // new tr
-        var $target_row = $(selector).parents('tr'); // target tr.
-          for (var i in options.singleRow) {
-            var col = options.singleRow[i];
-            $new_row.find(col).contents().not('div.indentation').wrapAll('<div id="newvalue"/>');
-            $target_row.find(col).contents()
-              .not('a.tabledrag-handle').not('span.warning').not('div.indentation')
-              .wrapAll('<div id="killme"/>');
-            $('#killme').replaceWith( $new_row.find('#newvalue').html() );
-          }
-      }
-      // Update the entire content area (defined by 'target selector').
-      else if (!options.noReload) { 
-        var target = options.targetSelector;
-        if (!target) {
-          target = Drupal.settings.popups.defaultTargetSelector;
-        }
-        
-        // Remove page_override=popup param from form's action. 
-        var action = $data.find('form').attr('action');
-        if (action) { 
-          action = Drupal.popups.parseUrl(action);
-          action.params = jQuery.grep(action.params, function(n, i){
-            return n != 'page_override=popup';
+      // Update the content area (defined by 'targetSelectors').
+      if (!options.noUpdate) { 
+        Drupal.popups.testContentSelector();
+        if (isset(options.targetSelectors)) { // Pick and choose what returned content goes where.
+          jQuery.each(options.targetSelectors, function(t_new, t_old) {
+            if(!isNaN(t_new)) {
+              t_new = t_old; // handle case where targetSelectors is an array, not a hash.
+            }
+            var new_content = $(t_new, data.content);
+            var $c = $(t_old).html(new_content); // Inject the new content into the original page.
+            Drupal.attachBehaviors($c);  
           });
-          $data.find('form').attr( 'action', Drupal.popups.buildUrl(action) );
         }
-        
-        // Update the original page.      
-//        var content = $data.find('content').text();
-        var $c = $(target).html(data.content); // Inject the new content into the page.
-        Drupal.attachBehaviors($c);
+        else { // Put the entire new content into default content area.
+          $c = $(Drupal.settings.popups.defaultTargetSelector).html(data.content);
+          Drupal.attachBehaviors($c);                    
+        }
       }
       
       // Update the title of the page.
-      if (options.updateTitle) {
-//        var title = $data.find('title').text();
-        $(Drupal.settings.popups.defaultTitleSelector).html(data.title);
-        document.title = data.title; // Also update the browser page title (TODO: include site name?).
+      if (isset(options.titleSelectors)) {
+        jQuery.each(options.titleSelectors, function() {
+          $(''+this).html(data.title);
+        });
       }
-      
+              
       // Done with changes to the original page, remove effects.
-      Drupal.popups.remove_loading();
-      if (!data.messages) { 
-        // If there is not a messages popup remove the overlay.
-        Drupal.popups.remove_overlay();
+      Drupal.popups.removeLoading();
+      if (!showMessage) { 
+        // If there is not a messages popups, so remove the overlay.
+        Drupal.popups.removeOverlay();
       }
-    }  // End of updating original page.
-  } // End of good response.
+    }
+  }  // End of updating original page.
 }; 
 
 /**
  * Submit the page and reload the results, before popping up the real dialog.
  *
- * @param a - link that was clicked.
- * @param options - options associated with the link.
+ * @param element
+ *   Element that was clicked to open the popups.
+ * @param options
+ *   Hash of options controlling how the popups interacts with the underlying page.
  */
-Drupal.popups.prototype.save_page = function(a, options) {
-  var popups = this;
-  // TODO - what if clicking on link with option['targetSelector']?
+Drupal.popups.savePage = function(element, options) {
   var target = Drupal.settings.popups.defaultTargetSelector;
   var $form = $('form', target);
   var ajaxOptions = {
     dataType: 'json',
-    beforeSubmit: Drupal.popups.beforeSubmit,
-    success: function(response, status) { // Sync up the current page contents with the submit.     
-//      var $data = $(response);
-//      var content = $data.find('content').text();
+    beforeSubmit: Drupal.popups.beforeSubmit,   
+    beforeSend: Drupal.popups.beforeSend,
+    success: function(response, status) { 
+      // Sync up the current page contents with the submit.
       var $c = $(target).html(response.content); // Inject the new content into the page.
       Drupal.attachBehaviors($c);
-      Drupal.popups.close();
       // The form has been saved, the page reloaded, now safe to show the link in a popup.
-      popups.open_path(a, options); 
-    }     
+      Drupal.popups.openPath(element, options); 
+    } 
   };
-  $form.ajaxSubmit( ajaxOptions ); // Submit the form. 
+  $form.ajaxSubmit(ajaxOptions); // Submit the form. 
 };
 
+/**
+ * Warn the user if ajax updates will not work
+ *   due to mismatch between the theme and the theme's popup setting.
+ */
+Drupal.popups.testContentSelector = function() {
+  var target = Drupal.settings.popups.defaultTargetSelector;
+  var hits = $(target).length;
+  if (hits !== 1) { // 1 is the corrent answer.
+    msg = Drupal.t('The popup content area for this theme is misconfigured.') + '\n';
+    if (hits === 0) {
+      msg += Drupal.t('There is no element that matches ') + '"' + target + '"\n';
+    }
+    else if (hits > 1) {
+      msg += Drupal.t('There are multiple elements that match: ') + '"' + target + '"\n';
+    }
+    msg += Drupal.t('Go to admin/build/themes/settings, select your theme, and edit the "Content Selector" field'); 
+    alert(msg);
+  }
+};

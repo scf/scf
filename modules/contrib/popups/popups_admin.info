@@ -1,0 +1,14 @@
+; $Id: popups_admin.info,v 1.1.4.3 2008/11/20 21:18:57 starbow Exp $
+name = Popups: Administration Links
+description = Uses the Popups API to add popups to various administration pages.
+package = User interface
+core = 6.x
+dependencies[] = popups
+
+
+; Information added by drupal.org packaging script on 2008-12-07
+version = "6.x-1.1"
+core = "6.x"
+project = "popups"
+datestamp = "1228673503"
+

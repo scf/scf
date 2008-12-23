@@ -1,0 +1,6 @@
+== Configuration ==
+
+To use this module, you install and enable it in admin/modules.
+Taxonomy_xml functions are available to users who have the access 
+right to "administer taxonomy." (User access rights can be set from 
+admin/user/configure/permission.)

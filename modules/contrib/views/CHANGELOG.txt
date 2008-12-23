@@ -1,0 +1,63 @@
+CHANGELOG for Views 2 for Drupal 6
+
+Views 2.0
+ o First 2.0 official release
+
+Views 2.1
+ Bugs fixed:
+   o #322862: 1.0037 debug code left in.
+   o #322908: README.txt update.
+   o #323014 by yched: Typo in exposed filter text.
+   o #323033: Using empty/is not empty in string/numeric filters caused notices.
+   o #322874 by yched: Errors in summary for some filters.
+   o #323282: Taxonomy term default choice handled incorrectly.
+   o #323318: Exposed taxonomy term failed if not set force single.
+
+Views 2.2
+  Bugs fixed:
+   o #305756: Number formatting caused illogical rounding.
+   o #324272 by neochief: hook_pre_render never called.
+   o #324058: Broken queries created by string values in multiple fields.
+   o #324726: "tag" fields should be autocomplete in View edit.
+   o #324058 by yched: Make aliases safer for many to one tables.
+   o #325765: Prevent key merge errors on query::add_where and query::add_having.
+   o #324378: Minor usability improvements to the list page.
+   o #326934: Need another check to make sure already added aliases do not get blown away.
+   o #324513: If a relationship table was added more than 1 hop away from the base, SQL errors resulted.
+   o #326129 by mindgame: Not between operator did not function.
+   o #326198: != mistakenly typod as = (display only)
+   o #326379: Provide a default title for the archive view.
+   o #327151: Add filter for node_counter.timestamp.
+   o #327113: Clean up error text when display will not validate.
+   o #307287: (Panels related) view::preview() would override previously set arguments if no arguments were sent.
+   o #321589: Comment template preprocessor misnamed so it would not fire.
+   o #329746: Comment rendering in the node row style was not working.
+   o #321109: view::destroy() needs to unset current_display or future init_displays won't work.
+   o #325115: If the block description is not set, show the display title as well as the view name in block administration.
+   o #327604 by henrrrik: should use multibyte string functions.
+   o #328933 by cmyers: views_handler_filter_date fails to use exposed operator.
+   o #332568 by Moonshine: Correct views performance timers.
+   o #332679 by yched: render_link() does not check for empty data.
+   o #333593: Incorrect reference to non-existent views_handler_join in help/api-tables.html.
+   o #334337 by miro_dietiker: Documentation clarification for arguments, blocks and PHP Code plugins.
+   o #336456 by dww: Date filter had trouble with NULL operators.
+   o #336125 by nedjo: Missing filter for node translation.
+   o #337360: Menu selection causes crash if menu module not active.
+   o #339295 by katbailey: AJAX paging could fail with the same view in multiple tabs.
+   o #339676 by nedjo: Source translation had wrong filter handler.
+   o #340002 by hass: Allow the "Add display" button to wrap for translations whose phrase is longer.
+   o #340033 by pancho: Clearer wording on some field help texts.
+   o #340515: views_perm() was incorrectly views_ui_perm().
+   o #330897: Invalid displays causing 'path' lookup to crash.
+   o #339674 by nedjo: Translation code cleanup.
+   o #341897: views_perm() mistakenly declared in views_ui.module.
+
+ Other changes:
+   o Reorganize the analysis code into analyze.inc to make it easier for people to find the code and use it externally.
+   o #298884 by neclimdul: Requested missing filter to filter for whether a user has a picture or not.
+   o #336531 by dww: Set boolean filter to not use a checkbox which is lesser UI.
+   o #338632 by drewish: Remove use of format_rss_channel and use proper templating instead.
+   o #326034 by yched: Allow short names in admin summaries via new "title short" definition.
+   o #335613 by swentel: Add hook_views_api() setting to bulk export.
+   o #339707 by nedjo: Add filter to show child translations.
+   o #284768 by drewish: Proper templates for RSS feeds rather than format_rss_item().
