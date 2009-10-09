@@ -1,0 +1,66 @@
+<?php
+// $Id: evoc.install,v 1.1.2.3 2009/02/24 03:49:18 scor Exp $
+
+/**
+ * Implementation of hook_schema().
+ */
+function evoc_schema() {
+  $schema['evoc_rdf_classes'] = array(
+    'fields' => array(
+      'prefix' => array('type' => 'varchar', 'length' => '32', 'not null' => TRUE),
+      'id' => array('type' => 'varchar', 'length' => '32', 'not null' => TRUE),
+      'label' => array('type' => 'varchar', 'length' => '32', 'not null' => TRUE),
+      'comment' => array('type' => 'text', 'not null' => TRUE),
+      'superclass' => array('type' => 'varchar', 'length' => '32', 'not null' => TRUE),
+    ),
+    'primary key' => array(
+      'prefix',
+      'id',
+    ),
+  );
+  $schema['evoc_rdf_properties'] = array(
+    'fields' => array(
+      'prefix' => array('type' => 'varchar', 'length' => '32', 'not null' => TRUE),
+      'id' => array('type' => 'varchar', 'length' => '32', 'not null' => TRUE),
+      'label' => array('type' => 'varchar', 'length' => '32', 'not null' => TRUE),
+      'comment' => array('type' => 'text', 'not null' => TRUE),
+      'domain' => array('type' => 'varchar', 'length' => '32', 'not null' => TRUE),
+      'range' => array('type' => 'varchar', 'length' => '32', 'not null' => TRUE),
+    ),
+    'primary key' => array(
+      'prefix',
+      'id',
+    ),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function evoc_install() {
+  drupal_install_schema('evoc');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function evoc_uninstall() {
+  drupal_uninstall_schema('evoc');
+}
+
+/**
+ * Implementation of hook_enable().
+ */
+function evoc_enable() {
+  // Import a few popular vocabularies.
+  drupal_load('module', 'rdf');
+  drupal_load('module', 'sparql');
+  drupal_load('module', 'evoc');
+  // Force schema rebuild, see http://drupal.org/node/200931
+  drupal_get_schema(NULL, TRUE);
+  evoc_import_vocabulary('http://purl.org/dc/elements/1.1/', 'dc');
+  evoc_import_vocabulary('http://xmlns.com/foaf/0.1/', 'foaf');
+  evoc_import_vocabulary('http://rdfs.org/sioc/ns#', 'sioc');
+  }

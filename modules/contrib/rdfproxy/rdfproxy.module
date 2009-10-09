@@ -1,0 +1,382 @@
+<?php
+// $Id: rdfproxy.module,v 1.3 2009/06/21 13:39:53 scor Exp $
+
+/**
+ * Implementation of hook_init().
+ */
+function rdfproxy_init() {
+
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function rdfproxy_perm() {
+  return array(
+    'import via RDF proxy',
+    'administer RDF proxy',
+  );
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function rdfproxy_menu() {
+  return array(
+    'rdfproxy/lookup/%rdfproxy_profile' => array(
+      'title' => 'RDF proxy lookup',
+      'type' => MENU_CALLBACK,
+      'access callback' => 'user_access',
+      'access arguments' => array('import via RDF proxy'),
+      'page callback' => 'rdfproxy_lookup',
+      'page arguments' => array(2),
+    ),
+    'admin/build/rdfproxy/add' => array(
+      'title' => 'Create new RDF proxy profile',
+      'type' => MENU_CALLBACK,
+      'access callback' => 'user_access',
+      'access arguments' => array('administer RDF proxy'),
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array(rdfproxy_add_profile_form),  
+    ),
+    'admin/build/rdfproxy/edit/%rdfproxy_profile' => array(
+      'title' => 'RDF proxy edit',
+      'type' => MENU_CALLBACK,
+      'access callback' => 'user_access',
+      'access arguments' => array('administer RDF proxy'),
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array(rdfproxy_add_profile_form, 4),  
+    ),
+  );
+}
+
+
+/**
+ * Specialized menu callback to load an RDF proxy profile.
+ */
+function rdfproxy_profile_load($name) {
+  $profile = rdfproxy_get_profile($name);
+  if (empty($profile)) {
+    return FALSE;
+  }
+  else {
+    return $profile;
+  }
+}
+
+/**
+ * Lookup function which fetches RDF data from a SPARQL endpoint.
+ */
+function rdfproxy_lookup($profile) {
+//  echo 'lookup';
+//  var_dump($profile);
+//global $rdf_namespaces;
+//var_dump(rdf_get_namespaces());
+  //var_dump($_GET['uri']);
+
+  // Check if the instance is already in the system.
+  $properties = db_query(db_rewrite_sql("SELECT * FROM {evoc_rdf_properties}"));
+
+  while ($item = db_fetch_object($properties)) {
+    $term_curie = $item->prefix . ':' . $item->id;
+    $properties_options[$term_curie] = $term_curie;
+  }
+  
+  
+  if (!$_GET['uri']) {
+    drupal_set_message('The RDF proxy lookup requires an URI to be provided', 'error');
+    return FALSE;
+  }
+  
+  // FIXME in sparql module.
+  require_once drupal_get_path('module', 'sparql') . '/sparql.client.inc';
+  $query = str_replace('%uri', '<' . $_GET['uri'] . '>', $profile->sparql_query);
+  $sparql_res = sparql_request($profile->sparql_endpoint, $query);
+  //var_dump($sparql_res);
+  
+  // Instances to be added/updated.
+  $instances = array();
+  
+  // Build a node based on the RDF graph.
+  // Get the content type to be created.
+  foreach ($sparql_res as $triple) {
+    if ($triple[1] == rdf_qname_to_uri('rdf:type')) {
+      $found = preg_match('/.*#(.*)/', $triple[2], $matches);
+      if (isset($matches[1])) {
+        $content_type_name = strtolower($matches[1]);
+        $instances["$triple[0]"]['type'] = $content_type_name;
+      }
+      else {
+        drupal_set_message('The RDF proxy lookup was not able to find a suitable local content type.', 'error');
+        return FALSE;
+      }
+    }
+  }
+
+  // Get values of the instances and their associated field name.
+  // TODO embed these values in RDF CCK instead of guessing them here.
+  $values = array();
+  foreach ($sparql_res as $triple) {
+    // TODO add check on the site ns.
+    //var_dump($triple);
+    $found = preg_match('/.*#[a-z_]*([A-Z])(.*)/', $triple[1], $matches);
+    if ($matches[2]) {
+      $field_name = strtolower($matches[1] . $matches[2]);
+      $field_name = ($field_name == 'title' || $field_name == 'body') ? $field_name : 'field_' . $field_name;
+      $value = rdf_val_to_str($triple[2]);
+      $instances["$triple[0]"]['values']["$field_name"][] = $value;
+    }
+  }
+//var_dump($instances);
+//var_dump($values);
+  foreach ($instances as $uri => $instance) {
+    _rdfproxy_node_save($uri, $instance['type'], $instance['values'], $profile);
+  }
+}
+
+/**
+ * Create or update a node from the RDF proxy item
+ */
+function _rdfproxy_node_save($uri, $content_type_name, $values, $profile, $settings = array()) {
+//  $uri = isset($_GET['uri']) ? $_GET['uri'] : $uri;
+  $uri = $uri;
+  $profile_name = $profile->name;
+  
+  module_load_include('inc', 'node', 'node.pages');
+
+  // Check if the instance is already in the system.
+  $local_instances = db_query("SELECT id, expires FROM {rdfproxy_instances} WHERE uri = '%s' AND profile = '%s'", $uri, $profile_name);
+  $item = db_fetch_object($local_instances);
+  if ($item) {
+    $expires = $item->expires;
+    $nid = $item->id;
+    // If the instance is still valid, go to its page.
+//var_dump($nid);
+//var_dump($expire);
+    if ($expires > time()) {
+//      drupal_goto('node/' . $nid);
+      return FALSE;
+    }
+    
+  }
+  
+  // Constructs the node object.
+  $node = new stdClass();
+  if (isset($nid)) {
+    $node->nid = $nid;
+    $node->vid = db_result(db_query("SELECT vid FROM {node_revisions} WHERE nid = %d", $node->nid));
+  }
+  // Determines the node type.
+  $node->type = $content_type_name;
+      
+  // Get the default options from the cont
+  $options = variable_get('node_options_'. $node->type, FALSE);
+  if (is_array($options)) {
+    $node->status = in_array('status', $options) ? 1 : 0;
+    $node->promote = in_array('promote', $options) ? 1 : 0;
+    $node->sticky = in_array('sticky', $options) ? 1 : 0;
+  }
+  else {
+    $node->status = 1;
+  }
+
+
+  // Multiple values mushing.
+  foreach ($values as $k => $v) {
+    if (is_array($v)) {
+      $values["$k"] = implode(', ', $v);
+    }
+  }
+
+  // Fill the node object with the given values
+  if (isset($values['title']) && $values['title']) {
+    $node->title = $values['title'];  
+    unset($values['title']);
+  }
+  else {
+    // TODO generate a better title from the other values?
+    $node->title = 'no title';
+  }
+  if (isset($values['body']) && $values['body']) {
+    $node->title = $values['body'];
+    unset($values['body']);  
+  }
+  
+  // CCK fields values.
+  foreach ($values as $field => $value) {
+    $type = content_types($node->type);
+    switch ($type['fields']["$field"]['type']) {
+      case 'link' :
+      $node->{$field}[0]['url'] = $value;
+        break;
+      
+      default:
+        $node->{$field}[0]['value'] = $value;
+    }
+  }
+//  $node->teaser = node_teaser();
+  $node->created = time();
+  $node->uid = 1;
+  node_object_prepare($node);
+  
+  node_save($node);
+  
+  // Store the saved instance in the rdfproxy_instances table.
+  $instance = new stdClass();
+  $instance->id = $node->nid;
+  $instance->type = 'node';
+  $instance->profile = $profile_name;
+  // FIXME pass this information as well.
+  $instance->uri = $uri;
+  $instance->expires = time() + $profile->expires_after;
+  //var_dump($instance);
+  
+  if (isset($nid)) {
+    drupal_write_record('rdfproxy_instances', $instance, 'id');
+    drupal_set_message('The RDF proxy instance has been updated');
+  }
+  else {
+    drupal_write_record('rdfproxy_instances', $instance);
+    drupal_set_message('The RDF proxy instance has been created');
+  }
+
+  // Go to the instance now that it's been created/refreshed.
+//  drupal_goto('node/' . $node->nid);
+  
+//var_dump($node);
+  return $node;
+}
+
+
+/**
+ * Specialized menu callback to load an RDF proxy profile.
+ */
+function rdfproxy_get_profile($name) {
+  $fields = drupal_schema_fields_sql('rdfproxy_profiles', 'p');
+  $fields = implode(', ', $fields);
+  $profile = db_fetch_object(db_query("SELECT $fields FROM {rdfproxy_profiles} p WHERE p.name = '%s'", $name));
+  return $profile;
+}
+
+/**
+ * Add/edit RDF proxy profile form.
+ */
+function rdfproxy_add_profile_form(&$form_state, $profile = NULL) {
+//  var_dump($profile);
+  $form = array();
+  if (!$profile) {
+    // A new profile is being created, remember it for the next FAPI steps.
+    $form['name'] = array(
+      '#type' => 'textfield',
+      '#title' => t('RDF proxy profile name'),
+      '#description' => t('This is the unique name of the profile. It must contain only alphanumeric characters and underscores.'),
+      '#required' => TRUE,
+      '#maxlength' => 32,
+      '#default_value' => $profile ? $profile->name : '',
+    );    
+  }
+  else {
+    drupal_set_title(t('Edit %profile RDF proxy profile', array('%profile' => $profile->name)));
+    $form['rpid'] = array('#type' => 'value', '#value' => $profile->rpid);
+    $form['name'] = array('#type' => 'value', '#value' => $profile->name);
+  }
+
+  $form['description'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Profile description'),
+    '#description' => t('This description will appear on the RDF proxy administrative UI to tell you what the profile is about.'),
+    '#default_value' => $profile ? $profile->description : '',
+  );
+
+//  $form['tag'] = array(
+//    '#type' => 'textfield',
+//    '#title' => t('View tag'),
+//    '#description' => t('Enter an optional tag for this view; it is used only to help sort views on the administrative page.'),
+//    '#default_value' => $view ? $view->tag : '',
+//    '#autocomplete_path' => 'admin/views/ajax/autocomplete/tag',
+//  );
+
+  $form['sparql_endpoint'] = array(
+    '#type' => 'textfield',
+    '#title' => t('SPARQL endpoint'),
+    '#description' => t(''),
+    '#required' => TRUE,
+    '#default_value' => $profile ? $profile->sparql_endpoint : '',
+  );
+  $form['sparql_query'] = array(
+    '#type' => 'textarea',
+    '#title' => t('SPARQL query'),
+    '#rows' => 10,
+    '#required' => TRUE,
+    '#description' => t('This CONSTRUCT SPARQL query will be used to map the schema of RDF data to the local schema.'),
+    '#default_value' => $profile ? $profile->sparql_query : '',
+  );
+  $form['expires_after'] = array(
+    '#type' => 'select',
+    '#title' => t('Expiration time'),
+    '#options' => array(
+      '60' => t('1 minute'),
+      '3600' => t('1 hour'),
+      '86400' => t('1 day'),
+      '0' => t('Never')
+    ),
+    '#default_value' => $profile ? $profile->expires_after : '3600',
+    '#description' => t('Duration after which a RDF proxy instance should be refreshed.')
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+  );
+  
+  return $form;
+
+}
+
+/**
+ * Validate the add view form.
+ */
+function rdfproxy_add_profile_form_validate($form, &$form_state) {
+  $name = $form_state['values']['name'];
+
+  // Profile name must be alphanumeric or underscores, no other punctuation.
+  if (preg_match('/[^a-zA-Z0-9_]/', $name)) {
+    form_error($form['name'], t('Profile name must be alphanumeric or underscores only.'));
+  }
+
+  // Profile name must already exist.
+  $view = views_get_view($form_state['values']['name']);
+  if ($view && $view->type != t('Default')) {
+    form_error($form['name'], t('You must use a unique name for this profile.'));
+  }
+}
+
+/**
+ * Process the add view form
+ */
+function rdfproxy_add_profile_form_submit($form, &$form_state) {
+  $profile = (object) $form_state['values'];
+  if ($profile->rpid) {
+    drupal_write_record('rdfproxy_profiles', $profile, 'rpid');
+    drupal_set_message(t('The profile %profile has been udpated.', array('%profile' => $profile->name)));
+  }
+  else {
+    drupal_write_record('rdfproxy_profiles', $profile);
+    drupal_set_message(t('The profile %profile has been created.', array('%profile' => $profile->name)));
+    $form_state['redirect'] = 'admin/build/rdfproxy/edit/' . $profile->name;
+  }
+}
+
+
+/**
+ * Implementation of hook_nodeapi().
+ */
+function rdfproxy_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  switch ($op) {
+    case 'load':
+      // TODO
+      break;
+    case 'delete':
+      db_query("DELETE FROM {rdfproxy_instances} WHERE id = %d", $node->nid);      
+      break;
+  }
+}

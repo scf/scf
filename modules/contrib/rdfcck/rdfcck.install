@@ -1,0 +1,82 @@
+<?php
+// $Id: rdfcck.install,v 1.2.2.1 2009/02/08 02:04:57 scor Exp $
+
+/**
+ * Implementation of hook_schema().
+ */
+function rdfcck_schema() {
+  $schema['rdfcck_content_types'] = array(
+    'description' => t('Contains the RDF mappings between content types and RDF classes'),
+    'fields' => array(
+      'mid'  => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'description' => t('Mapping ID. Used here to allow one content type to n RDF classes mappings.'),
+      ),
+      'type_name'  => array(
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'description' => t('Content type'),
+      ),
+      'class'  => array(
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'description' => t('RDF class in CURIE format'),
+      ),
+    ),
+    'primary key' => array(
+      'mid',
+    ),
+  );
+  $schema['rdfcck_fields'] = array(
+    'description' => t('Contains the RDF mappings between CCK fields and RDF properties'),
+    'fields' => array(
+      'mid'  => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'description' => t('Mapping ID. Used here to allow one field to n RDF properties mappings.'),
+      ),
+      'type_name'  => array(
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'description' => t('Name of the content this mapping will belong to. Each couple (field_name, content_type) can have its own set of properties. This is work around the shared fields issue.'),
+      ),
+      'field_name'  => array(
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'description' => t('Name of the CCK field'),
+      ),
+      'property'  => array(
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'description' => t('RDF property in CURIE format'),
+      ),
+    ),
+    'primary key' => array(
+      'mid',
+    ),
+  );
+
+  return $schema;
+}
+  
+/**
+ * Implementation of hook_install().
+ */
+function rdfcck_install() {
+  drupal_install_schema('rdfcck');
+}
+
+/**
+ * Implementation of hook_uninstall()
+ */
+function rdfcck_uninstall() {
+  drupal_uninstall_schema('rdfcck');
+}

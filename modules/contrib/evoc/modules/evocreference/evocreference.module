@@ -1,0 +1,754 @@
+<?php
+// $Id: evocreference.module,v 1.1.2.2 2009/02/25 22:21:30 scor Exp $
+
+/**
+ * @file
+ * Defines a field type for referencing a user from a node.
+ */
+
+/**
+ * Implementation of hook_menu().
+ */
+function evocreference_menu() {
+  $items = array();
+  $items['evocreference/autocomplete'] = array(
+    'title' => 'evocreference autocomplete',
+    'page callback' => 'evocreference_autocomplete',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
+  return $items;
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function evocreference_theme() {
+  return array(
+    'evocreference_select' => array(
+      'arguments' => array('element' => NULL),
+    ),
+    'evocreference_buttons' => array(
+      'arguments' => array('element' => NULL),
+    ),
+    'evocreference_autocomplete' => array(
+      'arguments' => array('element' => NULL),
+    ),
+    'evocreference_formatter_default' => array(
+      'arguments' => array('element'),
+    ),
+    'evocreference_formatter_plain' => array(
+      'arguments' => array('element'),
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_field_info().
+ */
+function evocreference_field_info() {
+  return array(
+    'evocreference' => array(
+      'label' => t('RDF vocabulary term reference'),
+      'description' => t('Store the prefix:id of a RDF class or property.'),
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_field_settings().
+ */
+function evocreference_field_settings($op, $field) {
+  switch ($op) {
+    case 'form':
+      $form = array();
+      $form['referenceable_term_types'] = array(
+        '#type' => 'checkboxes',
+        '#title' => t('Types of terms that can be referenced'),
+        '#default_value' => isset($field['referenceable_term_types']) && is_array($field['referenceable_term_types']) ? array_filter($field['referenceable_term_types']) : array(),
+        '#options' => array('classes' => t('Classes'), 'properties' => t('Properties')),
+      );
+      
+      // no particular setting for now.
+      // idea: referenceable vocabularies or terms
+      return $form;
+
+    case 'save':
+      $settings = array('referenceable_term_types');
+      return $settings;
+      
+    case 'database columns':
+      // We store the ns_prefix:term_id
+      // This might have a caveat when changing a ns/prefix or term id.
+      // But it is what the user will see and it is the most common notation.
+      // An alternative is to store the full URI, but this would be more verbose in the db with redundant information stored.
+      $columns = array(
+        'evoc_term' => array('type' => 'varchar', 'length' => 64, 'not null' => FALSE, 'sortable' => TRUE),
+      );
+      return $columns;
+
+  }
+}
+
+/**
+ * Implementation of hook_field().
+ */
+function evocreference_field($op, &$node, $field, &$items, $teaser, $page) {
+  switch ($op) {
+    case 'validate':
+//    var_dump($items);
+      // Extract evoc terms to check.
+      $evoc_terms = array();
+      foreach ($items as $delta => $item) {
+        // TODO check the evoc_term and make sure it's a CURIE
+        if (is_array($item) && !empty($item['evoc_term'])) {
+          $evoc_terms[] = $item['evoc_term'];
+        }
+      }
+//      var_dump($evoc_terms);
+      $refs = _evocreference_potential_references($field, '', NULL, $evoc_terms);
+      foreach ($items as $delta => $item) {
+        if (is_array($item)) {
+          $error_element = isset($item['_error_element']) ? $item['_error_element'] : '';
+          if (is_array($item) && isset($item['_error_element'])) unset($item['_error_element']);
+//           if (!empty($item['evoc_term']) && !isset($refs[$item['evoc_term']])) {
+//             form_set_error($error_element, t('%name: invalid CURIE.', array('%name' => t($field['widget']['label']))));
+//           }
+        }
+      }
+      return $items;
+  }
+}
+
+/**
+ * Implementation of hook_content_is_empty().
+ */
+function evocreference_content_is_empty($item, $field) {
+  if (empty($item['evoc_term'])) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * Implementation of hook_field_formatter_info().
+ */
+function evocreference_field_formatter_info() {
+  return array(
+    'default' => array(
+      'label' => t('Default'),
+      'field types' => array('evocreference'),
+      'multiple values' => CONTENT_HANDLE_CORE,
+    ),
+    'plain' => array(
+      'label' => t('Plain text'),
+      'field types' => array('evocreference'),
+      'multiple values' => CONTENT_HANDLE_CORE,
+    ),
+  );
+}
+
+/**
+ * Theme function for 'default' evocreference field formatter.
+ */
+function theme_evocreference_formatter_default($element) {
+  $output = '';
+
+  if (isset($element['#item']['evoc_term'])) {
+    $evoc_term = $element['#item']['evoc_term'];
+    $output = '<a href="' . rdf_qname_to_uri($evoc_term) . '">' . $evoc_term . '</a>';
+  }
+  return $output;
+}
+
+/**
+ * Theme function for 'plain' evocreference field formatter.
+ */
+function theme_evocreference_formatter_plain($element) {
+  $output = $element['#item']['evoc_term'];
+  return $output;
+}
+
+/**
+ * Implementation of hook_widget_info().
+ *
+ * We need custom handling of multiple values for the evocreference_select
+ * widget because we need to combine them into a options list rather
+ * than display multiple elements.
+ *
+ * We will use the content module's default handling for default value.
+ *
+ * Callbacks can be omitted if default handing is used.
+ * They're included here just so this module can be used
+ * as an example for custom modules that might do things
+ * differently.
+ */
+function evocreference_widget_info() {
+  return array(
+    'evocreference_select' => array(
+      'label' => t('Select list'),
+      'field types' => array('evocreference'),
+      'multiple values' => CONTENT_HANDLE_MODULE,
+      'callbacks' => array(
+        'default value' => CONTENT_CALLBACK_DEFAULT,
+      ),
+    ),
+    'evocreference_buttons' => array(
+      'label' => t('Check boxes/radio buttons'),
+      'field types' => array('evocreference'),
+      'multiple values' => CONTENT_HANDLE_MODULE,
+      'callbacks' => array(
+        'default value' => CONTENT_CALLBACK_DEFAULT,
+      ),
+    ),
+    'evocreference_autocomplete' => array(
+      'label' => t('Autocomplete text field'),
+      'field types' => array('evocreference'),
+      'multiple values' => CONTENT_HANDLE_CORE,
+      'callbacks' => array(
+        'default value' => CONTENT_CALLBACK_DEFAULT,
+      ),
+    ),
+  );
+}
+
+/**
+ * Implementation of FAPI hook_elements().
+ *
+ * Any FAPI callbacks needed for individual widgets can be declared here,
+ * and the element will be passed to those callbacks for processing.
+ *
+ * Drupal will automatically theme the element using a theme with
+ * the same name as the hook_elements key.
+ *
+ * Autocomplete_path is not used by text_widget but other widgets can use it
+ * (see nodereference and evocreference).
+ */
+function evocreference_elements() {
+  return array(
+    'evocreference_select' => array(
+      '#input' => TRUE,
+      '#columns' => array('uid'), '#delta' => 0,
+      '#process' => array('evocreference_select_process'),
+    ),
+    'evocreference_buttons' => array(
+      '#input' => TRUE,
+      '#columns' => array('uid'), '#delta' => 0,
+      '#process' => array('evocreference_buttons_process'),
+    ),
+    'evocreference_autocomplete' => array(
+      '#input' => TRUE,
+      '#columns' => array('name'), '#delta' => 0,
+      '#process' => array('evocreference_autocomplete_process'),
+      '#autocomplete_path' => FALSE,
+      ),
+    );
+}
+
+/**
+ * Implementation of hook_widget_settings().
+ */
+function evocreference_widget_settings($op, $widget) {
+  switch ($op) {
+    case 'form':
+      $form = array();
+      $match = isset($widget['autocomplete_match']) ? $widget['autocomplete_match'] : 'contains';
+      if ($widget['type'] == 'evocreference_autocomplete') {
+        $form['autocomplete_match'] = array(
+          '#type' => 'select',
+          '#title' => t('Autocomplete matching'),
+          '#default_value' => $match,
+          '#options' => array(
+            'starts_with' => t('Starts with'),
+            'contains' => t('Contains'),
+          ),
+          '#description' => t('Select the method used to collect autocomplete suggestions. Note that <em>Contains</em> can cause performance issues on sites with thousands of users.'),
+        );
+      }
+      else {
+        $form['autocomplete_match'] = array('#type' => 'hidden', '#value' => $match);
+      }
+      $form['reverse_link'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Reverse link'),
+        '#default_value' => isset($widget['reverse_link']) ? $widget['reverse_link'] : 0,
+        '#description' => t('If selected, a reverse link back to the referencing node will displayed on the referenced user record.'),
+      );
+      return $form;
+
+    case 'save':
+      return array('autocomplete_match', 'reverse_link');
+  }
+}
+
+/**
+ * Implementation of hook_widget().
+ *
+ * Attach a single form element to the form. It will be built out and
+ * validated in the callback(s) listed in hook_elements. We build it
+ * out in the callbacks rather than here in hook_widget so it can be
+ * plugged into any module that can provide it with valid
+ * $field information.
+ *
+ * Content module will set the weight, field name and delta values
+ * for each form element. This is a change from earlier CCK versions
+ * where the widget managed its own multiple values.
+ *
+ * If there are multiple values for this field, the content module will
+ * call this function as many times as needed.
+ *
+ * @param $form
+ *   the entire form array, $form['#node'] holds node information
+ * @param $form_state
+ *   the form_state, $form_state['values'][$field['field_name']]
+ *   holds the field's form values.
+ * @param $field
+ *   the field array
+ * @param $items
+ *   array of default values for this field
+ * @param $delta
+ *   the order of this item in the array of subelements (0, 1, 2, etc)
+ *
+ * @return
+ *   the form item for a single element for this field
+ */
+function evocreference_widget(&$form, &$form_state, $field, $items, $delta = 0) {
+  switch ($field['widget']['type']) {
+    case 'evocreference_select':
+      $element = array(
+        '#type' => 'evocreference_select',
+        '#default_value' => $items,
+      );
+      break;
+
+    case 'evocreference_buttons':
+      $element = array(
+        '#type' => 'evocreference_buttons',
+        '#default_value' => $items,
+      );
+      break;
+
+    case 'evocreference_autocomplete':
+      $element = array(
+        '#type' => 'evocreference_autocomplete',
+        '#default_value' => isset($items[$delta]) ? $items[$delta] : NULL,
+        '#value_callback' => 'evocreference_autocomplete_value',
+      );
+      break;
+  }
+  return $element;
+}
+
+/**
+ * Process an individual element.
+ *
+ * Build the form element. When creating a form using FAPI #process,
+ * note that $element['#value'] is already set.
+ *
+ * The $fields array is in $form['#field_info'][$element['#field_name']].
+ */
+function evocreference_select_process($element, $edit, $form_state, $form) {
+  // The evocreference_select widget doesn't need to create its own
+  // element, it can wrap around the optionwidgets_select element.
+  // Add a validation step where the value can be unwrapped.
+  $field_key  = $element['#columns'][0];
+  $element[$field_key] = array(
+    '#type' => 'optionwidgets_select',
+    '#default_value' => isset($element['#value']) ? $element['#value'] : '',
+    // The following values were set by the content module and need
+    // to be passed down to the nested element.
+    '#title' => $element['#title'],
+    '#required' => $element['#required'],
+    '#description' => $element['#description'],
+    '#field_name' => $element['#field_name'],
+    '#type_name' => $element['#type_name'],
+    '#delta' => $element['#delta'],
+    '#columns' => $element['#columns'],
+  );
+  if (empty($element[$field_key]['#element_validate'])) {
+    $element[$field_key]['#element_validate'] = array();
+  }
+  array_unshift($element[$field_key]['#element_validate'], 'evocreference_optionwidgets_validate');
+  return $element;
+}
+
+/**
+ * Process an individual element.
+ *
+ * Build the form element. When creating a form using FAPI #process,
+ * note that $element['#value'] is already set.
+ *
+ * The $fields array is in $form['#field_info'][$element['#field_name']].
+ */
+function evocreference_buttons_process($element, $edit, $form_state, $form) {
+  // The evocreference_select widget doesn't need to create its own
+  // element, it can wrap around the optionwidgets_select element.
+  // Add a validation step where the value can be unwrapped.
+  $field_key  = $element['#columns'][0];
+  $element[$field_key] = array(
+    '#type' => 'optionwidgets_buttons',
+    '#default_value' => isset($element['#value']) ? $element['#value'] : '',
+    // The following values were set by the content module and need
+    // to be passed down to the nested element.
+    '#title' => $element['#title'],
+    '#required' => $element['#required'],
+    '#description' => $element['#description'],
+    '#field_name' => $element['#field_name'],
+    '#type_name' => $element['#type_name'],
+    '#delta' => $element['#delta'],
+    '#columns' => $element['#columns'],
+  );
+  if (empty($element[$field_key]['#element_validate'])) {
+    $element[$field_key]['#element_validate'] = array();
+  }
+  array_unshift($element[$field_key]['#element_validate'], 'evocreference_optionwidgets_validate');
+  return $element;
+}
+
+/**
+ * Process an individual element.
+ *
+ * Build the form element. When creating a form using FAPI #process,
+ * note that $element['#value'] is already set.
+ *
+ */
+function evocreference_autocomplete_process($element, $edit, $form_state, $form) {
+  // The evocreference autocomplete widget doesn't need to create its own
+  // element, it can wrap around the text_textfield element and add an autocomplete
+  // path and some extra processing to it.
+  // Add a validation step where the value can be unwrapped.
+  $field_key  = $element['#columns'][0];
+
+  $element[$field_key] = array(
+    '#type' => 'text_textfield',
+    '#default_value' => isset($element['#value']) ? $element['#value'] : '',
+    '#autocomplete_path' => 'evocreference/autocomplete/'. $element['#field_name'],
+    // The following values were set by the content module and need
+    // to be passed down to the nested element.
+    '#title' => $element['#title'],
+    '#required' => $element['#required'],
+    '#description' => $element['#description'],
+    '#field_name' => $element['#field_name'],
+    '#type_name' => $element['#type_name'],
+    '#delta' => $element['#delta'],
+    '#columns' => $element['#columns'],
+  );
+  if (empty($element[$field_key]['#element_validate'])) {
+    $element[$field_key]['#element_validate'] = array();
+  }
+  array_unshift($element[$field_key]['#element_validate'], 'evocreference_autocomplete_validate');
+
+  // Used so that hook_field('validate') knows where to flag an error.
+  $element['_error_element'] = array(
+    '#type' => 'value',
+    // Wrapping the element around a text_textfield element creates a
+    // nested element, so the final id will look like 'field-name-0-uid-uid'.
+    '#value' => implode('][', array_merge($element['#parents'], array($field_key, $field_key))),
+  );
+//var_dump($element);
+  return $element;
+}
+
+/**
+ * Validate a select/buttons element.
+ *
+ * Remove the wrapper layer and set the right element's value.
+ * We don't know exactly where this element is, so we drill down
+ * through the element until we get to our key.
+ *
+ * We use $form_state['values'] instead of $element['#value']
+ * to be sure we have the most accurate value when other modules
+ * like optionwidgets are using #element_validate to alter the value.
+ */
+function evocreference_optionwidgets_validate($element, &$form_state) {
+  $field_key  = $element['#columns'][0];
+
+  $value = $form_state['values'];
+  $new_parents = array();
+  foreach ($element['#parents'] as $parent) {
+    $value = $value[$parent];
+    // Use === to be sure we get right results if parent is a zero (delta) value.
+    if ($parent === $field_key) {
+      $element['#parents'] = $new_parents;
+      form_set_value($element, $value, $form_state);
+      break;
+    }
+    $new_parents[] = $parent;
+  }
+}
+
+/**
+ * Validate an autocomplete element.
+ *
+ * Remove the wrapper layer and set the right element's value.
+ * This will move the nested value at 'field-name-0-uid-uid'
+ * back to its original location, 'field-name-0-uid'.
+ */
+function evocreference_autocomplete_validate($element, &$form_state) {
+  $field_name = $element['#field_name'];
+  $type_name = $element['#type_name'];
+  $field = content_fields($field_name, $type_name);
+  $field_key = $element['#columns'][0];
+  $value = $element['#value'][$field_key];
+  // We do not enforce the term to be valid and cache in the system.
+  // TODO implement a sanity check and warn the user when she is using an unkown term.
+  $term = $value;
+
+  form_set_value($element, $term, $form_state);
+}
+
+/**
+ * Implementation of hook_allowed_values().
+ */
+function evocreference_allowed_values($field) {
+  $references = _evocreference_potential_references($field);
+
+  $options = array();
+  foreach ($references as $key => $value) {
+    // Views theming runs check_plain (htmlentities) on the values.
+    // We reverse that with html_entity_decode.
+    $options[$key] = html_entity_decode(strip_tags($value['rendered']), ENT_QUOTES);
+  }
+  return $options;
+}
+
+/**
+ * Fetch an array of all candidate referenced users.
+ *
+ * This info is used in various places (aloowed values, autocomplete results,
+ * input validation...). Some of them only need the uids, others nid + names,
+ * others yet uid + names + rendered row (for display in widgets).
+ * The array we return contains all the potentially needed information, and lets
+ * consumers use the parts they actually need.
+ *
+ * @param $field
+ *   The field description.
+ * @param $string
+ *   Optional string to filter usernames on (used by autocomplete)
+ * @param $match
+ *   Operator to match filtered name against, can be any of:
+ *   'contains', 'equals', 'starts_with'
+ * @param $ids
+ *   Optional user ids to lookup (the $string and $match arguments will be
+ *   ignored).
+ * @param $limit
+ *   If non-zero, limit the size of the result set.
+ *
+ * @return
+ *   An array of valid users in the form:
+ *   array(
+ *     uid => array(
+ *       'title' => The user name,
+ *       'rendered' => The text to display in widgets (can be HTML)
+ *     ),
+ *     ...
+ *   )
+ */
+function _evocreference_potential_references($field, $string = '', $match = 'contains', $ids = array(), $limit = NULL) {
+  static $results = array();
+
+  // Create unique id for static cache.
+  $cid = $field['field_name'] .':'. $match .':'. ($string !== '' ? $string : implode('-', $ids)) .':'. $limit;
+  if (!isset($results[$cid])) {
+    // We don't use views in evoc
+    $references = _evocreference_potential_references_standard($field, $string, $match, $ids, $limit);
+
+    // Store the results.
+    $results[$cid] = $references;
+  }
+
+  return $results[$cid];
+}
+
+
+/**
+ * Helper function for _evocreference_potential_references():
+ * referenceable users defined by user role and status
+ */
+// TODO remove extra parameters as we only expect $string here
+function _evocreference_potential_references_standard($field, $string = '', $match = 'contains', $ids = array(), $limit = NULL) {
+  $where = array();
+  $args = array();
+
+  if ($string !== '') {
+    $match_operators = array(
+      'contains' => "LIKE '%%%s%%'",
+      'equals' => "= '%s'",
+      'starts_with' => "LIKE '%s%%'",
+    );
+
+    // TODO use a preg instead to make sure it's a CURIE
+    $string_parts = explode(':', $string);
+    if (isset($string_parts[1])) {
+      // CURIE pattern.
+      $where[] = 't.prefix '. (isset($match_operators[$match]) ? $match_operators[$match] : $match_operators['contains']);
+      $args[] = $string_parts[0];
+      $where[] = 't.id '. (isset($match_operators[$match]) ? $match_operators[$match] : $match_operators['contains']);
+      $args[] = $string_parts[1];
+      $where_type = 'AND';
+    }
+    else {
+      $where[] = 't.prefix '. (isset($match_operators[$match]) ? $match_operators[$match] : $match_operators['contains']);
+      $args[] = $string_parts[0];
+      $where[] = 't.id '. (isset($match_operators[$match]) ? $match_operators[$match] : $match_operators['contains']);
+      $args[] = $string_parts[0];
+      $where[] = 't.comment '. (isset($match_operators[$match]) ? $match_operators[$match] : $match_operators['contains']);
+      $args[] = $string_parts[0];
+      $where_type = 'OR';
+    }
+
+  }
+
+  $terms = array();
+  $where_clause = $where ? 'WHERE ('. implode(') ' . $where_type . ' (', $where) .')' : '';
+  // Fetch the classes if specified in the field settings.
+  if (isset($field['referenceable_term_types']['classes']) && $field['referenceable_term_types']['classes']) {
+  	$result = db_query("SELECT t.prefix, t.id, t.comment FROM {evoc_rdf_classes} t $where_clause ORDER BY t.prefix ASC LIMIT 100", $args);
+	  while ($term = db_fetch_object($result)) {
+	    $terms[] = array(
+	      'title' => $term->prefix . ':' . $term->id,
+	      'rendered' => $term->prefix . ':' . $term->id . ' <span class="description">' . $term->comment . '</span>',
+	    );
+	  }
+  }
+  // Fetch the properties if specified in the field settings.
+  if (isset($field['referenceable_term_types']['properties']) && $field['referenceable_term_types']['properties']) {
+	  $result = db_query("SELECT t.prefix, t.id, t.comment FROM {evoc_rdf_properties} t $where_clause ORDER BY t.prefix ASC LIMIT 100", $args);
+	  while ($term = db_fetch_object($result)) {
+	    $terms[] = array(
+	      'title' => $term->prefix . ':' . $term->id,
+	      'rendered' => $term->prefix . ':' . $term->id . ' <span class="description">' . $term->comment . '</span>',
+	    );
+	  }
+  }
+  return $terms;
+}
+
+/**
+ * Menu callback; Retrieve a pipe delimited string of autocomplete suggestions for existing users
+ */
+function evocreference_autocomplete($field_name, $string = '') {
+  $fields = content_fields();
+
+  // Custom autocomplete for non CCK field modules.
+  // We create dummy fields with the right parameters.
+	$fields['_classes'] = array(
+	  'field_name' => '_classes',
+    'widget' => array('autocomplete_match' => 'contains'),
+	  'referenceable_term_types' => array('classes' => 1),
+	);
+  $fields['_properties'] = array(
+    'field_name' => '_properties',
+    'widget' => array('autocomplete_match' => 'contains'),
+    'referenceable_term_types' => array('properties' => 1),
+  );
+	
+  $field = $fields[$field_name];
+  $match = isset($field['widget']['autocomplete_match']) ? $field['widget']['autocomplete_match'] : 'contains';
+  $matches = array();
+
+  $references = _evocreference_potential_references($field, $string, $match, array(), 10);
+  foreach ($references as $id => $row) {
+    // Add a class wrapper for a few required CSS overrides.
+    $matches[$row['title']] = '<div class="reference-autocomplete">'. $row['rendered'] . '</div>';
+  }
+  drupal_json($matches);
+}
+
+/**
+ * Implementation of hook_user().
+ */
+function evocreference_user($type, &$edit, &$account) {
+  switch ($type) {
+    case 'load':
+      // Only add links if we are on the user 'view' page.
+      if (arg(0) != 'user' || arg(2)) {
+        return;
+      }
+      // find CCK evocreference field tables
+      // search through them for matching user ids and load those nodes
+      $additions = array();
+      $types = content_types();
+
+      // Find the table and columns to search through, if the same
+      // table comes up in more than one content type, we only need
+      // to search it once.
+      $search_tables = array();
+      $search_links = array();
+      foreach ($types as $type_name => $type) {
+        foreach ($type['fields'] as $field) {
+          // Only add tables when reverse link has been selected.
+          if ($field['type'] == 'evocreference' && !empty($field['widget']['reverse_link'])) {
+            $db_info = content_database_info($field);
+            $search_tables[$db_info['table']] = $db_info['columns']['uid']['column'];
+            $search_links[$db_info['table']] = $field['widget']['reverse_link'];
+          }
+        }
+      }
+      foreach ($search_tables as $table => $column) {
+        $ids = db_query(db_rewrite_sql("SELECT DISTINCT(n.nid) FROM {node} n LEFT JOIN {". $table ."} f ON n.vid = f.vid WHERE f.". $column ."=". $account->uid. " AND n.status = 1"));
+        while ($data = db_fetch_object($ids)) {
+          // TODO, do we really want a complete node_load() here? We only need the title to create a link.
+          $node = node_load($data->nid);
+          $node->reverse_link = $search_links[$table];
+          $additions[$node->type][] = $node;
+        }
+      }
+      $account->evocreference = $additions;
+      return;
+      break;
+
+    case 'view':
+      if (!empty($account->evocreference)) {
+        $node_types = content_types();
+        $additions = array();
+        $values = array();
+        foreach ($account->evocreference as $node_type => $nodes) {
+          foreach ($nodes as $node) {
+            if ($node->reverse_link) {
+              $values[$node_type][] = l($node->title, 'node/'. $node->nid);
+            }
+          }
+          if (isset($values[$node_type])) {
+            $additions[] = array(
+              '#type' => 'user_profile_item',
+              '#title' => check_plain($node_types[$node_type]['name']),
+              '#value' => theme('item_list', $values[$node_type]),
+            );
+          }
+        }
+        if ($additions) {
+          $account->content['evocreference'] = $additions + array(
+            '#type' => 'user_profile_category',
+            '#attributes' => array('class' => 'user-member'),
+            '#title' => t('Related content'),
+            '#weight' => 10,
+          );
+        }
+      }
+      break;
+  }
+}
+
+/**
+ * FAPI theme for an individual elements.
+ *
+ * The textfield or select is already rendered by the
+ * textfield or select themes and the html output
+ * lives in $element['#children']. Override this theme to
+ * make custom changes to the output.
+ *
+ * $element['#field_name'] contains the field name
+ * $element['#delta]  is the position of this element in the group
+ */
+function theme_evocreference_select($element) {
+  return $element['#children'];
+}
+
+function theme_evocreference_buttons($element) {
+  return $element['#children'];
+}
+
+function theme_evocreference_autocomplete($element) {
+  return $element['#children'];
+}

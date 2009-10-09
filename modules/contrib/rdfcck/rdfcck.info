@@ -1,0 +1,16 @@
+; $Id: rdfcck.info,v 1.2.2.2 2009/02/25 22:23:19 scor Exp $
+name = RDF CCK
+description = Allows to define mappings between CCK fields and RDF and export nodes as RDF.
+dependencies[] = content
+dependencies[] = rdf
+dependencies[] = evoc
+dependencies[] = evocreference
+package = CCK
+core = 6.x
+
+; Information added by drupal.org packaging script on 2009-02-26
+version = "6.x-2.x-dev"
+core = "6.x"
+project = "rdfcck"
+datestamp = "1235650671"
+

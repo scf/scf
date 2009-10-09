@@ -1,0 +1,111 @@
+<?php
+// $Id: rdfproxy.install,v 1.1 2009/04/09 21:11:32 scor Exp $
+
+/**
+ * Implementation of hook_schema().
+ */
+function rdfproxy_schema() {
+  $schema['rdfproxy_profiles'] = array(
+    'description' => t('Stores the general data for RDF proxy profiles.'),
+    'fields' => array(
+      'rpid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => t('The ID of the RDF proxy profile.'),
+        'no export' => TRUE,
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => '32',
+        'default' => '',
+        'not null' => TRUE,
+        'description' => t('The unique name of the RDF proxy profile. May only be alphanumeric characters plus underscores.'),
+      ),
+      'description' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'default' => '',
+        'description' => t('A description of the RDF proxy profile for the admin interface.'),
+      ),
+      'tag' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'default' => '',
+        'description' => t('A tag used to group/sort RDF proxy profile in the admin interface (not used for now)'),
+      ),
+      'sparql_endpoint' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'default' => '',
+        'not null' => TRUE,
+        'description' => t('The SPARQL endpoint this RDF proxy profile will use as source for synchronizing its data.'),
+      ),
+      'sparql_query' => array(
+        'type' => 'text',
+        'not null' => TRUE,
+        'description' => t('The SPARQL query which will be used to map the endpoint data to the local RDF CCK schema.'),
+      ),
+      'expires_after' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => t('The duration in seconds after which a proxy instance is outdated for this profile.'),
+      ),
+    ),
+    'primary key' => array('rpid'),
+    'unique keys' => array('name' => array('name')),
+  );
+  $schema['rdfproxy_instances'] = array(
+    'description' => t('Stores the data about the local RDF instances.'),
+    'fields' => array(
+      'id' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => t('The ID of the element in the local system (can be a node, term etc.).'),
+        'no export' => TRUE,
+      ),
+      'type' => array(
+        'type' => 'varchar',
+        'length' => '32',
+        'default' => '',
+        'not null' => TRUE,
+        'description' => t('The type of instance (node, term).'),
+      ),
+      'profile' => array(
+        'type' => 'varchar',
+        'length' => '32',
+        'default' => '',
+        'description' => t('The name of the profile.'),
+      ),
+      'uri' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'default' => '',
+        'description' => t('The URI of the instance.'),
+      ),
+      'expires' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t('The Unix timestamp when the local instanced is expired.'),
+      ),
+    ),
+  );
+  
+  return $schema;
+}
+  
+/**
+ * Implementation of hook_install().
+ */
+function rdfproxy_install() {
+  drupal_install_schema('rdfproxy');
+}
+
+/**
+ * Implementation of hook_uninstall()
+ */
+function rdfproxy_uninstall() {
+  drupal_uninstall_schema('rdfproxy');
+}

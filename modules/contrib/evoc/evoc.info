@@ -1,0 +1,15 @@
+; $Id: evoc.info,v 1.1.2.1 2009/02/07 23:15:05 scor Exp $
+name = External RDF Vocabulary Importer
+description = Allows to import external Vocabularies in order to map them to Drupal data objects.
+dependencies[] = rdf
+dependencies[] = sparql
+package = RDF
+core = 6.x
+php = 5.2
+
+; Information added by drupal.org packaging script on 2009-03-02
+version = "6.x-1.0-alpha2"
+core = "6.x"
+project = "evoc"
+datestamp = "1235955921"
+

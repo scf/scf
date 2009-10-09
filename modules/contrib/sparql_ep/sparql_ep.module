@@ -1,0 +1,97 @@
+<?php
+// $Id: sparql_ep.module,v 1.1 2009/07/02 08:00:14 scor Exp $
+
+/**
+ * Implementation of hook_menu().
+ */
+function sparql_ep_menu() {
+  $items = array();
+
+  $items['sparql_endpoint'] = array(
+    'title' => 'SPARQL endpoint',
+    'page callback' => 'sparql_ep_sparql_endpoint',
+    'access arguments' => array('access RDF data'),
+  );
+  $items['sparql_ep_index'] = array(
+    'title' => 'Build RDF index',
+    'page callback' => 'sparql_ep_index_rdf',
+    'access arguments' => array('administer content types'),
+  );
+  return $items;
+}
+
+function sparql_ep_initialize($type = 'store') {
+  global $db_url;
+  $url = parse_url($db_url);
+  $config = array(
+    /* db */
+    'db_name' => substr(urldecode($url['path']), 1),
+    'db_user' => urldecode($url['user']),
+    'db_pwd' => isset($url['pass']) ? urldecode($url['pass']) : '',
+    /* store */
+    'store_name' => 'sparql_ep_arc2',
+  
+    /* endpoint */
+    'endpoint_features' => array(
+      'select', 'construct', 'ask', 'describe', 
+      'load', 'insert', 'delete', 
+      'dump' /* dump is a special command for streaming SPOG export */
+    ),
+    'endpoint_timeout' => 60, /* not implemented in ARC2 preview */
+    'endpoint_read_key' => '', /* optional */
+    'endpoint_write_key' => 'somekey', /* optional */
+    'endpoint_max_limit' => 500, /* optional */
+  );
+  
+  /* instantiation */
+  if ($type == 'endpoint') {
+    $store = ARC2::getStoreEndpoint($config);
+  }
+  else {
+    $store = ARC2::getStore($config);
+  }
+  if (!$store->isSetUp()) {
+    $store->setUp();
+  }
+  return $store;
+}
+
+function sparql_ep_index_rdf() {
+  // Instantiate the ARC2 local store.
+  $store = sparql_ep_initialize();
+
+  // Emtpy the local store.
+  // FIXME optimize by doing this only when creating/saving a node.
+  $store->reset();
+
+  // Fetch all the node id which are published.
+  $entities = db_query(db_rewrite_sql("SELECT nid FROM {node} WHERE status = 1 limit 1000"));
+
+  while ($entity = db_fetch_object($entities)) {
+    // Build the document path.
+    $doc = url('node/' . $entity->nid . '/rdf', array('absolute' => TRUE));
+    
+    // Parse the document and insert it in the store.
+    $parser = ARC2::getRDFParser();
+    $parser->parse($doc);
+    $triples = $parser->getTriples();    
+    $store->insert($triples, $doc);
+  }
+
+return t('The RDF index of the site has been rebuilt. Browse to the <a href="@endpoint">SPARQL endpoint</a> to query it.', array('@endpoint' => url('sparql_endpoint')));
+}
+
+function sparql_ep_sparql_endpoint() {
+  // FIXME add all the ns in the default SPARQL query
+  // patch to be committed to ARC2.
+  $ns = rdf_get_namespaces();
+  global $default_q;
+  $l = array('site', 'sioc', 'foaf', 'rdf', 'dc');
+  foreach($l as $prefix) {
+  $default_q .= "PREFIX $prefix: <" . $ns[$prefix] . ">\n";
+  }
+
+  // Instantiate the ARC2 SPARQL endpoint.
+  $ep = sparql_ep_initialize('endpoint');
+  $ep->go();
+}

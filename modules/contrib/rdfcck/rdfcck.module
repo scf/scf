@@ -1,0 +1,530 @@
+<?php
+// $Id: rdfcck.module,v 1.2.2.6 2009/02/26 06:28:54 scor Exp $
+
+/**
+ * @file
+ * Defines mappings between CCK fields and RDF, and exports nodes as RDF.
+ */
+
+/**
+ * Implementation of hook_perm().
+ */
+function rdfcck_perm() {
+  return array('administer RDF CCK mappings');
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function rdfcck_menu() {
+  $items = array();
+
+  // Make sure this doesn't fire until content_types is working,
+  // needed to avoid errors on initial installation.
+  if (!defined('MAINTENANCE_MODE')) {
+    foreach (node_get_types() as $type) {
+      $type_name = $type->type;
+      $content_type = content_types($type_name);
+      $type_url_str = $content_type['url_str'];
+      $items['admin/content/node-type/'. $type_url_str .'/rdf'] = array(
+        'title' => 'Manage RDF mappings',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('rdfcck_admin_rdf_overview_form', $type_name),
+        'access arguments' => array('administer RDF CCK mappings'),
+        //'file' => 'includes/content.admin.inc',
+        'type' => MENU_LOCAL_TASK,
+        'weight' => 1,
+      );
+    }
+  }
+  return $items;
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function rdfcck_theme() {
+  return array(
+    'rdfcck_admin_rdf_overview_form' => array(
+      'arguments' => array('form' => NULL),
+    ),
+  );
+}
+
+/**
+ * Menu callback; listing of field RDF mappings for a content type.
+ *
+ * Allows the content type to be mapped to a RDF class and
+ * fields to be mapped to RDF properties.
+ */
+function rdfcck_admin_rdf_overview_form(&$form_state, $type_name) {
+  // When displaying the form, make sure the list of 'extra' fields
+  // is up-to-date.
+  if (empty($form_state['post'])) {
+    content_clear_type_cache();
+  }
+
+  // Gather type information.
+  $type = content_types($type_name);
+  $fields = $type['fields'];
+  $field_types = _content_field_types();
+
+  if (empty($fields) && empty($form_state['post'])) {
+    drupal_set_message(t('There are no fields configured for this content type. You can !link.', array(
+      '!link' => l(t('Add a new field'), str_replace('/fields', '/add_field', $_GET['q'])))), 'warning');
+  }
+
+  $extra = $type['extra'];
+  $groups = $group_options = array();
+  if (module_exists('fieldgroup')) {
+    $groups = fieldgroup_groups($type['type']);
+    $group_options = _fieldgroup_groups_label($type['type']);
+  }
+
+  // Rows in this table are essentially nested, but for the simplicity of
+  // theme and submit functions, we keep them in a flat array, and use a
+  // $dummy render structure to figure the right display order.
+  $dummy = array();
+
+  // Define which fields will be mappable to RDF properties.
+  // The title, body and all CCK fields can be mapped to RDF.
+  $rdf_fields = array_keys($fields);
+  $rdf_fields[] = 'title';
+  $rdf_fields[] = 'body_field';
+
+  $form = array(
+    '#tree' => TRUE,
+    '#type_name' => $type['type'],
+    '#fields' => array_keys($fields),
+    '#rdf_fields' => $rdf_fields,
+    '#groups' => array_keys($groups),
+    '#extra' => array_keys($extra),
+    '#order' => array(),
+    '#prefix' => '<p>'. t('Specify the RDF class of this content type. You can also map the CCK fields to existing RDF properties.') .'</p>',
+  );
+
+  $form['rdf_class'] = array(
+    '#type' => 'textfield',
+    '#title' => t('RDF class'),
+    '#description' => t('Choose the RDF class this content type will be mapped to.'),
+    '#autocomplete_path' => 'evocreference/autocomplete/_classes',
+    '#default_value' => _rdfcck_get_default_class($type_name),
+    '#size' => 30,
+  );
+
+  // Fields.
+  foreach ($fields as $name => $field) {
+    $weight = $field['widget']['weight'];
+    $form[$name] = array(
+      'human_name' => array('#value' => check_plain($field['widget']['label'])),
+      'name' => array('#value' => $field['field_name']),
+      'type' => array('#value' => t($field_types[$field['type']]['label'])),
+      'rdf_property' => array('#type' => 'textfield', '#autocomplete_path' => 'evocreference/autocomplete/_properties', '#size' => 30, '#default_value' => _rdfcck_get_default_property($type_name, $name)),
+      'hidden_name' => array('#type' => 'hidden', '#default_value' => $field['field_name']),
+      '#leaf' => TRUE,
+    );
+    $dummy[$name] = array('#weight' => $weight, '#value' => $name .' ');
+  }
+
+  // Groups.
+  foreach ($groups as $name => $group) {
+    $weight = $group['weight'];
+    $form[$name] = array(
+      'human_name' => array('#value' => check_plain($group['label'])),
+      'name' => array('#value' => $group['group_name']),
+      'type' => array(),
+      'rdf_property' => array(),
+      'hidden_name' => array('#type' => 'hidden', '#default_value' => $group['group_name']),
+      '#root' => TRUE,
+    );
+    $dummy[$name] = array('#weight' => $weight, '#value' => $name .' ');
+    // Adjust child fields rows.
+    foreach ($group['fields'] as $field_name => $field) {
+      $form[$field_name]['#depth'] = 1;
+      $form[$field_name]['parent']['#default_value'] = $name;
+      $dummy[$name][$field_name] = $dummy[$field_name];
+      unset($dummy[$field_name]);
+    }
+  }
+
+  // Non-CCK 'fields'.
+  foreach ($extra as $name => $label) {
+    if (in_array($name, $form['#rdf_fields'])) {
+      $weight = $extra[$name]['weight'];
+      $form[$name] = array(
+        'human_name' => array('#value' => t($extra[$name]['label'])),
+        'name' => array('#value' => isset($extra[$name]['description']) ? $extra[$name]['description'] : ''),
+        'type' => array(),
+        'rdf_property' => array('#type' => 'textfield', '#autocomplete_path' => 'evocreference/autocomplete/_properties', '#size' => 30, '#default_value' => _rdfcck_get_default_property($type_name, $name)),
+        'hidden_name' => array('#type' => 'hidden', '#default_value' => $name),
+        '#leaf' => TRUE,
+        '#root' => TRUE,
+        '#extra_field' => TRUE,
+      );
+      $dummy[$name] = array('#weight' => $weight, '#value' => $name .' ');
+    }
+  }
+  
+  // Let drupal_render figure out the right order for the rows.
+  $form['#order'] = explode(' ', trim(drupal_render($dummy)));
+
+  $form['submit'] = array('#type' => 'submit', '#value' => t('Save'));
+  return $form;
+}
+
+/**
+ *  Theme the field overview table.
+ */
+function theme_rdfcck_admin_rdf_overview_form($form) {
+  if (empty($form['#order'])) {
+    return;
+  }
+  $output = drupal_render($form['rdf_class']);
+
+  $header = array(t('Label'), t('Name'), t('Type'), t('RDF property'));
+  $rows = array();
+
+  foreach ($form['#order'] as $key) {
+    $row = array();
+    $element = &$form[$key];
+    $element['weight']['#attributes']['class'] = 'field-weight';
+    $element['parent']['#attributes']['class'] = 'group-parent';
+    $element['hidden_name']['#attributes']['class'] = 'field-name';
+    if (in_array($key, $form['#groups'])) {
+      $element['human_name']['#prefix'] = '<strong>';
+      $element['human_name']['#suffix'] = '</strong>';
+    }
+    $row[] = theme('indentation', isset($element['#depth']) ? $element['#depth'] : 0) . drupal_render($element['human_name']);
+    $row[] = drupal_render($element['name']);
+    $row[] = drupal_render($element['type']);
+    $row[] = drupal_render($element['rdf_property']);
+
+    $class = '';
+    $rows[] = array('data' => $row, 'class' => $class);
+  }
+
+  $output .= theme('table', $header, $rows, array('id' => 'content-field-overview'));
+  $output .= drupal_render($form);
+
+  return $output;
+}
+
+function rdfcck_admin_rdf_overview_form_submit($form, &$form_state) {
+  $form_values = $form_state['values'];
+  $msg = FALSE;
+  $extra = array();
+
+  foreach ($form_values as $key => $values) {
+    if ($key == 'rdf_class') {
+      // Delete the class mapping.
+      db_query("DELETE FROM {rdfcck_content_types} WHERE type_name = '%s'", $form['#type_name']);
+      // Update the RDF class mapping if a class is provided.
+      if ($class = $values) {
+        db_query("INSERT INTO {rdfcck_content_types} (type_name, class) VALUES ('%s', '%s')", $form['#type_name'], $class);
+      }
+      drupal_set_message(t('Updated RDF class mapping.'));
+    }
+    elseif (in_array($key, $form['#rdf_fields'])) {
+      // Delete the property mapping.
+      // FIXME add the type_name here too.
+      db_query("DELETE FROM {rdfcck_fields} WHERE field_name = '%s'", $key);
+      // Update the mapping if specified.
+      if ($value = $values['rdf_property']) {
+        db_query("INSERT INTO {rdfcck_fields} (field_name, type_name, property) VALUES ('%s', '%s', '%s')", $key, $form['#type_name'], $value);
+      }
+      $msg = TRUE;
+    }
+  }
+  if ($msg) {
+    drupal_set_message(t('Updated RDF property mappings.'));
+  }
+
+  content_clear_type_cache();
+}
+
+function _rdfcck_get_default_property($type_name, $field_name) {
+  $property = db_query(db_rewrite_sql("SELECT property FROM {rdfcck_fields} WHERE type_name = '%s' AND field_name = '%s'"), $type_name, $field_name);
+
+  while ($item = db_fetch_object($property)) {
+    $property_curie = $item->property;
+  }
+
+  return $property_curie;
+}
+
+function _rdfcck_get_default_class($type_name) {
+  $class = db_query(db_rewrite_sql("SELECT class FROM {rdfcck_content_types} WHERE type_name = '%s'"), $type_name);
+
+  while ($item = db_fetch_object($class)) {
+    $class_curie = $item->class;
+  }
+
+  return $class_curie;
+}
+
+function _rdfcck_get_properties() {
+  $properties_options = array();
+  $properties_options[0] = '<none>';
+  $properties = db_query(db_rewrite_sql("SELECT * FROM {evoc_rdf_properties}"));
+
+  while ($item = db_fetch_object($properties)) {
+    $term_curie = $item->prefix . ':' . $item->id;
+    $properties_options[$term_curie] = $term_curie;
+  }
+
+  return $properties_options;
+}
+
+function _rdfcck_get_classes() {
+  $classes_options = array();
+  $classes_options[0] = '<none>';
+  $classes = db_query(db_rewrite_sql("SELECT * FROM {evoc_rdf_classes}"));
+
+  while ($item = db_fetch_object($classes)) {
+    $term_curie = $item->prefix . ':' . $item->id;
+    $classes_options[$term_curie] = $term_curie;
+  }
+
+  return $classes_options;
+}
+
+
+
+
+/**
+ * Implementation of hook_rdf_resources()
+ */
+function rdfcck_rdf_resources($context) {
+  switch ($context) {
+    case NULL:
+    case RDF_SITE_URI:
+      // TODO improve the discovery mechanism for passing the nid to the loading function.
+      //$uri = url('node/' . arg(1), array('fragment' => 'this', 'absolute' => TRUE));
+      $uri = url('node/' . arg(1), array('absolute' => TRUE));
+      return array($uri => new RDF_QueryCallback('rdfcck_load_node', array(arg(1))));
+  }
+}
+
+// Only the actual node is loaded with its CCK fields.
+// This is where the RDF data is added to the RDF export at node/*/rdf.
+function rdfcck_load_node($node) {
+  $node = is_object($node) ? $node : node_load((int)$node);
+
+  $resources = array(
+    rdf::type         => array(
+      // Mapping to the local schema.
+      rdf_uriref(rdf_qname_to_uri('site:' . _rdfcck_build_site_rdf_class_id($node->type))),
+    ),
+    // TODO normalize the order of the parameters in _rdfcck_build_site_rdf_property_id().
+    'site:' . _rdfcck_build_site_rdf_property_id('title', $node->type)  => $node->title,
+    'site:' . _rdfcck_build_site_rdf_property_id('body', $node->type)   => $node->body,
+    'site:created'    => rdf_datetime($node->created),
+    'site:changed'    => rdf_datetime($node->changed),
+  );
+
+  // Add the type, title and body mappings if they exist.
+  if ($c = _rdfcck_get_default_class($node->type)) {
+    // Mapping to the external class.
+    array_push($resources[rdf::type], rdf_uriref(rdf_qname_to_uri(_rdfcck_get_default_class($node->type))));
+  };
+  if ($p = _rdfcck_get_default_property($node->type, 'title')) {
+    $resources[$p] = $node->title;
+  };
+  if ($p = _rdfcck_get_default_property($node->type, 'body_field')) {
+    $resources[$p] = $node->body;
+  };
+
+  $type = content_types($node->type);
+  if ($type['fields']) {
+    foreach ($type['fields'] as $field) {
+      $rdf_site_field_name = _rdfcck_build_site_rdf_property_id($field['field_name'], $node->type);
+      $field_values = $node->$field['field_name'];
+      // $objects will contain all the values of the field.
+      $objects = array();
+      foreach ($field_values as $value) {
+        switch ($field['type']) {
+          case 'nodereference' :
+            if ($value['nid']) {
+              $objects[] = rdf_uriref(url('node/' . $value['nid'], array('fragment' => 'this', 'absolute' => TRUE)));
+            }
+            break;
+
+          case 'userreference' :
+            if ($value['uid']) {
+              $objects[] = rdf_uriref(url('user/' . $value['uid'], array('fragment' => 'this', 'absolute' => TRUE)));
+            }
+            break;
+
+          case 'text' :
+            if ($value['value']) {
+              $objects[] = $value['value'];
+            }
+            break;
+  
+          case 'link' :
+            if ($value['url']) {
+              $objects[] = rdf_uriref($value['url']);
+            }
+            break;
+
+          case 'image' :
+          case 'filefield' :
+            if ($value['filepath']) {
+              $objects[] = rdf_uriref(url($value['filepath'], array('absolute' => TRUE)));
+            }
+            break;
+            
+        } // end switch
+      } // end foreach values of the field
+      $resources['site:' . $rdf_site_field_name] = $objects;
+      // Only export the external mapping if it is defined.
+      if ($p = _rdfcck_get_default_property($node->type, $field['field_name'])) {
+        $resources[$p] = $objects;
+      };
+    }
+  }
+
+  return $resources;
+}
+
+
+
+/**
+ * Implementation of hook_rdf_classes().
+ */
+function rdfcck_rdf_classes() {
+  // Retrieve the content types.
+  $types = node_get_types();
+  $classes = array();
+  foreach ($types as $type) {
+    // Construct a class for each content type using the content type name a default class id.
+    // The type should be already lower case, but we use it for future compatibility reasons.
+    // TODO: maybe move this case formatting further in the worflow and centralize it?
+    $class_id = _rdfcck_build_site_rdf_class_id($type->type);
+    $classes[$class_id] = array(
+      'title' => $type->name,
+      'uri' => 'field/' . $type->type,
+      'module'  => 'content', // module necessary here to allow rdf_schema module to consider this class enable.
+      'comment' => $type->description,
+      'enabled' => TRUE,
+
+
+    );
+  }
+ return $classes;
+}
+
+/**
+ * Implementation of hook_rdf_properties().
+ */
+function rdfcck_rdf_properties() {
+  $types = node_get_types();
+  $properties = array();
+  foreach ($types as $type) {
+    // Construct a property for each content type using the content type name a default class id.
+    $type = content_types($type->type); // This contains the CCK fields definitions.
+
+    // Core node title and body.
+    if ($type['has_title']) {
+      $property_id = _rdfcck_build_site_rdf_property_id('title', $type['type']);
+      $properties[$property_id] = array(
+        'title' => 'Title',
+        'domain' => $type['type'],
+        'comment' => 'Title of the node',
+      );
+    }
+    if ($type['has_body']) {
+      $property_id = _rdfcck_build_site_rdf_property_id('body', $type['type']);
+      $properties[$property_id] = array(
+        'title' => 'Body',
+        'domain' => $type['type'],
+        'comment' => 'Body of the node',
+      );
+    }
+
+    // CCK fields.
+    if ($type['fields']) {
+      foreach ($type['fields'] as $field) {
+        // Determine the range of the property.
+        $range = NULL;
+        // Noderefence field.
+        switch ($field['type']) {
+          case 'nodereference' :
+            if (isset($field['referenceable_types'])) {
+              // Loop through all the referencable type, and pick the first one we find.
+              // FIXME - when we have more than one referencable type, we need to make an owl union.
+              $range = NULL;
+              foreach ($field['referenceable_types'] as $referencable_type) {
+                if ($referencable_type) {
+                  $range = 'site:' . $referencable_type;
+                  break;
+                }
+                else {
+                  $range = 'err01:not_found'; // This should not happen (referencable type not found).
+                }
+              }
+            }
+            break;
+
+          case 'userreference' :
+            $range = 'site:user';
+            break;
+
+          case 'number_decimal' :
+            $range = 'xsd:decimal';
+            break;
+
+          case 'number_integer' :
+            $range = 'xsd:integer';
+            break;
+
+          case 'number_float' :
+            $range = 'xsd:float';
+            break;
+
+          case 'link' :
+            $range = 'rdf:resource';
+            break;
+
+          // TODO add the case 'text' ? rdfs:Literal for now (default)
+        }
+
+        // Generate the property information.
+        $property_id = _rdfcck_build_site_rdf_property_id($field['field_name'], $field['type_name']);
+        $properties[$property_id] = array(
+          'title' => $field['widget']['label'],
+          'domain' => $field['type_name'],
+          'comment' => $field['widget']['description'],
+          'range' => isset($range) ? $range : NULL,
+        );
+      }
+
+
+    }
+  }
+
+  return array('drupal' => $properties);
+}
+
+// We apply a specific pattern to generated the site class ids: type.
+// The type should be already lower case, but we force it here for future compatibility reasons
+// inline with the RDF vocabulary best practises.
+function _rdfcck_build_site_rdf_class_id($type) {
+  return ucfirst(strtolower($type));
+}
+
+// We apply a specific pattern to generated the site property ids: type_Fieldname.
+// The name of the type is inserted here to work around the shared CCK fields.
+// The type should be already lower case, but we force it here for future compatibility reasons
+// inline with the RDF vocabulary best practises.
+function _rdfcck_build_site_rdf_property_id($field, $type) {
+  return strtolower($type) . '_' . ucfirst(strtolower(str_Replace('field_', '', $field)));
+}
+
+/**
+ * Implementation of hook_rdf_namespaces().
+ */
+function rdfcck_rdf_namespaces() {
+  return array('site' => url('ns', array('absolute' => TRUE)) . '#');
+  return $namespaces;
+}

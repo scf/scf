@@ -1,0 +1,39 @@
+<?php
+// $Id: evocreference.install,v 1.1.2.1 2009/02/25 16:00:50 scor Exp $
+
+/**
+ * @file
+ * Implementation of hook_install().
+ */
+function evocreference_install() {
+  drupal_load('module', 'content');
+  content_notify('install', 'evocreference');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function evocreference_uninstall() {
+  drupal_load('module', 'content');
+  content_notify('uninstall', 'evocreference');
+}
+
+/**
+ * Implementation of hook_enable().
+ *
+ * Notify content module when this module is enabled.
+ */
+function evocreference_enable() {
+  drupal_load('module', 'content');
+  content_notify('enable', 'evocreference');
+}
+
+/**
+ * Implementation of hook_disable().
+ *
+ * Notify content module when this module is disabled.
+ */
+function evocreference_disable() {
+  drupal_load('module', 'content');
+  content_notify('disable', 'evocreference');
+}
