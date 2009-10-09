@@ -1,5 +1,5 @@
 <?php
-// $Id: evoc.install,v 1.1.2.3 2009/02/24 03:49:18 scor Exp $
+// $Id: evoc.install,v 1.1.2.4 2009/06/21 12:53:17 scor Exp $
 
 /**
  * Implementation of hook_schema().
@@ -24,8 +24,8 @@ function evoc_schema() {
       'id' => array('type' => 'varchar', 'length' => '32', 'not null' => TRUE),
       'label' => array('type' => 'varchar', 'length' => '32', 'not null' => TRUE),
       'comment' => array('type' => 'text', 'not null' => TRUE),
-      'domain' => array('type' => 'varchar', 'length' => '32', 'not null' => TRUE),
-      'range' => array('type' => 'varchar', 'length' => '32', 'not null' => TRUE),
+      'rdf_domain' => array('type' => 'varchar', 'length' => '32', 'not null' => TRUE),
+      'rdf_range' => array('type' => 'varchar', 'length' => '32', 'not null' => TRUE),
     ),
     'primary key' => array(
       'prefix',
@@ -63,4 +63,18 @@ function evoc_enable() {
   evoc_import_vocabulary('http://purl.org/dc/elements/1.1/', 'dc');
   evoc_import_vocabulary('http://xmlns.com/foaf/0.1/', 'foaf');
   evoc_import_vocabulary('http://rdfs.org/sioc/ns#', 'sioc');
-  }
+}
+
+/**
+ * Implementation of hook_update_N.
+ *
+ * Rename columns to avoid reserved word conflicts (specifically with MySQL 5.1)
+ */
+function evoc_update_6001() {
+  $ret = array();
+  $schema = evoc_schema();
+  $fields = $schema['evoc_rdf_properties']['fields'];
+  db_change_field($ret, 'evoc_rdf_properties', 'domain', 'rdf_domain', $fields['rdf_domain']);
+  db_change_field($ret, 'evoc_rdf_properties', 'range', 'rdf_range', $fields['rdf_range']);
+  return $ret;
+}

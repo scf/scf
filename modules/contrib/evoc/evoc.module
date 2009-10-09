@@ -1,5 +1,5 @@
 <?php
-// $Id: evoc.module,v 1.1.2.7 2009/02/25 18:50:40 scor Exp $
+// $Id: evoc.module,v 1.1.2.10 2009/07/11 16:16:51 scor Exp $
 
 /**
  * @file
@@ -189,7 +189,7 @@ function evoc_fetch_vocabulary($vocabulary_uri, $vocabulary_prefix, $ignore_base
   foreach ($term_queries as $query) {
     $endpoint = 'http://demo.openlinksw.com/sparql/';
     //$endpoint = 'http://www.sparql.org/sparql';
-    //$endpoint = 'http://jena.hpl.hp.com:2020/sparql';
+    $endpoint = 'http://jena.hpl.hp.com:2020/sparql';
     $sparql_res = sparql_request($endpoint, $query['query']);
 
     if (!is_array($sparql_res)) {
@@ -211,17 +211,17 @@ function evoc_fetch_vocabulary($vocabulary_uri, $vocabulary_prefix, $ignore_base
       $term = array();
       $term['id'] = $term_qname_parts[1];
       $term['type'] = $type;
-      $term['label'] = $res_term['label']->value ? $res_term['label']->value : $res_term['label'];
-      $term['comment'] = $res_term['comment']->value ? $res_term['comment']->value : $res_term['comment'];
+      $term['label'] = !empty($res_term['label']->value) ? $res_term['label']->value : NULL;
+      $term['comment'] = !empty($res_term['comment']->value) ? $res_term['comment']->value : NULL;
       switch ($type) {
         case 'class' :
-          $term['superclass'] = rdf_uri_to_qname($res_term['superclass']->uri);
+          $term['superclass'] = !empty($res_term['superclass']->uri) ? rdf_uri_to_qname($res_term['superclass']->uri) : NULL;
           break;
 
         case 'property' :
           // Extract some information like domain and range.
-          $term['domain'] = rdf_uri_to_qname($res_term['domain']->uri);
-          $term['range'] = rdf_uri_to_qname($res_term['range']->uri);
+          $term['rdf_domain'] = !empty($res_term['domain']->uri) ? rdf_uri_to_qname($res_term['domain']->uri) : NULL;
+          $term['rdf_range'] = !empty($res_term['range']->uri) ? rdf_uri_to_qname($res_term['range']->uri) : NULL;
           break;
 
       }
@@ -246,9 +246,10 @@ function _evoc_save_rdf_terms($ns, $prefix, $terms) {
   // Get the existing namespaces stored in the system.
   // Here we want to make sure we have the namespace stored in the db in case
   // the module defining this ns in hook_rdf_namespaces() is disabled.
-  $rdf_namespaces = rdf_db_rdf_namespaces();
+  // This function was renamed, leaving the old one for compatibility. To
+  // remove later.
+  $rdf_namespaces = function_exists('rdf_db_rdf_namespaces') ? rdf_db_rdf_namespaces() : rdf_rdf_namespaces();
 
-  //var_dump($rdf_namespaces);
   if (!in_array($ns, $rdf_namespaces)) { //FIXME: check also the prefix and raise a warning
     db_query("INSERT INTO {rdf_namespaces} (prefix, uri) VALUES ('%s', '%s')", $prefix, $ns);
     drupal_set_message(t("The namespace for $prefix has been created."));
