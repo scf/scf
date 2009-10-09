@@ -1,13 +1,25 @@
-/* $Id: admin_menu.js,v 1.7.2.4 2008/09/08 23:02:26 sun Exp $ */
+/* $Id: admin_menu.js,v 1.7.2.7 2009/01/24 04:59:22 sun Exp $ */
 
 $(document).ready(function() {
   // Apply margin-top if enabled; directly applying marginTop doesn't work in IE.
-  if ($('#admin-menu').size() && Drupal.settings.admin_menu.margin_top) {
-    $('body').addClass('admin-menu');
+  if ($('#admin-menu').size() && Drupal.settings.admin_menu) {
+    if (Drupal.settings.admin_menu.margin_top) {
+      $('body').addClass('admin-menu');
+    }
+    if (Drupal.settings.admin_menu.position_fixed) {
+      $('#admin-menu').css('position', 'fixed');
+    }
+    // Move page tabs into administration menu.
+    if (Drupal.settings.admin_menu.tweak_tabs) {
+      $('ul.tabs.primary li').each(function() {
+        $(this).addClass('admin-menu-tab').appendTo('#admin-menu > ul');
+      });
+      $('ul.tabs.secondary').appendTo('#admin-menu > ul > li.admin-menu-tab.active');
+    }
   }
 
   // Collapse fieldsets on Modules page. For why multiple selectors see #111719.
-  if (Drupal.settings.admin_menu.tweak_modules) {
+  if (Drupal.settings.admin_menu && Drupal.settings.admin_menu.tweak_modules) {
     $('#system-modules fieldset:not(.collapsed), #system-modules-1 fieldset:not(.collapsed)').addClass('collapsed');
   }
 

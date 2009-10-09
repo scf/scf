@@ -1,17 +1,17 @@
 <?php
-// $Id: admin_menu.inc,v 1.11.2.10 2008/09/12 16:21:22 pwolanin Exp $
+// $Id: admin_menu.inc,v 1.11.2.25 2009/06/09 18:21:29 sun Exp $
 
 /**
  * The key function that builds the menu links whenever there is a menu rebuild.
  */
 function _admin_menu_rebuild_links() {
-  // Get the newly rebuilt menu
+  // Get the newly rebuilt menu.
   $menu = menu_router_build();
   // Add normal and suggested items as links.
   $menu_links = array();
   foreach ($menu as $path => $item) {
     // Exclude menu callbacks, include items below admin/* and node/add/*.
-    if ($item['type'] != MENU_CALLBACK && (($item['_parts'][0] == 'admin' && count($item['_parts']) > 1) || (strpos($path, 'node/add') !== FALSE))) {
+    if ($item['type'] != MENU_CALLBACK && (($item['_parts'][0] == 'admin' && count($item['_parts']) > 1) || (strpos($path, 'node/add') === 0))) {
       // TODO: handle local tasks with wildcards
       if (!strpos($path, '%')) {
         $item = admin_menu_link_build($item);
@@ -105,31 +105,23 @@ function admin_menu_link_save($item) {
  *   If one of these links is added back, it should be removed from the array.
  */
 function admin_menu_admin_menu(&$deleted) {
-  global $base_url;
-
   $links = array();
   $icon_path = '<front>';
 
-  // Add 'administer' item to the icon menu.
-  $links[] = array(
-    'title' => 'Administer',
-    'path' => 'admin',
-    'weight' => 10,
-    'parent_path' => $icon_path,
-  );
-
-  // Add system update links.
+  // Add link to manually run cron.
   $links[] = array(
     'title' => 'Run cron',
     'path' => 'admin/reports/status/run-cron',
     'weight' => 50,
     'parent_path' => $icon_path,
   );
+  // Add link to run update.php.
   $links[] = array(
     'title' => 'Run updates',
-    'path' => $base_url .'/update.php',
+    'path' => 'update.php',
     'weight' => 50,
     'parent_path' => $icon_path,
+    'options' => array('external' => TRUE),
   );
 
   // Move 'By module' item into Site configuration.
@@ -191,15 +183,17 @@ function admin_menu_admin_menu(&$deleted) {
     $type_url_str = str_replace('_', '-', $type->type);
     $type_path = 'admin/content/node-type/' . $type_url_str;
     $links[$type_path] = array(
-      'title' => 'Edit @content-type',
+      'title' => 'Edit !content-type',
       'path' => $type_path,
       'parent_path' => 'admin/content/types',
-      'options' => array('t' => array('@content-type' => $type->name)),
+      'options' => array('t' => array('!content-type' => $type->name)),
     );
-    unset($deleted['admin/content/node-type/' . $type_url_str . '/edit']);
+    unset($deleted[$type_path . '/edit']);
     // CCK and other modules adding to node types handled here.
     foreach($deleted as $path => $item) {
-      if (strpos($path, $type_path) !== FALSE) {
+      // Precise test needed to account for multiple content-types having the
+      // same prefix in their name.
+      if ($path === $type_path || strpos($path, $type_path . '/') === 0) {
         // Logically, parent path can never go shorter than $type_path.
         $i = $item['_number_parts'] - 1;
         do {
@@ -213,6 +207,30 @@ function admin_menu_admin_menu(&$deleted) {
     }
   }
 
+  // Add clear-cache.
+  $links[] = array(
+    'title' => 'Flush all caches',
+    'path' => 'admin_menu/flush-cache',
+    'query' => 'destination',
+    'weight' => 20,
+    'parent_path' => $icon_path,
+  );
+  $caches = array(
+    'admin_menu' => 'Administration menu',
+    'cache' => 'Cache tables',
+    'menu' => 'Menu',
+    'requisites' => 'Page requisites',
+    'theme' => 'Theme registry',
+  );
+  foreach ($caches as $name => $title) {
+    $links[] = array(
+      'title' => $title,
+      'path' => 'admin_menu/flush-cache/' . $name,
+      'query' => 'destination',
+      'parent_path' => 'admin_menu/flush-cache',
+    );
+  }
+
   // Add devel module links
   if (module_exists('devel')) {
     // Add variable editor.
@@ -222,21 +240,27 @@ function admin_menu_admin_menu(&$deleted) {
       'weight' => 20,
       'parent_path' => $icon_path,
     );
-    // Add clear-cache.
-    $links[] = array(
-      'title' => 'Empty cache',
-      'path' => 'devel/cache/clear',
-      'weight' => 20,
-      'parent_path' => $icon_path,
-    );
     // Add switch_user items.
     if ($devel_user_links = module_invoke('devel', 'switch_user_list')) {
       foreach ($devel_user_links as $link) {
-        if (preg_match('!href="'. base_path() .'([^\?]+)\?([^"]+)" title="([^"]+)">((<em>)?[^<]+(</em>)?)!', $link, $match)) {
+        if (is_array($link)) {
+          $links[] = array(
+            'title' => $link['title'],
+            'description' => $link['attributes']['title'],
+            'path' => $link['href'],
+            'options' => array(
+              'query' => $link['query'],
+              'html' => !empty($link['html']),
+            ),
+            'parent_path' => 'logout',
+          );
+        }
+        // @todo Remove when Devel 6.x-1.16 has been released.
+        elseif (preg_match('!href="' . base_path() . '([^\?]+)\?([^"]+)" title="([^"]+)">((<em>)?[^<]+(</em>)?)!', $link, $match)) {
           $links[] = array(
             'title' => $match[4],
             'description' => $match[3],
-            'path' => $match[1],
+            'path' => urldecode($match[1]),
             'weight' => 20,
             'query' => 'destination',
             'parent_path' => 'logout',
@@ -249,7 +273,7 @@ function admin_menu_admin_menu(&$deleted) {
   // Add developer modules toggle link.
   $saved_state = variable_get('admin_menu_devel_modules_enabled', NULL);
   $links[] = array(
-    'title' => isset($saved_state) ? t('Re-enable developer modules') : t('Disable developer modules'),
+    'title' => isset($saved_state) ? t('Enable developer modules') : t('Disable developer modules'),
     'path' => 'admin_menu/toggle-modules',
     'weight' => 88,
     'parent_path' => $icon_path,
@@ -272,7 +296,7 @@ function admin_menu_admin_menu(&$deleted) {
  *   An array of links that were removed from $menu_links.
  */
 function admin_menu_adjust_items(&$menu_links, &$sort) {
-  global $user, $base_url;
+  global $user;
   $links = array();
   $deleted = array();
 
@@ -292,15 +316,14 @@ function admin_menu_adjust_items(&$menu_links, &$sort) {
       unset($menu_links[$path], $sort[$path]);
     }
   }
-  $icon_link = array(
+  // Add the icon containing special links.
+  $links[] = array(
     'title' => theme('admin_menu_icon'),
     'path' => '<front>',
     'weight' => -100,
     'parent_path' => '<root>',
     'options' => array('extra class' => 'admin-menu-icon', 'html' => TRUE),
   );
-  // Add the icon containing special links.
-  $links[] = $icon_link;
   // Add link to show current authenticated/anonymous users - we will add the
   // data dynamically in the _alter hook.
   $links[] = array(
@@ -335,27 +358,39 @@ function admin_menu_adjust_items(&$menu_links, &$sort) {
 function admin_menu_theme_settings() {
   $form['admin_menu_margin_top'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Apply margin-top to page body'),
+    '#title' => t('Adjust top margin'),
     '#default_value' => variable_get('admin_menu_margin_top', 1),
-    '#description' => t('If enabled, the output of this site will be shifted for approx. 20 pixels from the top of the viewport to make room for the Administration Menu. If this setting is disabled, some absolute or fixed positioned page elements at the top of the viewport may be covered by Administration Menu.'),
+    '#description' => t('If enabled, the site output is shifted down approximately 20 pixels from the top of the viewport to display the administration menu. If disabled, some absolute- or fixed-positioned page elements may be covered by the administration menu.'),
+  );
+  $form['admin_menu_position_fixed'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Keep menu at top of page'),
+    '#default_value' => variable_get('admin_menu_position_fixed', 0),
+    '#description' => t('If enabled, the administration menu is always displayed at the top of the browser viewport (even after the page is scrolled). <strong>Note: In some browsers, this setting results in a malformed page, an invisible cursor, non-selectable elements in forms, or other issues. Disable this option if these issues occur.</strong>'),
   );
   $form['tweaks'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Drupal Administration Tweaks'),
+    '#title' => t('Advanced settings'),
   );
   $form['tweaks']['admin_menu_tweak_modules'] = array(
     '#type' => 'checkbox',
     '#title' => t('Collapse fieldsets on modules page'),
     '#default_value' => variable_get('admin_menu_tweak_modules', 0),
-    '#description' => t('If enabled, fieldsets on the <a href="!modules-url">Site building &raquo; Modules</a> page will be initially collapsed.', array('!modules-url' => url('admin/build/modules'))),
+    '#description' => t('If enabled, fieldsets on the <a href="!modules-url">modules</a> page are automatically collapsed when loading the page.', array('!modules-url' => url('admin/build/modules'))),
   );
   if (module_exists('util')) {
-    $form['tweaks']['admin_menu_tweak_modules']['#description'] .= '<br /><strong>'. t('If you installed Utility module for this purpose, you can safely uninstall it now!') .'</strong>';
+    $form['tweaks']['admin_menu_tweak_modules']['#description'] .= '<br /><strong>'. t('If the Utility module was installed for this purpose, it can be safely disabled and uninstalled.') .'</strong>';
   }
+  $form['tweaks']['admin_menu_tweak_tabs'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Move local tasks into menu'),
+    '#default_value' => variable_get('admin_menu_tweak_tabs', 0),
+    '#description' => t('If enabled, the tabs on the current page are moved into the administration menu. This feature is only available in themes that use the CSS classes <code>tabs primary</code> and <code>tabs secondary</code> for tabs.'),
+  );
   $form = system_settings_form($form);
   $form['wipe description'] = array(
     '#type' => 'item',
-    '#value' => t('If you are seeing a duplicated menu or other problems, you may use this button to delete everything in the menu and rebuild it.'),
+    '#value' => t('If the administration menu displays duplicate menu items, you may need to rebuild your menu items using the <em>Wipe and rebuild</em> button.'),
   );
   $form['wipe'] = array(
     '#type' => 'submit',
@@ -387,24 +422,24 @@ function _admin_menu_devel_settings_form_alter(&$form, $form_state) {
 
   $form['admin_menu'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Administration Menu settings'),
+    '#title' => t('Administration menu settings'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
   $display_options = array('mid', 'weight', 'pid');
-  $display_options = array(0 => t('None'), 'mlid' => t('Menu link id'), 'weight' => t('Weight'), 'plid' => t('Parent link id'));
+  $display_options = array(0 => t('None'), 'mlid' => t('Menu link ID'), 'weight' => t('Weight'), 'plid' => t('Parent link ID'));
   $form['admin_menu']['admin_menu_display'] = array(
     '#type' => 'radios',
-    '#title' => t('Display extra information for menu items in Drupal Administration Menu'),
+    '#title' => t('Display additional data for each menu item'),
     '#default_value' => variable_get('admin_menu_display', 0),
     '#options' => $display_options,
-    '#description' => t('If enabled, the chosen information will appear next to each menu item link.'),
+    '#description' => t('Display the selected items next to each menu item link.'),
   );
   $form['admin_menu']['admin_menu_show_all'] = array(
     '#type' => 'checkbox',
     '#title' => t('Display all menu items'),
     '#default_value' => variable_get('admin_menu_show_all', 0),
-    '#description' => t('Enable this option to disable user access checks for menu items, i.e. every menu item in the visible menu tree will be displayed to every user regardless of access permissions.'),
+    '#description' => t('If enabled, all menu items are displayed regardless of your site permissions. <em>Note: Do not enable on a production site.</em>'),
   );
 }
 
@@ -421,7 +456,7 @@ function admin_menu_toggle_modules() {
     // Re-enable modules that were enabled before.
     module_enable($saved_state);
     variable_del('admin_menu_devel_modules_enabled');
-    drupal_set_message(t('Re-enabled these modules: !module-list.', array('!module-list' => implode(', ', $saved_state))));
+    drupal_set_message(t('Enabled these modules: !module-list.', array('!module-list' => implode(', ', $saved_state))));
     $rebuild = TRUE;
   }
   else {
@@ -453,5 +488,54 @@ function admin_menu_toggle_modules() {
     actions_synchronize();
   }
   drupal_goto('');
+}
+
+/**
+ * Flush all caches or a specific one.
+ *
+ * @param $name
+ *   (optional) Name of cache to flush.
+ */
+function admin_menu_flush_cache($name = NULL) {
+  switch ($name) {
+    case 'admin_menu':
+      admin_menu_wipe();
+      break;
+
+    case 'cache':
+      // Don't clear cache_form - in-progress form submissions may break.
+      // Ordered so clearing the page cache will always be the last action.
+      $core = array('cache', 'cache_block', 'cache_filter', 'cache_page');
+      $cache_tables = array_merge(module_invoke_all('flush_caches'), $core);
+      foreach ($cache_tables as $table) {
+        cache_clear_all('*', $table, TRUE);
+      }
+      break;
+
+    case 'menu':
+      module_invoke('menu', 'rebuild');
+      break;
+
+    case 'requisites':
+      // Change query-strings on css/js files to enforce reload for all users.
+      _drupal_flush_css_js();
+
+      drupal_clear_css_cache();
+      drupal_clear_js_cache();
+      break;
+
+    case 'theme':
+      module_invoke('system', 'theme_data');
+      drupal_rebuild_theme_registry();
+      break;
+
+    default:
+      // Flush all caches; no need to re-implement this.
+      module_load_include('inc', 'system', 'system.admin');
+      $form = $form_state = array();
+      system_clear_cache_submit($form, $form_state);
+      break;
+  }
+  drupal_goto();
 }
 

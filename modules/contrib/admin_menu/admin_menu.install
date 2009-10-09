@@ -1,5 +1,5 @@
 <?php
-// $Id: admin_menu.install,v 1.4.2.4 2008/09/12 16:21:22 pwolanin Exp $
+// $Id: admin_menu.install,v 1.4.2.6 2009/01/28 19:48:41 sun Exp $
 
 /**
  * Implementation of hook_uninstall().
@@ -9,10 +9,12 @@ function admin_menu_uninstall() {
   db_query("DELETE FROM {menu_links} WHERE module = 'admin_menu'");
   menu_cache_clear_all();
   // Delete variables.
-  variable_del('admin_menu_rebuild_links');
   variable_del('admin_menu_devel_modules_enabled');
   variable_del('admin_menu_margin_top');
+  variable_del('admin_menu_position_fixed');
+  variable_del('admin_menu_rebuild_links');
   variable_del('admin_menu_tweak_modules');
+  variable_del('admin_menu_tweak_tabs');
 }
 
 /**
@@ -38,7 +40,7 @@ function admin_menu_update_6001() {
   $ret = array();
   module_load_include('inc', 'admin_menu');
   admin_menu_wipe();
-  $ret[] = array('success' => TRUE, 'query' => t('admin_menu links deleted for clean rebuild.'));
+  $ret[] = array('success' => TRUE, 'query' => 'Administration menu links deleted for clean rebuild.');
   return $ret;
 }
 

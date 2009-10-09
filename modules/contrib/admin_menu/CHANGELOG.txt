@@ -1,10 +1,63 @@
-// $Id: CHANGELOG.txt,v 1.33.2.21 2008/09/12 16:34:56 pwolanin Exp $
+// $Id: CHANGELOG.txt,v 1.33.2.58 2009/07/02 12:10:37 sun Exp $
 
 Admin Menu x.x-x.x, xxxx-xx-xx
 ------------------------------
 
+
 Admin Menu 6.x-1.x, xxxx-xx-xx
 ------------------------------
+
+
+Admin Menu 6.x-1.5, 2009-07-02
+------------------------------
+#479922 by sun: Fixed fieldsets not collapsed on admin/build/modules/list*.
+#236657 by sun: Updated for corrected arguments of system_clear_cache_submit().
+#471504 by wulff: Updated Danish translation.
+
+
+Admin Menu 6.x-1.4, 2009-05-15
+------------------------------
+by Dave Reid: Updated for getInfo() for tests.
+#433016 by ultimateboy: Fixed Devel switch user links added to wrong parent.
+#349169 by sun: Fixed Devel switch user links contain multiple path prefixes.
+#384100 by kepol, sun: Fixed content-type items displayed in wrong place.
+#373339 by sun: Fixed double-escaped 'Edit <content-type>' link titles.
+by sun: Fixed admin menu tests (and updated to 6.x for SimpleTest 2.x).
+#359158 by nitrospectide, sun: Fixed Devel Themer breaks admin menu.
+#365335 by sun: Fixed not all variables removed after uninstall.
+
+
+Admin Menu 6.x-1.3, 2009-01-24
+------------------------------
+#362454 by sun: Fixed Drupal.settings.admin_menu is undefined JS error in some
+  browsers.
+
+
+Admin Menu 6.x-1.2, 2009-01-20
+------------------------------
+#358697 by sun: Added docs about admin_menu_suppress() to README.txt.
+#342684 by darumaki, sun: Added notice about Opera configuration to README.txt.
+#350932 by sun: Fixed "Run updates" link repeated per language/site.
+#342298 by gustz: Updated Spanish translation.
+#346106 by sun: Fixed XHTML-Strict validation for admin menu icon.
+#287448 by sun: Fixed unnecessary menu rebuild for users without permission to
+  use admin menu.
+#342002 by AltaVida: Fixed improper test for node/add paths.
+#272920 by keith.smith: Changed all text strings throughout the module.
+#322731 by sun: Fixed improper use of t() in module install file.
+#282030 by sun: Fixed "Run updates" item visible for unprivileged users.
+#322877 by sun: Added tweak to move page tabs into administration menu.
+#287468 by sun: Fixed module paths directly below "admin" get the wrong parent.
+#310423 by sun: Added optional position: fixed configuration setting.
+#292657 by smk-ka: Improved rendering performance.
+#234149 by yhager, sun: Fixed RTL support for IE.
+#323726 by danez1972: Added Spanish translation.
+#325057 by sun: Updated README.txt.
+#234149 by yhager, levavie, sun: Added RTL support.
+#325057 by sun: Added links to flush specific caches.
+#324334 by AltaVida: Fixed usernames with spaces not in Devel user switch links.
+#319382 by betz: Added Dutch translation.
+
 
 Admin Menu 6.x-1.1, 2008-09-12
 ------------------------------
