@@ -1,13 +1,12 @@
 <?php
-// $Id: rdf.module,v 1.8 2008/02/21 23:01:55 arto Exp $
-/**
- * rdf.module - Enables the use of RDF metadata in Drupal 6.x.
- *
- * @author Arto Bendiken <http://bendiken.net/>
- * @copyright Copyright (c) 2007-2008 Arto Bendiken. All rights reserved.
- * @license GPL <http://creativecommons.org/licenses/GPL/2.0/>
- * @package rdf.module
- */
+// $Id: rdf.module,v 1.30 2009/03/25 04:20:41 arto Exp $
+
+//////////////////////////////////////////////////////////////////////////////
+// Module settings
+
+define('RDF_SCHEMA_URI',        rdf_get_schema_uri());
+define('RDF_SCHEMA_MODULE_URI', 'http://drupal.org/project/rdf#schema');
+define('RDF_RSS_URI',           'http://purl.org/rss/1.0/');
 
 //////////////////////////////////////////////////////////////////////////////
 // Core API hooks
@@ -16,8 +15,15 @@
  * Implementation of hook_init().
  */
 function rdf_init() {
-  $path = drupal_get_path('module', 'rdf');
-  require_once $path . '/rdf.api.inc';
+  module_load_include('inc', 'rdf', 'rdf.api');
+  module_load_include('inc', 'rdf', 'rdf.db');
+  module_load_include('inc', 'rdf', 'rdf.schema');
+
+  rdf_define_vocabularies(); // TODO: replace with autoload-based solution
+
+  if (user_access('access RDF data')) {
+    rdf_add_autodiscovery_link(t('RDF'), url('rdf'));
+  }
 
   // Attempt to load the ARC2 library, if available. This library must be
   // manually installed by the administrator due to license incompatibility.
@@ -25,9 +31,21 @@ function rdf_init() {
     @include_once RDF_ARC2_PATH . '/ARC2.php';
   }
 
-  // Integrate into the Services API, if available.
+  // Integrate some RDF operations into the Services API, if available:
   if (module_exists('services')) {
-    require_once $path . '/rdf.services.inc';
+    module_load_include('inc', 'rdf', 'rdf.services');
+  }
+
+  // Integrate with FeedAPI and the Feed Element Mapper, if installed:
+  if (module_exists('feedapi')) {
+    module_load_include('inc', 'rdf', 'rdf.feedapi');
+  }
+
+  // Replace the theme's DOCTYPE with the RDFa DOCTYPE, if enabled:
+  if (variable_get('rdf_rdfa_doctype', FALSE)) {
+    // Implement hook_exit() to mark us as incompatible with aggressive caching:
+    function rdf_exit($destination = NULL) {}
+    ob_start('_rdf_ob_handler');
   }
 }
 
@@ -41,13 +59,21 @@ function rdf_help($path, $arg = NULL) {
     case 'admin/settings/rdf':
       return '<p>' . t('<a href="http://drupal.org/handbook/modules/rdf" title="Resource Description Framework">RDF</a> is a <a href="http://www.w3.org/RDF/">W3C standard</a> for modeling and sharing distributed knowledge based on a decentralized open-world assumption.') . '</p>';
     case 'admin/settings/rdf#formats':
-      return '<p>' . t('RDF data can be serialized into a number of textual formats (also known as representations). The two built-in, always available formats are <a href="http://drupal.org/node/219870">RDF/PHP</a> and <a href="http://drupal.org/node/219874">RDF/JSON</a>. For interoperability with more RDF formats, you can <a href="@modules">enable add-on modules</a> such as <em>RDF Import</em> and <em>RDF Export</em> which add parsing/serialization support for several widespread formats.', array('@modules' => url('admin/build/modules'))) . '</p>';
+      return '<p>' . t('RDF data can be serialized into a number of textual formats (also known as representations). The two built-in, always available formats are <a href="http://drupal.org/node/219870">RDF/PHP</a> and <a href="http://drupal.org/node/219874">RDF/JSON</a>. For interoperability with more RDF formats, you can <a href="@status">install the ARC2 library</a> which adds parsing/serialization support for several widespread formats.', array('@status' => url('admin/reports/status'))) . '</p>';
+    case 'admin/settings/rdf/mappings':
+      return '<p>' . t('This is a summary of the currently defined mappings between Drupal data and RDF classes/properties.') . '</p>';
+    case 'admin/settings/rdf/feeds':
+      return '<p>' . t('This is a list of the <a href="http://web.resource.org/rss/1.0/">RSS 1.0</a>-compatible RDF feeds available on this Drupal site.') . '</p>';
+    case 'admin/settings/rdf/feeds/edit/%':
+      return '<p>' . t('') . '</p>'; // TODO
     case 'admin/settings/rdf/namespaces':
       return '<p>' . t('<a href="http://drupal.org/node/219858#namespaces">Namespaces</a> define URI abbreviations for use in <a href="http://drupal.org/node/219856#curie" title="Compact URIs">CURIEs</a> and for purposes of human-friendly display of RDF data.') . '</p>';
     case 'admin/settings/rdf/contexts':
-      return '<p>' . t('<a href="http://drupal.org/node/219858#contexts">Contexts</a>, also known as <a href="http://www.w3.org/2004/03/trix/">named graphs</a>,  ....') . '</p>';
+      return '<p>' . t('<a href="http://drupal.org/node/219858#contexts">Contexts</a>, also known as <a href="http://www.w3.org/2004/03/trix/">named graphs</a>, provide a mechanism for grouping RDF statements (e.g. by their provenance), facilitating mass operations on a set of statements.') . '</p>';
     case 'admin/settings/rdf/repositories':
       return '<p>' . t('<a href="http://drupal.org/node/219858#repositories">Repositories</a> are storage containers for RDF data, and can be implemented, for instance, in terms of an in-memory triple store, a serialized file on disk, an RDBMS database, or an RPC connection to a remote service.') . '</p>';
+    case 'admin/settings/rdf/repositories/rdf/add':
+      return '<p>' . t('To create a new local RDF repository, enter the human-readable name, the machine-readable name, and all other relevant fields that are on this page.') . '</p>';
   }
 }
 
@@ -59,7 +85,12 @@ function rdf_perm() {
     'access RDF data',
     'administer RDF data',
     'administer RDF repositories',
-    'administer RDF namespaces',
+    'import RDF data',
+    'export RDF data',
+    'export site settings',
+    'import site settings',
+    'export enabled modules',
+    'import enabled modules',
   );
 }
 
@@ -67,60 +98,28 @@ function rdf_perm() {
  * Implementation of hook_menu().
  */
 function rdf_menu() {
-  return array(
-    // Administer >> Content management >> RDF data
-    'admin/content/rdf' => array(
-      'title' => 'RDF data',
-      'access arguments' => array('administer RDF data'),
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array('rdf_admin_data'),
-      'file' => 'rdf.admin.inc',
-    ),
-    'admin/content/rdf/list' => array(
-      'title' => 'List',
-      'type' => MENU_DEFAULT_LOCAL_TASK,
-    ),
-    // Administer >> Site configuration >> RDF settings
-    'admin/settings/rdf' => array(
-      'title' => 'RDF settings',
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array('rdf_admin_settings'),
-      'file' => 'rdf.admin.inc',
-    ),
-    'admin/settings/rdf/namespaces' => array(
-      'title' => 'Namespaces',
-      'access arguments' => array('administer RDF namespaces'),
-      'page callback' => 'rdf_admin_namespaces',
-      'file' => 'rdf.admin.inc',
-      'weight' => 10,
-    ),
-    'admin/settings/rdf/namespaces/list' => array(
-      'title' => 'List',
-      'type' => MENU_DEFAULT_LOCAL_TASK,
-    ),
-    'admin/settings/rdf/contexts' => array(
-      'title' => 'Contexts',
-      'access arguments' => array('administer RDF data'),
-      'page callback' => 'rdf_admin_contexts',
-      'file' => 'rdf.admin.inc',
-      'weight' => 20,
-    ),
-    'admin/settings/rdf/contexts/list' => array(
-      'title' => 'List',
-      'type' => MENU_DEFAULT_LOCAL_TASK,
-    ),
-    'admin/settings/rdf/repositories' => array(
-      'title' => 'Repositories',
-      'access arguments' => array('administer RDF repositories'),
-      'page callback' => 'rdf_admin_repositories',
-      'file' => 'rdf.admin.inc',
-      'weight' => 30,
-    ),
-    'admin/settings/rdf/repositories/list' => array(
-      'title' => 'List',
-      'type' => MENU_DEFAULT_LOCAL_TASK,
-    ),
-  );
+  module_load_include('inc', 'rdf', 'rdf.menu');
+  return rdf_menu_build();
+}
+
+/**
+ * Implementation of hook_menu_alter().
+ */
+function rdf_menu_alter(&$items) {
+  // Override the RSS feeds output by Drupal's core modules:
+  foreach (rdf_rdf_feeds() as $feed_id => $feed) {
+    if (($feed = (object)$feed) && !empty($feed->enabled) && module_exists($feed->module)) {
+      $path = isset($feed->menu) ? $feed->menu : $feed->path;
+
+      if (isset($items[$path])) {
+        $arguments = empty($items[$path]['page arguments']) ? array($feed_id) : array_merge(array($feed_id), $items[$path]['page arguments']);
+        $items[$path]['page callback']  = 'rdf_feed_callback';
+        $items[$path]['page arguments'] = $arguments;
+        $items[$path]['module']         = 'rdf';
+        $items[$path]['file']           = 'rdf.pages.inc';
+      }
+    }
+  }
 }
 
 /**
@@ -162,6 +161,10 @@ function rdf_theme() {
       'arguments' => array('value' => NULL),
       'file' => 'rdf.theme.inc',
     ),
+    'rdf_value' => array(
+      'arguments' => array('value' => NULL),
+      'file' => 'rdf.theme.inc',
+    ),
     'rdf_admin_settings' => array(
       'arguments' => array('form' => NULL),
       'file' => 'rdf.admin.inc',
@@ -173,8 +176,363 @@ function rdf_theme() {
   );
 }
 
+/**
+ * Implementation of hook_cron().
+ */
+function rdf_cron() {
+  // TODO: Run CHECK TABLE on {rdf_data_*}
+
+  // Merge duplicate statements in the {rdf_data_*} tables:
+  if (variable_get('rdf_db_merge_duplicates', FALSE)) {
+    foreach (rdf_db_get_repository_tables() as $table) {
+      rdf_db_merge_duplicate_statements($table);
+    }
+  }
+
+  // Purge unused URLs from the {rdf_resources} table:
+  if (variable_get('rdf_db_purge_resources', FALSE)) {
+    // TODO
+  }
+}
+
+/**
+ * Implementation of hook_user().
+ */
+function rdf_user($op, &$edit, &$account, $category = NULL) {
+  switch ($op) {
+    case 'view':
+      if (user_access('access RDF data')) {
+        rdf_add_autodiscovery_link(t('RDF'), url('user/' . $account->uid . '/rdf'));
+      }
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_nodeapi().
+ */
+function rdf_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  switch ($op) {
+    case 'load':
+    case 'prepare':
+      $node->rdf = isset($node->rdf) ? $node->rdf : array(); // used e.g. by rdf_feedapi_mapper()
+      break;
+
+    case 'insert':
+    case 'update':
+      // This is a mechanism for overcoming the limitation that when working
+      // with a new $node object that hasn't yet been stored in the
+      // database, and hence doesn't have a $node->nid, it isn't possible to
+      // stores triples relating to the node; a lack of $node->nid implies a
+      // lack of an URI for the node. However, by populating $node->rdf with
+      // properties and values, we'll here take care of inserting triples,
+      // using the node's URI as subject, once the node has been created and
+      // $node->nid is available. For convenience and consistency, we
+      // provide the same facility for node updates, too.
+      //
+      // For example:
+      //   $node->rdf['dc:origin'] = rdf_uri("http://...");
+      // ...will result in the insertion of a triple of:
+      //   array('node/' . $node->nid, 'dc:origin', rdf_uri("http://..."));
+      //
+      if (isset($node->nid) && !empty($node->rdf)) {
+        $uri = url('node/' . $node->nid, array('absolute' => TRUE, 'alias' => TRUE));
+        rdf_insert_all(rdf_denormalize(array($uri => $node->rdf)), !empty($node->rdf_options) ? $node->rdf_options : array());
+        $node->rdf = array();
+      }
+      break;
+
+    case 'view':
+      // Add an RDF autodiscovery link when the node is displayed by itself as a page:
+      if (user_access('access RDF data') && !empty($a4)) {
+        rdf_add_autodiscovery_link(t('RDF'), url('node/' . $node->nid . '/rdf'));
+      }
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_taxonomy().
+ */
+function rdf_taxonomy($op, $type, $array = NULL) {
+  if ($type == 'vocabulary') {
+    switch ($op) {
+      case 'insert':
+      case 'update':
+        if (!empty($array['rdf_property'])) {
+          variable_set('rdf_schema_property_vocabulary_'. $array['vid'], rdf_qname_to_uri($array['rdf_property']));
+        }
+        else {
+          variable_del('rdf_schema_property_vocabulary_'. $array['vid']);
+        }
+        break;
+      case 'delete':
+        variable_del('rdf_schema_property_vocabulary_'. $array['vid']);
+        break;
+    }
+  }
+}
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function rdf_form_alter(&$form, $form_state, $form_id) {
+  switch ($form_id) {
+    // Administer >> User management >> Profiles >> Edit
+    case 'profile_field_form':
+      // The submitted value is stored using the callback function defined below.
+      $rdf_mapping = isset($form['fid']['#value']) ? variable_get('rdf_schema_property_profile_'. $form['fid']['#value'], '') : '';
+      $form['rdf_mapping'] = array('#type' => 'fieldset', '#title' => t('RDF mapping'), '#collapsible' => TRUE, '#collapsed' => FALSE, '#weight' => 1);
+      $form['rdf_mapping']['rdf_property'] = array(
+        '#type'          => 'textfield',
+        '#title'         => t('RDF property'),
+        '#default_value' => rdf_uri_to_qname($rdf_mapping, FALSE, $rdf_mapping),
+        '#maxlength'     => 255,
+        '#description'   => t(''), // TODO
+        '#autocomplete_path' => 'rdf/autocomplete/property',
+      );
+      $form['submit']['#weight'] = 40;
+      $form['#validate'][] = 'rdf_schema_property_form_validate';
+      $form['#submit'][] = 'rdf_schema_profile_field_form_submit';
+      break;
+
+    // Administer >> Content management >> Taxonomy >> Edit vocabulary
+    case 'taxonomy_form_vocabulary':
+      // The submitted value is stored in our implementation of hook_taxonomy()
+      $rdf_mapping = isset($form['vid']['#value']) ? variable_get('rdf_schema_property_vocabulary_'. $form['vid']['#value'], '') : '';
+      $form['rdf_mapping'] = array('#type' => 'fieldset', '#title' => t('RDF mapping'), '#collapsible' => TRUE, '#collapsed' => FALSE, '#weight' => 1);
+      $form['rdf_mapping']['rdf_property'] = array(
+        '#type'          => 'textfield',
+        '#title'         => t('RDF property'),
+        '#default_value' => rdf_uri_to_qname($rdf_mapping, FALSE, $rdf_mapping),
+        '#maxlength'     => 255,
+        '#description'   => t(''), // TODO
+        '#autocomplete_path' => 'rdf/autocomplete/property',
+      );
+      $form['submit']['#weight'] = 40;
+      $form['delete']['#weight'] = 45;
+      $form['#validate'][] = 'rdf_schema_property_form_validate';
+      break;
+
+    // Administer >> Content management >> Content types >> Edit
+    case 'node_type_form':
+      // The submitted value is auto-saved by node.module as a configuration variable with a name in the form 'rdf_schema_class_TYPE'
+      $rdf_mapping = variable_get('rdf_schema_class_'. $form['#node_type']->type, '');
+      $form['rdf_mapping'] = array('#type' => 'fieldset', '#title' => t('RDF mapping'), '#collapsible' => TRUE, '#collapsed' => TRUE, '#weight' => 1);
+      $form['rdf_mapping']['rdf_schema_class'] = array(
+        '#type'          => 'textfield',
+        '#title'         => t('RDF class'),
+        '#default_value' => rdf_uri_to_qname($rdf_mapping, FALSE, $rdf_mapping),
+        '#maxlength'     => 255,
+        '#description'   => t(''), // TODO
+        '#autocomplete_path' => 'rdf/autocomplete/class',
+      );
+      $form['#validate'][] = 'rdf_schema_class_form_validate';
+      break;
+
+    // Administer >> Content management >> Content types >> (content type) >> Manage fields >> Configure
+    case 'content_field_edit_form':
+      // The submitted value is stored using the callback function defined below.
+      $rdf_mapping = variable_get('rdf_schema_property_content_' . $form['field_name']['#value'], '');
+      $form['rdf_mapping'] = array('#type' => 'fieldset', '#title' => t('RDF mapping'), '#collapsible' => FALSE, '#collapsed' => FALSE, '#weight' => 1);
+
+      // Ordinary CCK fields
+      if (empty($form['#field']['todate'])) {
+        $form['rdf_mapping']['rdf_property'] = array(
+          '#type'          => 'textfield',
+          '#title'         => t('RDF property'),
+          '#default_value' => rdf_uri_to_qname($rdf_mapping, FALSE, $rdf_mapping),
+          '#maxlength'     => 255,
+          '#description'   => t(''), // TODO
+          '#autocomplete_path' => 'rdf/autocomplete/property',
+        );
+      }
+      // HACK: support CCK Date fields that have both a start and an end date:
+      else { // $form['#field']['todate'] == 'optional' | 'required'
+        // From date
+        $rdf_mapping = variable_get('rdf_schema_property_content_' . $form['field_name']['#value'] . '[from]', $rdf_mapping);
+        $form['rdf_mapping']['rdf_property_from'] = array(
+          '#type'          => 'textfield',
+          '#title'         => t('RDF property (from date)'),
+          '#default_value' => rdf_uri_to_qname($rdf_mapping, FALSE, $rdf_mapping),
+          '#maxlength'     => 255,
+          '#description'   => t(''), // TODO
+          '#autocomplete_path' => 'rdf/autocomplete/property',
+        );
+        // To date
+        $rdf_mapping = variable_get('rdf_schema_property_content_' . $form['field_name']['#value'] . '[to]', '');
+        $form['rdf_mapping']['rdf_property_to'] = array(
+          '#type'          => 'textfield',
+          '#title'         => t('RDF property (to date)'),
+          '#default_value' => rdf_uri_to_qname($rdf_mapping, FALSE, $rdf_mapping),
+          '#maxlength'     => 255,
+          '#description'   => t(''), // TODO
+          '#autocomplete_path' => 'rdf/autocomplete/property',
+        );
+      }
+
+      $form['submit']['#weight'] = 90;
+      $form['#validate'][] = 'rdf_schema_property_form_validate';
+      $form['#submit'][]   = 'rdf_schema_content_field_form_submit';
+      break;
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// Forms API callbacks
+
+/**
+ * @see rdf_form_alter()
+ */
+function rdf_schema_class_form_validate($form, &$form_state) {
+  extract($form_state['values'], EXTR_SKIP | EXTR_REFS);
+  $rdf_schema_class = trim($rdf_schema_class);
+
+  if ($rdf_schema_class != '' && !rdf_is_valid_uri($rdf_schema_class) && !rdf_is_valid_curie($rdf_schema_class)) {
+    form_set_error('rdf_schema_class', t('RDF class is not a valid URI or CURIE.'));
+  }
+  else {
+    $rdf_schema_class = rdf_qname_to_uri($rdf_schema_class);
+  }
+}
+
+/**
+ * @see rdf_form_alter()
+ */
+function rdf_schema_property_form_validate($form, &$form_state) {
+  extract($form_state['values'], EXTR_SKIP | EXTR_REFS);
+
+  if (isset($rdf_property)) {
+    if (($rdf_property = trim($rdf_property)) != '' && !rdf_is_valid_uri($rdf_property) &&
+        !(rdf_is_valid_curie($rdf_property) && rdf_is_valid_prefix($rdf_property))) {
+      form_set_error('rdf_property', t('RDF property is not a valid URI or CURIE.'));
+    }
+  }
+  // HACK: support CCK Date fields that have both a start and an end date:
+  else if (isset($rdf_property_from, $rdf_property_to)) {
+    foreach (array('rdf_property_from', 'rdf_property_to') as $rdf_property) {
+      if (($$rdf_property = trim($$rdf_property)) != '' && !rdf_is_valid_uri($$rdf_property) &&
+          !(rdf_is_valid_curie($$rdf_property) && rdf_is_valid_prefix($$rdf_property))) {
+        form_set_error($rdf_property, t('RDF property is not a valid URI or CURIE.'));
+      }
+    }
+  }
+}
+
+/**
+ * @see rdf_form_alter()
+ */
+function rdf_schema_profile_field_form_submit($form, &$form_state) {
+  extract($form_state['values'], EXTR_SKIP | EXTR_REFS);
+
+  if (!empty($rdf_property)) {
+    variable_set('rdf_schema_property_profile_' . $fid, rdf_qname_to_uri($rdf_property));
+  }
+  else {
+    variable_del('rdf_schema_property_profile_' . $fid);
+  }
+}
+
+/**
+ * @see rdf_form_alter()
+ */
+function rdf_schema_content_field_form_submit($form, &$form_state) {
+  extract($form_state['values'], EXTR_SKIP | EXTR_REFS);
+
+  // HACK: support CCK Date fields that have both a start and an end date:
+  $rdf_properties = isset($rdf_property) ?
+    array('rdf_property' => '') :
+    array('rdf_property_from' => '[from]', 'rdf_property_to' => '[to]');
+
+  foreach ($rdf_properties as $rdf_property_var => $field_suffix) {
+    if (!empty($$rdf_property_var)) {
+      variable_set('rdf_schema_property_content_' . $field_name . $field_suffix, rdf_qname_to_uri($$rdf_property_var));
+    }
+    else {
+      variable_del('rdf_schema_property_content_' . $field_name . $field_suffix);
+    }
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// Views API hooks
+
+/**
+ * Implementation of hook_views_api().
+ */
+function rdf_views_api() {
+  return array(
+    'api'  => 2,
+    'path' => drupal_get_path('module', 'rdf'),
+  );
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // RDF API hooks
+
+/**
+ * Implementation of hook_rdf_feeds().
+ */
+function rdf_rdf_feeds() {
+  $enabled = variable_get('rdf_feed_override', array());
+
+  // Declare all RSS feeds provided by Drupal's core modules:
+  $feeds = array(
+    // node.module (front page feed)
+    'node_feed' => array(
+      'type'        => RDF_RSS_URI,
+      'path'        => 'rss.xml',
+      'title'       => t('Front page feed'),
+      'module'      => 'node',
+      'callback'    => 'rdf_feed_node_frontpage',
+      'enabled'     => !empty($enabled['node_feed']),
+    ),
+    // taxonomy.module
+    'taxonomy_term_feed' => array(
+      'type'        => RDF_RSS_URI,
+      'path'        => 'taxonomy/term/%/0/feed',
+      'menu'        => 'taxonomy/term/%',
+      'title'       => t('Taxonomy term feed'),
+      'module'      => 'taxonomy',
+      'callback'    => 'rdf_feed_taxonomy_term',
+      'enabled'     => !empty($enabled['taxonomy_term_feed']),
+    ),
+    // blog.module
+    'blog_feed_user' => array(
+      'type'        => RDF_RSS_URI,
+      'path'        => 'blog/%user/feed',
+      'title'       => 'Users\' recent blog entries feed',
+      'module'      => 'blog',
+      'callback'    => 'rdf_feed_blog_user',
+      'enabled'     => !empty($enabled['blog_feed_user']),
+    ),
+    'blog_feed_last' => array(
+      'type'        => RDF_RSS_URI,
+      'path'        => 'blog/feed',
+      'title'       => 'All recent blog entries feed',
+      'module'      => 'blog',
+      'callback'    => 'rdf_feed_blog_last',
+      'enabled'     => !empty($enabled['blog_feed_last']),
+    ),
+    // aggregator.module
+    'aggregator_page_rss' => array(
+      'type'        => RDF_RSS_URI,
+      'path'        => 'aggregator/rss',
+      'title'       => t('Aggregator feed'),
+      'module'      => 'aggregator',
+      'callback'    => 'rdf_feed_aggregator_rss',
+      'enabled'     => !empty($enabled['aggregator_page_rss']),
+    ),
+  );
+
+  // Declare all Views module feeds, if the module is installed:
+  if (module_exists('views')) {
+    module_load_include('inc', 'rdf', 'rdf.views');
+    $feeds = array_merge($feeds, rdf_views_get_feeds());
+  }
+
+  return $feeds;
+}
 
 /**
  * Implementation of hook_rdf_formats().
@@ -199,6 +557,42 @@ function rdf_rdf_formats() {
       'serialize'   => 'rdf_serialize_json',
       'unserialize' => 'rdf_unserialize_json',
     ),
+    'rdf+xml' => array(
+      'title'       => t('RDF/XML'),
+      'link'        => 'http://www.w3.org/TR/rdf-syntax-grammar/',
+      'mime_type'   => 'application/rdf+xml',
+      'encoding'    => 'utf-8',
+      'file_ext'    => 'rdf',
+      'serialize'   => 'rdf_serialize_xml',
+      'unserialize' => class_exists('ARC2') ? 'rdf_unserialize_xml' : NULL,
+    ),
+    'trix' => array(
+      'title'       => t('TriX'),
+      'link'        => 'http://www.w3.org/2004/03/trix/',
+      'mime_type'   => 'application/trix',
+      'encoding'    => 'utf-8',
+      'file_ext'    => 'xml',
+      'serialize'   => 'rdf_serialize_trix',
+      'unserialize' => NULL,
+    ),
+    'turtle' => array(
+      'title'       => t('Turtle'),
+      'link'        => 'http://www.dajobe.org/2004/01/turtle/',
+      'mime_type'   => 'application/x-turtle',
+      'encoding'    => 'utf-8',
+      'file_ext'    => 'ttl',
+      'serialize'   => 'rdf_serialize_turtle',
+      'unserialize' => class_exists('ARC2') ? 'rdf_unserialize_turtle' : NULL,
+    ),
+    'ntriples' => array(
+      'title'       => t('N-Triples'),
+      'link'        => 'http://www.w3.org/TR/rdf-testcases/#ntriples',
+      'mime_type'   => 'text/plain', // TODO: any semi-standardized alternative?
+      'encoding'    => 'ascii',
+      'file_ext'    => 'nt',
+      'serialize'   => 'rdf_serialize_ntriples',
+      'unserialize' => class_exists('ARC2') ? 'rdf_unserialize_ntriples' : NULL,
+    ),
   );
 }
 
@@ -206,7 +600,7 @@ function rdf_rdf_formats() {
  * Implementation of hook_rdf_namespaces().
  */
 function rdf_rdf_namespaces() {
-  return array(
+  $namespaces = array(
     '_'        => 'http://bnode.net/',
     'rdf'      => 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
     'rdfs'     => 'http://www.w3.org/2000/01/rdf-schema#',
@@ -216,21 +610,28 @@ function rdf_rdf_namespaces() {
     'dc'       => 'http://purl.org/dc/elements/1.1/',
     'dcterms'  => 'http://purl.org/dc/terms/',
     'dcmitype' => 'http://purl.org/dc/dcmitype/',
+    'foaf'     => 'http://xmlns.com/foaf/0.1/',
+    'rss'      => RDF_RSS_URI,
+    'drupal'   => RDF_SCHEMA_URI,
   );
+  foreach (rdf_schema_get_entities() as $entity) {
+    $namespaces[$entity] = RDF_SCHEMA_URI . $entity .'#';
+  }
+  return array_merge($namespaces, rdf_db_rdf_namespaces());
 }
 
 /**
  * Implementation of hook_rdf_contexts().
  */
 function rdf_rdf_contexts() {
-  return array(RDF_SITE_URI);
+  return array_merge(array(RDF_SITE_URI, RDF_SCHEMA_URI), rdf_db_rdf_contexts());
 }
 
 /**
  * Implementation of hook_rdf_repositories().
  */
 function rdf_rdf_repositories() {
-  return array(
+  return array_merge(array(
     'system' => array(
       'title'      => t('System'),
       'type'       => 'system',
@@ -245,6 +646,72 @@ function rdf_rdf_repositories() {
       'filters'    => array(
         'subject'  => RDF_SITE_URI,
       ),
+    ),
+  ), rdf_db_rdf_repositories());
+}
+
+/**
+ * Implementation of hook_rdf_classes().
+ */
+function rdf_rdf_classes() {
+  return array(
+    'user' => array(
+      'title'   => t('User'),
+      'module'  => 'user',
+      'table'   => 'users',
+      'query'   => 'SELECT uid FROM {users} WHERE uid > 0',
+      'uri'     => 'user/%uid',
+      'enabled' => TRUE,
+    ),
+    'vocabulary' => array(
+      'title'   => t('Taxonomy vocabulary'),
+      'module'  => 'taxonomy',
+      'table'   => 'vocabulary',
+      'query'   => 'SELECT vid FROM {vocabulary}',
+      // NOTE: Drupal vocabularies don't actually have dereferenceable URIs
+      'uri'     => 'taxonomy/vocabulary/%vid',
+      'enabled' => FALSE, // TODO
+    ),
+    'term' => array(
+      'title'   => t('Taxonomy term'),
+      'module'  => 'taxonomy',
+      'table'   => 'term_data',
+      'query'   => 'SELECT tid FROM {term_data}',
+      'uri'     => 'taxonomy/term/%tid',
+      'enabled' => FALSE, // TODO
+    ),
+    'node' => array(
+      'title'   => t('Node'),
+      'module'  => 'node',
+      'table'   => 'node',
+      'query'   => 'SELECT nid FROM {node}',
+      'uri'     => 'node/%nid',
+      'load'    => 'node_load',
+      'enabled' => TRUE,
+    ),
+    'comment' => array(
+      'title'   => t('Comment'),
+      'module'  => 'comment',
+      'table'   => 'comments',
+      'query'   => 'SELECT nid, cid FROM {comments}',
+      'uri'     => 'node/%nid#comment-%cid',
+      'enabled' => FALSE, // TODO
+    ),
+    'path' => array(
+      'title'   => t('URL alias'),
+      'module'  => 'path',
+      'table'   => 'url_alias',
+      'query'   => 'SELECT dst FROM {url_alias}',
+      'uri'     => '%dst',
+      'enabled' => FALSE, // TODO
+    ),
+    'variable' => array(
+      'title'   => t('Setting'),
+      'module ' => 'system',
+      'table'   => 'variable',
+      'query'   => 'SELECT name FROM {variable}',
+      'uri'     => 'rdf/variable/%name',
+      'enabled' => FALSE, // TODO
     ),
   );
 }
@@ -261,6 +728,7 @@ function rdf_rdf_properties() {
     'dc'       => array('contributor', 'coverage', 'creator', 'date', 'description', 'format', 'identifier', 'language', 'publisher', 'relation', 'rights', 'source', 'subject', 'title', 'type'),
     'dcterms'  => array('abstract_', 'accessRights', 'accrualMethod', 'accrualPeriodicity', 'accrualPolicy', 'alternative', 'audience', 'available', 'bibliographicCitation', 'conformsTo', 'contributor', 'coverage', 'created', 'creator', 'date', 'dateAccepted', 'dateCopyrighted', 'dateSubmitted', 'description', 'educationLevel', 'extent', 'format', 'hasFormat', 'hasPart', 'hasVersion', 'identifier', 'instructionalMethod', 'isFormatOf', 'isPartOf', 'isReferencedBy', 'isReplacedBy', 'isRequiredBy', 'issued', 'isVersionOf', 'language', 'license', 'mediator', 'medium', 'modified', 'provenance', 'publisher', 'references', 'relation', 'replaces', 'requires', 'rights', 'rightsHolder', 'source', 'spatial', 'subject', 'tableOfContents', 'temporal', 'title', 'type', 'valid'),
     'dcmitype' => array(),
+    'foaf'     => array(/*stable:*/'homepage', 'made', 'maker', 'mbox', 'member', /*testing:*/'depiction', 'depicts', 'family_name', 'firstName', 'gender', 'givenname', 'img', 'interest', 'isPrimaryTopicOf', 'knows', 'logo', 'mbox_sha1sum', 'name', 'nick', 'page', 'phone', 'primaryTopic', 'surname', 'thumbnail', 'title', 'topic', 'weblog'),
   );
 }
 
@@ -270,8 +738,13 @@ function rdf_rdf_properties() {
 function rdf_rdf_resources($context) {
   switch ($context) {
     case NULL:
+      return array(); // FIXME
+      //return array_merge(rdf_schema_get_resources(), rdf_schema_get_classes());
     case RDF_SITE_URI:
       return array(RDF_SITE_URI => new RDF_QueryCallback('rdf_load_site'));
+      //return rdf_schema_get_resources(); // rdf_schema.module
+    case RDF_SCHEMA_URI:
+      return rdf_schema_get_classes();
   }
 }
 
@@ -293,4 +766,94 @@ function rdf_rdf_query($subject, $predicate, $object, $options = array()) {
     }
   }
   return rdf_denormalize($data);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// Miscellaneous helpers
+
+function rdf_get_schema_uri() {
+  $uri = 'rdf/schema';
+  $uri = (function_exists('url') ? url($uri, array('absolute' => TRUE)) : $uri) . '/';
+  return variable_get('rdf_schema_uri', $uri);
+}
+
+function rdf_menu_access_user($account) {
+  return user_access('access RDF data') && user_view_access($account);
+}
+
+function rdf_menu_access_node($op, $node, $account = NULL) {
+  return user_access('access RDF data') && node_access($op, $node, $account);
+}
+
+function rdf_menu_access_http($perm_get, $perm_post) {
+  return user_access($_SERVER['REQUEST_METHOD'] == 'POST' ? $perm_post : $perm_get);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// Output buffering callback
+
+function _rdf_ob_handler($buffer) {
+  static $mimetypes = array('text/html');
+  static $doctype   = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML+RDFa 1.0//EN\"\n  \"http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd\">\n";
+
+  // Only attempt RDFa modifications for HTML output:
+  if (in_array($mimetype = _rdf_ob_handler_get_content_type(), $mimetypes)) {
+    $buffer = _rdf_ob_handler_remove_doctype($buffer, $doctype);
+    $buffer = _rdf_ob_handler_insert_namespaces($buffer);
+    $buffer = $doctype . $buffer;
+  }
+  return $buffer;
+}
+
+function _rdf_ob_handler_get_content_type($default = NULL) {
+  static $regex = '!^Content-Type:\s*([\w\d\/\-]+)!i';
+  return _rdf_ob_handler_get_http_header($regex, $default);
+}
+
+function _rdf_ob_handler_get_http_header($regex, $default = NULL) {
+  // The last header is the one that counts:
+  //$headers = preg_grep($regex, explode("\n", drupal_get_headers()));
+  $headers = preg_grep($regex, headers_list());
+  if (!empty($headers) && preg_match($regex, array_pop($headers), $matches)) {
+    return $matches[1]; // found it
+  }
+  return $default; // no such luck
+}
+
+function _rdf_ob_handler_remove_doctype($buffer, &$doctype) {
+  $lines = $cutoff = 0;
+  $line  = strtok($buffer, "\n");
+
+  // Attempt to find the opening <html> tag in the first 15 lines:
+  while ($line !== FALSE && $lines++ < 15) {
+    if (($pos = strpos($line, '<html')) !== FALSE) {
+      // If we managed to find <html>, substitute the DOCTYPE; otherwise, the
+      // page output will be returned unmodified.
+      return substr($buffer, $cutoff += $pos);
+    }
+
+    $cutoff += strlen($line) + 1; // line length and "\n"
+    $line = strtok("\n");
+  }
+
+  $doctype = ''; // Don't prepend the new doctype
+  return $buffer;
+}
+
+function _rdf_ob_handler_insert_namespaces($buffer) {
+  $namespaces = rdf_get_namespaces('rdfa');
+
+  // Attempt to find the last character of the opening <html> tag:
+  if (!empty($namespaces) && ($html = strtok($buffer, '>'))) {
+    $buffer = substr($buffer, strlen($html) + 1);
+
+    // Insert the xmlns:prefix="uri" definitions at the end of the opening <html> tag:
+    $xmlns  = array();
+    foreach ($namespaces as $prefix => $uri) {
+      $xmlns[] = '      xmlns:' . $prefix . '="' . $uri . '"';
+    }
+    $html  .= "\n" . implode("\n", $xmlns) . '>';
+    return $html . $buffer;
+  }
+  return $buffer;
 }

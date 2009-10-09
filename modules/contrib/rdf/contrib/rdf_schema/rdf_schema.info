@@ -1,8 +1,0 @@
-; $Id: rdf_schema.info,v 1.1 2008/02/21 22:56:54 arto Exp $
-name = RDF Schema
-description = Provides an RDF Schema (RDFS) vocabulary for Drupal data.
-package = RDF
-dependencies[] = rdf
-dependencies[] = rdf_export
-core = 6.x
-php = 5.2

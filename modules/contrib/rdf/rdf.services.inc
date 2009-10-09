@@ -1,13 +1,5 @@
 <?php
-// $Id: rdf.services.inc,v 1.2 2008/02/10 23:01:15 arto Exp $
-/**
- * rdf.services.inc - Integrates the RDF API with the Services API.
- *
- * @author Arto Bendiken <http://bendiken.net/>
- * @copyright Copyright (c) 2007-2008 Arto Bendiken. All rights reserved.
- * @license GPL <http://creativecommons.org/licenses/GPL/2.0/>
- * @package rdf.module
- */
+// $Id: rdf.services.inc,v 1.5 2009/02/16 13:27:09 arto Exp $
 
 //////////////////////////////////////////////////////////////////////////////
 // Services API hooks

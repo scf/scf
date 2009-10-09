@@ -1,7 +1,0 @@
-; $Id: rdf_import.info,v 1.1 2008/02/11 21:54:40 arto Exp $
-name = RDF Import
-description = Imports RDF data in the RDF/XML, Turtle and N-Triples formats.
-package = RDF
-dependencies[] = rdf
-core = 6.x
-php = 5.2

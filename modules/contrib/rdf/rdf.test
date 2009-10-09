@@ -1,0 +1,121 @@
+<?php
+// $Id: rdf.test,v 1.4 2009/03/08 01:38:32 arto Exp $
+
+//////////////////////////////////////////////////////////////////////////////
+// RDF API unit tests (repository operations)
+
+class RepositoryTestCase extends DrupalWebTestCase {
+  function getInfo() {
+    return array(
+      'name'        => t('Repositories'),
+      'description' => t('Creates, renames and deletes a local RDF repository.'),
+      'group'       => t('RDF API'),
+    );
+  }
+
+  function setup() {
+    $this->repository = 'simpletest';
+    $this->table = RDF_DB_TABLE_PREFIX . $this->repository;
+
+    // Don't call the parent constructor, as that would set up a sandbox
+    // that leads most, if not all, of these tests to fail. Anyone who wants
+    // this sandboxed is feel free to figure it out and submit a patch.
+    //parent::setup('rdf');
+  }
+
+  function test_create_repository() {
+    $this->assertFalse(db_table_exists($this->table), t('Table does not exist'));
+    rdf_db_create_repository($this->repository, array('title' => t('Simpletest'), 'description' => ''));
+    $this->assertTrue(db_table_exists($this->table), t('Table was created'));
+  }
+
+  function test_rename_repository() {
+    rdf_db_rename_repository($this->repository, $this->repository . '_renamed');
+    $this->assertTrue(db_table_exists($this->table . '_renamed'), t('Table was renamed'));
+
+    rdf_db_rename_repository($this->repository . '_renamed', $this->repository);
+    $this->assertTrue(db_table_exists($this->table), t('Table was renamed back'));
+  }
+
+  function test_delete_repository() {
+    rdf_db_delete_repository($this->repository);
+    $this->assertFalse(db_table_exists($this->table), t('Table was deleted'));
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// RDF API unit tests (statement operations)
+
+class StatementTestCase extends DrupalWebTestCase {
+  const REPOSITORY = 'simpletest';
+
+  public function getInfo() {
+    return array(
+      'name'        => t('Statements'),
+      'description' => t('Inserts, queries and deletes RDF statements.'),
+      'group'       => t('RDF API'),
+    );
+  }
+
+  public function setup() {
+    rdf_db_create_repository(self::REPOSITORY, array('title' => t('Simpletest'), 'description' => ''));
+    rdf_use_repository(self::REPOSITORY);
+    rdf_delete(NULL, NULL, NULL);
+    rdf_insert_all($this->load_test_data());
+
+    // Don't call the parent constructor, as that would set up a sandbox
+    // that leads most, if not all, of these tests to fail. Anyone who wants
+    // this sandboxed is feel free to figure it out and submit a patch.
+    //parent::setup('rdf');
+  }
+
+  public function teardown() {
+    rdf_use_repository(NULL);
+    rdf_db_delete_repository(self::REPOSITORY);
+    parent::teardown();
+  }
+
+  public function test_count_statements() {
+    $this->assertTrue(rdf_count() > 0, t('Test data was inserted'));
+    $this->assertEqual(rdf_count(), count($this->load_test_data()), t('Expected statement count found'));
+  }
+
+  public function test_insert_statement() {
+    rdf_insert('http://drupal.org/', dc::title, 'Drupal');
+    $this->assertEqual(rdf_count(), count($this->load_test_data()) + 1, t('One statement was inserted'));
+  }
+
+  public function test_insert_duplicates() {
+    rdf_insert_all($this->load_test_data());
+    $this->assertEqual(rdf_count(), count($this->load_test_data()), t('No duplicate statements found'));
+  }
+
+  public function test_query_statements() {
+    foreach ($this->load_test_data() as $stmt) {
+      $this->assertEqual(call_user_func_array('rdf_count', $stmt), 1, t('Querying statement #@index', array('@index' => ++$counter)));
+    }
+  }
+
+  public function test_delete_one_statement() {
+    call_user_func_array('rdf_delete', reset($this->load_test_data()));
+    $this->assertEqual(rdf_count(), count($this->load_test_data()) - 1, t('One statement was deleted'));
+  }
+
+  public function test_delete_all_statements() {
+    rdf_delete(NULL, NULL, NULL);
+    $this->assertEqual(rdf_count(), 0, t('All statements were deleted'));
+  }
+
+  private function load_test_data() {
+    return rdf_denormalize(array(
+      'http://drupal.org/project/rdf' => array(
+        dc::title      => 'RDF API',
+        dc::creator    => rdf_uri('http://ar.to/#self'),
+      ),
+      'http://ar.to/#self' => array(
+        foaf::name     => 'Arto Bendiken',
+        foaf::homepage => rdf_uri('http://bendiken.net/'),
+      ),
+    ));
+  }
+}
