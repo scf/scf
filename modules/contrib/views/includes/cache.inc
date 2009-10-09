@@ -1,5 +1,5 @@
 <?php
-// $Id: cache.inc,v 1.21 2008/11/19 22:33:55 merlinofchaos Exp $
+// $Id: cache.inc,v 1.25 2009/06/01 23:33:37 merlinofchaos Exp $
 /**
  * @file cache.inc
  *
@@ -113,9 +113,15 @@ function _views_discover_default_views() {
       foreach ($defaults as $name => $view) {
         // Only views with a sufficiently high api version are eligible.
         if (isset($view->api_version) && $view->api_version >= 2) {
+          // Do not cache dead handlers.
+          $view->destroy();
           $cache[$name] = $view;
         }
       }
+
+      // Allow modules to modify default views before they are cached.
+      drupal_alter('views_default_views', $cache);
+
       views_cache_set('views_default_views', $cache, TRUE);
     }
   }
@@ -209,7 +215,7 @@ function views_object_cache_get($obj, $name, $skip_cache = FALSE) {
   if (!array_key_exists($key, $cache)) {
     $data = db_fetch_object(db_query("SELECT * FROM {views_object_cache} WHERE sid = '%s' AND obj = '%s' AND name = '%s'", session_id(), $obj, $name));
     if ($data) {
-      $cache[$key] = unserialize(db_decode_blob($data->data));
+      $cache[$key] = unserialize($data->data);
     }
   }
   return isset($cache[$key]) ? $cache[$key] : NULL;
@@ -228,7 +234,7 @@ function views_object_cache_get($obj, $name, $skip_cache = FALSE) {
  */
 function views_object_cache_set($obj, $name, $cache) {
   views_object_cache_clear($obj, $name);
-  db_query("INSERT INTO {views_object_cache} (sid, obj, name, data, updated) VALUES ('%s', '%s', '%s', %b, %d)", session_id(), $obj, $name, serialize($cache), time());
+  db_query("INSERT INTO {views_object_cache} (sid, obj, name, data, updated) VALUES ('%s', '%s', '%s', '%s', %d)", session_id(), $obj, $name, serialize($cache), time());
 }
 
 /**

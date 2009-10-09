@@ -1,5 +1,5 @@
 <?php
-// $Id: views_plugin_display_attachment.inc,v 1.1 2008/09/03 19:21:30 merlinofchaos Exp $
+// $Id: views_plugin_display_attachment.inc,v 1.4 2009/05/20 02:53:30 merlinofchaos Exp $
 /**
  * @file
  * Contains the attachment display plugin.
@@ -82,7 +82,7 @@ class views_plugin_display_attachment extends views_plugin_display {
     else if (count($displays) == 1) {
       $display = array_shift($displays);
       if (!empty($this->view->display[$display])) {
-        $attach_to = $this->view->display[$display]->display_title;
+        $attach_to = check_plain($this->view->display[$display]->display_title);
       }
     }
 
@@ -172,6 +172,7 @@ class views_plugin_display_attachment extends views_plugin_display {
    */
   function attach_to($display_id) {
     $displays = $this->get_option('displays');
+
     if (empty($displays[$display_id])) {
       return;
     }
@@ -182,6 +183,7 @@ class views_plugin_display_attachment extends views_plugin_display {
     $view->original_args = $view->args;
 
     $args = $this->get_option('inherit_arguments') ? $this->view->args : array();
+    $view->set_arguments($args);
 
     // because of this, it is very very important that displays that can accept
     // attachments not also be attachments, or this could explode messily.

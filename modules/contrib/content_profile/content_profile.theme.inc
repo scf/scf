@@ -1,5 +1,5 @@
 <?php
-// $Id: content_profile.theme.inc,v 1.1.2.1 2008/02/01 16:00:24 fago Exp $
+// $Id: content_profile.theme.inc,v 1.1.2.8 2009/01/07 10:58:05 fago Exp $
 
 /**
  * @file
@@ -11,7 +11,9 @@
  */
 function theme_content_profile_display_add_link($element) {
   $type = $element['#content_type'];
-  return l(t("Create your @profile_node.", array('@profile_node' => node_get_types('name', $type))), content_profile_get_add_path($type), array('query' => drupal_get_destination()));
+  $uid = $element['#admin'] ? 'uid='. intval($element['#uid']) .'&' : '';
+  $text = t($element['#admin'] ? "Create the user's @profile_node." : "Create your @profile_node.", array('@profile_node' => node_get_types('name', $type)));
+  return l($text, content_profile_get_add_path($type, $element['#uid']), array('query' => $uid . drupal_get_destination()));
 }
 
 /**
@@ -30,12 +32,14 @@ function theme_content_profile_display_link($element) {
 }
 
 /**
- * Implementation of template_preprocess_HOOK()
+ * Implementation of content_profile_preprocess_HOOK()
  */
-function template_preprocess_content_profile_display_view(&$variables) {
+function content_profile_preprocess_content_profile_display_view(&$variables) {
   $element = $variables['element'];
   $node = content_profile_load($element['#content_type'], $element['#uid']);
   $variables['node'] = &$node;
+  $variables['uid'] = $element['#uid'];
+  $variables['type'] = $element['#content_type'];
 
   $path = drupal_get_path('module', 'content_profile') .'/content_profile.css';
   drupal_add_css($path, 'module', 'all', FALSE);
@@ -43,16 +47,14 @@ function template_preprocess_content_profile_display_view(&$variables) {
   $variables['title'] = check_plain(node_get_types('name', $node->type));
 
   $tabs = array();
-  if ($element['#edit_link'] || $element['#style'] == 'teaser') {
-    $tabs[] = theme('content_profile_display_tab_view', $node);
-  }
   if ($element['#edit_link']) {
+    $tabs[] = theme('content_profile_display_tab_view', $node);
     $tabs[] = theme('content_profile_display_tab_edit', $node);
   }
   if (count($tabs) > 0) {
     $variables['tabs'] = $tabs;
   }
-  $variables['content'] = node_view($node, ($element['#style'] == 'teaser'), TRUE, FALSE);
+  $variables['content'] = node_view($node, ($element['#style'] == 'teaser'), TRUE, TRUE);
 }
 
 /**
@@ -75,29 +77,37 @@ function theme_content_profile_display_tab_edit($node) {
  * Gets the edit path for a content_profile
  */
 function content_profile_get_edit_path($node) {
-  $handler = variable_get('content_profile_path_handler', 'content_profile_default_path_hanlder');
-  return $handler('edit', $node);
+  $handler = variable_get('content_profile_path_handler', 'content_profile_default_path_handler');
+  return $handler('edit', $node, $node->uid);
 }
 
 /**
  * Gets the add path for a content_profile of the active user
  */
-function content_profile_get_add_path($type) {
-  $handler = variable_get('content_profile_path_handler', 'content_profile_default_path_hanlder');
-  return $handler('add', $type);
+function content_profile_get_add_path($type, $uid) {
+  $handler = variable_get('content_profile_path_handler', 'content_profile_default_path_handler');
+  return $handler('add', $type, $uid);
 }
 
 /**
  * Default path handler for content profile, which uses the default system paths
- * 
+ *
  * @param $action 'add' or 'edit
  * @param $arg For 'add' the content type, for 'edit' the node to be edited
+ * @param $uid the uid of the profile's owner.
  */
-function content_profile_default_path_hanlder($action, $arg) {
-  switch ($action) {
-    case 'add':
-      return 'node/add/'. $arg;
-    case 'edit':
-      return 'node/'. $arg->nid .'/edit';      
+function content_profile_default_path_handler($action, $arg, $uid) {
+  $type = $action == 'add' ? $arg : $arg->type;
+  if (content_profile_get_settings($type, 'edit_tab') == 'top') {
+    return 'user/'. $uid . '/profile/'. $type;
+  }
+  elseif (content_profile_get_settings($type, 'edit_tab') == 'sub') {
+    return 'user/'. $uid . '/edit/'. $type;
+  }
+  elseif ($action == 'add') {
+    return 'node/add/'. str_replace('_', '-', $arg);
+  }
+  else {
+    return 'node/'. $arg->nid .'/edit';
   }
 }

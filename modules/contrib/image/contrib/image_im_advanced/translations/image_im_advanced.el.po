@@ -1,0 +1,187 @@
+# translation of image_im_advanced to Ελληνικά
+# $Id: image_im_advanced.el.po,v 1.1 2008/12/27 11:16:44 hass Exp $
+# Copyright 2008 Vasileios Lourdas <drupal@lourdas.name>
+# Generated from files:
+#  image.imagemagick.inc,v 1.3.2.9 2007/07/10 00:56:19 drewish
+#  image.module,v 1.209.2.41 2007/08/08 16:21:35 drewish
+#  image.info,v 1.2 2006/11/20 04:22:27 walkah
+#  image_attach.module,v 1.9.2.16 2007/07/16 16:23:39 drewish
+#  image_attach.info,v 1.1 2006/11/20 04:54:28 walkah
+#  image_gallery.info,v 1.2 2006/12/26 17:50:32 walkah
+#  image_import.info,v 1.1 2007/02/19 03:40:20 walkah
+#  image.install,v 1.1.4.10 2007/08/07 21:55:02 drewish
+#  image_gallery.module,v 1.5.2.11 2007/08/01 19:55:59 drewish
+#  image_import.module,v 1.1.2.8 2007/07/24 17:34:14 drewish
+msgid ""
+msgstr ""
+"Project-Id-Version: el\n"
+"POT-Creation-Date: 2008-12-21 00:22+0200\n"
+"PO-Revision-Date: 2008-12-21 00:30+0200\n"
+"Last-Translator: Vasileios Lourdas <drupal@lourdas.name>\n"
+"Language-Team: Ελληνικά <en@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms:  nplurals=2; plural=(n != 1);\n"
+"X-Generator: KBabel 1.11.4\n"
+
+#: image_im_advanced.module:33 image_im_advanced.info:0
+msgid "ImageMagick Advanced Options"
+msgstr "Επιλογές του ImageMagick για προχωρημένους"
+
+#: image_im_advanced.module:35
+msgid "These settings let you control some of ImageMagick's more advanced options."
+msgstr "Οι επιλογές αυτές επιτρέπουν τον έλεγχο ορισμένων από τις επιλογές για προχωρημένους του ImageMagick."
+
+#: image_im_advanced.module:41
+msgid "JPEG quality"
+msgstr "Ποιότητα JPEG"
+
+#: image_im_advanced.module:45;81
+msgid "%"
+msgstr "%"
+
+#: image_im_advanced.module:46
+msgid "Define the image quality for JPEG manipulations. Ranges from 0 to 100. Higher values mean better image quality but bigger files. <a href=\"!link\">More information on -quality</a>"
+msgstr "Ορισμός της ποιότητας εικόνας για το χειρισμό των JPEG. Το εύρος κυμαίνεται από το 0 έως και το 100. Υψηλότερες τιμές σημαίνουν καλύτερη ποιότητα εικόνας, αλλά μεγαλύτερα αρχεία. <a href=\"!link\">Περισσότερες πληροφορίες για το -quality</a>"
+
+#: image_im_advanced.module:50
+msgid "Strip metadata from images at this size and below"
+msgstr "Αφαίρεση των μεταδεδομένων από τις εικόνες αυτού του μεγέθους και παρακάτω"
+
+#: image_im_advanced.module:52
+msgid "You may choose to strip all metadata, such as camera information and color profiles, from the processed images in order to reduce their file size. Please choose at what maximum size you want images to be stripped of their metadata. Example: \"150x150\". Enter \"0x0\" to disable this feature. This option requires ImageMagick 6.0.0 or higher. <a href=\"!link\">More information on -strip</a>"
+msgstr "Μπορείτε να επιλέξετε να αφαιρούνται όλα τα μεταδεδομένα, όπως πληροφορίες κάμερας και χρωματικά προφίλ από τις επεξεργασμένες εικόνες, προκειμένου να μειωθεί το μέγεθος του αρχείου τους. Επιλέξτε σε ποιο μέγιστο μέγεθος θέλετε να αφαιρούνται τα μεταδεδομένα από τις εικόνες. Παράδειγμα: \"150x150\". Εισάγετε \"0x0\" για την απενεργοποίηση αυτού του χαρακτηριστικού. Η επιλογή αυτή απαιτεί ImageMagick 6.0.0 ή νεότερο. <a href=\"!link\">Περισσότερες πληροφορίες για το -strip</a>"
+
+#: image_im_advanced.module:56
+msgid "Convert colorspace"
+msgstr "Μετατροπή χρωματικού χώρου"
+
+#: image_im_advanced.module:58
+msgid "<None>"
+msgstr "<Καμία>"
+
+#: image_im_advanced.module:58
+msgid "RGB"
+msgstr "RGB"
+
+#: image_im_advanced.module:58
+msgid "Gray"
+msgstr "Γκρι"
+
+#: image_im_advanced.module:59
+msgid "This option lets you convert images to the specified colorspace. This will be overridden by the Color profile option, if used. <a href=\"!link\">More information on -colorspace</a>"
+msgstr "Η επιλογή επιτρέπει την μετατροπή εικόνων στον καθορισμένο χρωματικό χώρο. Η επιλογή θα αγνοηθεί από την επιλογή του προφίλ Χρώματος, αν αυτή χρησιμοποιείται. <a href=\"!link\">Περισσότερες πληροφορίες για το -colorspace</a>"
+
+#: image_im_advanced.module:63
+msgid "Change image resolution to 72 ppi"
+msgstr "Αλλαγή ανάλυσης εικόνας στα 72 ppi"
+
+#: image_im_advanced.module:65
+msgid "If checked, this option will set the print resolution of the image to 72 pixels per inch, which is suitable for web use. This does not affect the pixel size or quality of the image.  <a href=\"!link\">More information on -density</a>"
+msgstr "Αν είναι ενεργοποιημένη, η επιλογή αυτή θα ορίσει την ανάλυση εκτύπωσης της εικόνας στα 72 εικονοστοιχεία ανά ίντσα, που είναι κατάλληλη για χρήση στον ιστό. Δεν επηρεάζει το μέγεθος του εικονοστοιχείου ή την ποιότητα της εικόνας. <a href=\"!link\">Περισσότερες πληροφορίες για το -density</a>"
+
+#: image_im_advanced.module:70
+msgid "Sharpening filter"
+msgstr "Φϊλτρο οξύτητας"
+
+#: image_im_advanced.module:73
+msgid "The sharpness filter is used to regain some of the sharpness that is always lost when a digital photograph is scaled down. This is equivalent to the commonly used \"Unsharp Mask\" filter. It is important that these values are not set too high as it can easily make the images look artificial. <a href=\"!link\">More information on -unsharp</a>"
+msgstr "Το φίλτρο οξύτητας χρησιμοποιείται για να ανακτηθεί μέρος της οξύτητας που πάντα χάνεται κατά τη μείωση του μεγέθους της ψηφιακής φωτογραφίας. Αυτό ισοδυναμεί με το γνωστό φίλτρο \"Unsharp Mask\". Είναι σημαντικό οι τιμές αυτές να μην οριστούν πολύ μεγάλες, διαφορετικά οι εικόνες θα φαίνονται τεχνητές. <a href=\"!link\">Περισσότερες πληροφορίες για το -unsharp</a>"
+
+#: image_im_advanced.module:77
+msgid "Sharpness filter strength"
+msgstr "Ένταση φίλτρου οξύτητας"
+
+#: image_im_advanced.module:82
+msgid "Apply this percentage of sharpness when scaling. 90 is recommended, although values higher than 100 are also valid. Set to 0 to disable this feature."
+msgstr "Εφαρμογή αυτού του ποσοστού οξύτητας κατά την αλλαγή μεγέθους. Προτείνεται η τιμή 90, ωστόσο μεγαλύτερες τιμές από το 100 είναι επίσης έγκυρες. Εισάγετε 0 για την απενεργοποίηση του χαρακτηριστικού."
+
+#: image_im_advanced.module:86
+msgid "Sharpness filter radius"
+msgstr "Ακτίνα φίλτρου οξύτητας"
+
+#: image_im_advanced.module:90
+msgid "Use this pixel radius for the sharpness filter. 0.9 is recommended."
+msgstr "Χρησιμοποιήστε αυτή την ακτίνα pixel για την οξύτητα. Συνιστάται η τιμή 0.9."
+
+#: image_im_advanced.module:95
+msgid "Color profile"
+msgstr "Προφίλ χρώματος"
+
+#: image_im_advanced.module:98
+msgid "Processed images may be converted to a color profile specified here. This is especially important when working with images that use a wide-gamut color profile such as ColorMatch or Adobe RGB, which is often the case with professional photography. sRGB (which may be downloaded from <a href=\"http://www.color.org/profiles.html\">ICC</a>) is recommended since it is likely to look good on most displays.<br />Note that this conversion is still useful even if you choose to strip all metadata from your images (see above). This is because the conversion happens first and changes the actual image data before the profile is stripped."
+msgstr "Οι επεξεργασμένες εικόνες μπορούν να μετατραπούν σε ένα χρωματικό προφίλ όπως ορίζεται εδώ. Το χαρακτηριστικό αυτό είναι ιδιαίτερα σημαντικό κατά την εργασία με εικόνες που χρησιμοποιούν ένα χρωματικό προφίλ ευρέου φάσματος, όπως το ColorMatch ή Adobe RGB, όπως συχνά χρησιμοποιούνται στην επαγγελματική φωτογραφία. Προτείνεται το sRGB (που μπορεί να το κατεβάσει κανείς από το <a href=\"http://www.color.org/profiles.html\">ICC</a>), εφόσον είναι το πιθανότερο να δείχνει σωστά σε όλες τις οθόνες.<br />Πρέπει να σημειωθεί ότι αυτή η μετατροπή είναι χρήσιμη ακόμη και αν αποφασίσετε να αφαιρέσετε όλα τα μεταδεδομένα από τις εικόνες (δείτε παραπάνω). Αυτό συμβαίνει γιατί λαμβάνει χώρα πρώτα η μετατροπή, η οποία αλλάζει τα πραγματικά δεδομένα της εικόνας προτού αφαιρεθεί το προφίλ."
+
+#: image_im_advanced.module:102
+msgid "Path to color profile"
+msgstr "Διαδρομή προς το προφίλ χρώματος"
+
+#: image_im_advanced.module:104
+msgid "The path to a color profile file that all scaled down images will be converted to. Leave empty to disable."
+msgstr "Η διαδρομή για ένα αρχείο προφίλ χρώματος στο οποίο θα γίνει μετατροπή του μεγέθους των εικόνων. Αφήστε κενό για απενεργοποίηση."
+
+#: image_im_advanced.module:121
+msgid "The JPEG quality must be a positive number between 1 and 100."
+msgstr "Η ποιότητα JPEG πρέπει να οριστεί ως θετικός αριθμός μεταξύ 1 και 100."
+
+#: image_im_advanced.module:126
+msgid "The strip metadata threshold must be specified in the form <em>NxN</em>. Example: <em>150x150</em>."
+msgstr "Το κατώφλι αφαίρεσης των μεταδεδομένων πρέπει να οριστεί στη μορφή <em>NxN</em>. Παράδειγμα: <em>150x150</em>."
+
+#: image_im_advanced.module:132
+msgid "The sharpness amount must be specified as a positive number."
+msgstr "Η ποσότητα οξύτητας (sharpness amount) πρέπει να οριστεί ως θετική τιμή."
+
+#: image_im_advanced.module:135
+msgid "The sharpness radius must be specified as a positive value."
+msgstr "Η ακτίνα οξύτητας (sharpness radius) πρέπει να οριστεί ως θετική τιμή."
+
+#: image_im_advanced.module:141
+msgid "The ICC profile could not be read."
+msgstr "Δεν ήταν δυνατή η ανάγνωση του ICC προφίλ."
+
+#: image_im_advanced.module:0
+msgid "image_im_advanced"
+msgstr "image_im_advanced"
+
+#: image_im_advanced.install:13
+msgid "ImageMagick advanced options"
+msgstr "Επιλογές του ImageMagick για προχωρημένους"
+
+#: image_im_advanced.install:16
+msgid "ImageMagick image toolkit is not properly installed"
+msgstr "Η εργαλειοθήκη εικόνων ImageMagick δεν είναι σωστά εγκατεστημένη"
+
+#: image_im_advanced.install:17
+msgid "The <em>@toolkit_inc/image_imagemagick.inc</em> file must be copied to <em>@inc_dir in order for the ImageMagick image toolkit to function."
+msgstr "Το αρχείο <em>@toolkit_inc/image_imagemagick.inc</em> πρέπει να αντιγραφεί στον κατάλογο <em>@inc_dir</em> προκειμένου η εργαλειοθήκη εικόνων ImageMagick να δουλεύει σωστά."
+
+#: image_im_advanced.install:24
+msgid "ImageMagic image toolkit is not selected"
+msgstr "Δεν έχει επιλεγεί η εργαλειοθήκη εικόνων ImageMagick"
+
+#: image_im_advanced.install:25
+msgid "The ImageMagic image toolkit is not selected.  The advanced options only apply to the ImageMagick toolkit.  Select the image toolkit <a href=\"@toolkit\">here</a>."
+msgstr "Η εργαλειοθήκη εικόνων ImageMagick δεν έχει επιλεγεί. Οι ρυθμίσεις για προχωρημένους ισχύουν μόνο για την εργαλειοθήκη ImageMagick. Επιλέξτε την εργαλειοθήκη εικόνων <a href=\"@toolkit\">εδώ</a>."
+
+#: image_im_advanced.install:32
+msgid "ImageMagick convert utility not found."
+msgstr "Το εργαλείο convert του ImageMagick δε βρέθηκε."
+
+#: image_im_advanced.install:33
+msgid "The ImageMagick image convert utility (@convert) does not exist.  If you have ImageMagick installed, click <a href=\"@toolkit\">here</a> to provide the path to the convert utility."
+msgstr "Το εργαλείο convert (@convert) του ImageMagick δεν υπάρχει. Αν υπάρχει εγκατεστημένο το ImageMagick, κάντε κλικ <a href=\"@toolkit\">εδώ</a> για να ορίσετε τη διαδρομή για το εργαλείο convert."
+
+#: image_im_advanced.install:37
+msgid "ImageMagick image toolkit is selected"
+msgstr "Έχει επιλεγεί η εργαλειοθήκη εικόνων ImageMagick"
+
+#: image_im_advanced.info:0
+msgid "Adds advanced options to the ImageMagick image toolkit."
+msgstr "Προσθέτει επιλογές για προχωρημένους στην εργαλειοθήκη εικόνων ImageMagick."
+
+#: image_im_advanced.info:0
+msgid "Image"
+msgstr "Εικόνα"
+

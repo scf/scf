@@ -20,222 +20,143 @@
  *
  *
  */
-function en7_parse(& $tags, & $node_array, $node) {
-  $node_id = null;
-  $contributors = null;
-  $type_map = array(
-    '0' => '102', // Journal Article
-    '1' => '100', // Book
-    '2' => '108', // Thesis
-    '3' => '103', // Conference Proceedings
-    '4' => '120', // Personal Communication
-    '5' => '105', // NewsPaper Article
-    '6' => '113', // Computer Program
-    '7' => '101', // Book Section
-    '8' => '106', // Magazine Article
-    '9' => '100', // Edited Book
-    '10' => '109', // Report
-    '11' => '122', // Map
-    '12' => '114', // Audiovisual Material
-    '13' => '112', // Artwork
-    '15' => '119', // Patent
-    '16' => '107', // Electronic Source
-    '17' => '117', // Bill
-    '18' => '116', // Case
-    '19' => '115', // Hearing
-    '20' => '121', // Manuscript
-    '21' => '110', // Film or Broadcast
-    '22' => '118', // Statute
-    '26' => '123', // Chart or Table
-    '31' => '129' // Generic
 
-  );
-  foreach ($tags as $tag) {
-    if ($tag['type'] == "complete" || $tag['type'] == "open") {
-      $tag_name = $tag['tag'];
-      $data = trim($tag['value']);
-      switch ($tag_name) {
-        case 'RECORD' :
-          if ($tag['type'] == "open") {
-            $node_id = array_push($node_array, $node) - 1;
-            $node_array[$node_id]['biblio_contributors'] = array();
-          }
-          break;
-        case 'REFERENCE_TYPE' :
-          $node_array[$node_id]['biblio_type'] = $type_map[$data];
-          break;
-          //Author information
-        case 'AUTHOR' :
-          $node_array[$node_id]['biblio_contributors'][] = array(
-            'name' => $data,
-            'ct_id' => 1
-          );
-          //$contributors['author'][] = $data;
-          break;
-        case 'SECONDARY_AUTHOR' :
-          $node_array[$node_id]['biblio_contributors'][] = array(
-            'name' => $data,
-            'ct_id' => 2
-          );
-          break;
-        case 'TERTIARY_AUTHOR' :
-          $node_array[$node_id]['biblio_contributors'][] = array(
-            'name' => $data,
-            'ct_id' => 3
-          );
-          break;
-        case 'SUBSIDIARY_AUTHOR' :
-          $node_array[$node_id]['biblio_contributors'][] = array(
-            'name' => $data,
-            'ct_id' => 4
-          );
-          break;
-        case 'translated-authors' :
-          break;
-        case 'auth-address' :
-          break;
-        case 'auth-affiliaton' :
-          break;
-          // Title information
-        case 'TITLE' :
-          $node_array[$node_id]['title'] .= $data;
-          break;
-        case 'SECONDARY_TITLE' :
-          $node_array[$node_id]['biblio_secondary_title'] .= $data;
-          break;
-        case 'TERTIARY_TITLE' :
-          $node_array[$node_id]['biblio_tertiary_title'] .= $data;
-          break;
-        case 'ALTERNATE_TITLE' :
-          $node_array[$node_id]['biblio_alternate_title'] .= $data;
-          break;
-        case 'SHORT_TITLE' :
-          $node_array[$node_id]['biblio_short_title'] .= $data;
-          break;
-        case 'translated-title' :
-          $node_array[$node_id]['biblio_translated_title'] .= $data;
-          break;
-          // Periodical information
-        case 'full-title' :
-          break;
-        case 'abbr-1' :
-          break;
-        case 'abbr-2' :
-          break;
-        case 'abbr-3' :
-          $node_array[$node_id][$periodical] = $data;
-          break;
-        case 'PAGES' :
-          $node_array[$node_id]['biblio_pages'] .= $data;
-          break;
-          //Volume, issue, and edition information
-        case 'VOLUME' :
-          $node_array[$node_id]['biblio_volume'] .= $data;
-          break;
-        case 'NUMBER' :
-          $node_array[$node_id]['biblio_number'] .= $data;
-          break;
-        case 'ISSUE' :
-          $node_array[$node_id]['biblio_issue'] .= $data;
-          break;
-        case 'secondary-volume' :
-          break;
-        case 'secondary-issue' :
-          break;
-        case 'NUMBER_OF_VOLUMES' :
-          $node_array[$node_id]['biblio_number_of_volumes'] .= $data;
-          break;
-        case 'EDITION' :
-          $node_array[$node_id]['biblio_edition'] .= $data;
-          break;
-        case 'SECTION' :
-          $node_array[$node_id]['biblio_section'] .= $data;
-          break;
-        case 'REPRINT_EDITION' :
-          $node_array[$node_id]['biblio_reprint_edition'] .= $data;
-          break;
-        case 'reprint-status' :
-          break;
-        case 'KEYWORD' :
-          $node_array[$node_id]['biblio_keywords'] .= (empty($node_array[$node_id]['biblio_keywords'])) ? $data : ", $data";
-          //       $node_array[$node_id]['biblio_keywords'][] = $data;
-          break;
-        case 'YEAR' :
-          $node_array[$node_id]['biblio_year'] .= $data;
-          break;
-        case 'DATE' :
-          $node_array[$node_id]['biblio_date'] .= $data;
-          break;
-        case 'PLACE_PUBLISHED' :
-          $node_array[$node_id]['biblio_place_published'] .= $data;
-          break;
-        case 'PUBLISHER' :
-          $node_array[$node_id]['biblio_publisher'] .= $data;
-          break;
-        case 'orig-pub' :
-          break;
-        case 'ISBN' :
-          $node_array[$node_id]['biblio_isbn'] .= $data;
-          break;
-        case 'ACCESSION_NUMBER' :
-          $node_array[$node_id]['biblio_accession_number'] .= $data;
-          break;
-        case 'CALL_NUMBER' :
-          $node_array[$node_id]['biblio_call_number'] .= $data;
-          break;
-        case 'ABSTRACT' :
-          $node_array[$node_id]['biblio_abst_e'] .= $data;
-          break;
-        case 'label' :
-          break;
-        case 'image' :
-          break;
-        case 'caption' :
-          break;
-        case 'NOTES' :
-          $node_array[$node_id]['biblio_notes'] .= $data;
-          break;
-        case 'research-notes' :
-          $node_array[$node_id]['biblio_notes'] .= $data;
-          break;
-        case 'URL' :
-          $node_array[$node_id]['biblio_url'] .= $data;
-          break;
-        case 'access-date' :
-          break;
-        case 'modified-date' :
-          break;
-        case 'CUSTOM1' :
-          $node_array[$node_id]['biblio_custom1'] .= $data;
-          break;
-        case 'CUSTOM2' :
-          $node_array[$node_id]['biblio_custom2'] .= $data;
-          break;
-        case 'CUSTOM3' :
-          $node_array[$node_id]['biblio_custom3'] .= $data;
-          break;
-        case 'CUSTOM4' :
-          $node_array[$node_id]['biblio_custom4'] .= $data;
-          break;
-        case 'CUSTOM5' :
-          $node_array[$node_id]['biblio_custom5'] .= $data;
-          break;
-        case 'CUSTOM6' :
-          $node_array[$node_id]['biblio_custom6'] .= $data;
-          break;
-        case 'custom7' :
-          break;
-        case 'misc1' :
-          break;
-        case 'misc2' :
-          break;
-        case 'misc3' :
-          break;
-        case 'TYPE_OF_WORK' :
-          $node_array[$node_id]['biblio_type_of_work'] .= $data;
-          break;
-      }
-    }
+function en7_startElement($parser, $name, $attrs) {
+  global $node, $element, $auth_count, $keyword_count;
+  switch ($name) {
+    case 'RECORD' :
+      $node = array();
+      $node['biblio_type'] = 102; // we set 102 here because the xml parser won't
+      // process a value of 0 (ZERO) which is the
+      // ref-type 102. if there is a non-zero value it will be overwritten
+      $element = '';
+      break;
+    case 'AUTHORS':
+    case 'SECONDARY_AUTHORS':
+    case 'TERTIARY_AUTHORS':
+    case 'SUBSIDIARY_AUTHORS':
+      $auth_count = 0;
+      break;
+    case 'KEYWORDS':
+      $keyword_count = 0;
+      break;
+    default:
+      $element = $name;
   }
 }
 
+function en7_endElement($parser, $name) {
+  global $node, $element, $terms, $batch, $session_id, $nids, $auth_count, $keyword_count;
+  switch ($name) {
+    case 'RECORD' :
+      if (!empty($terms)) {
+        if (!isset($node['taxonomy'])) $node['taxonomy'] = array();
+        $node['taxonomy'] = array_merge($terms, $node['taxonomy']);
+      }
+      $nids[] = biblio_save_node($node, $batch, $session_id);
+      break;
+    case 'AUTHOR':
+    case 'SECONDARY_AUTHOR':
+    case 'TERTIARY_AUTHOR':
+    case 'SUBSIDIARY_AUTHOR':
+      $auth_category = en7_field_map($name);
+      $node['biblio_contributors'][$auth_category][$auth_count]['auth_type'] = _biblio_get_auth_type($auth_category, $node['biblio_type']);
+      $auth_count++;
+      break;
+    case 'KEYWORD':
+      $keyword_count++;
+      break;
+    default:
+
+  }
+  $element = '';
+}
+
+function en7_characterData($parser, $data) {
+  global $node, $element, $auth_count, $keyword_count;
+  if (trim($data)) {
+    switch ($element) {
+      case 'REFERENCE_TYPE':
+        $node['biblio_type'] = en7_type_map($data);
+        break;
+      case 'AUTHOR':
+        $node['biblio_contributors'][1][$auth_count]['name'] .= $data;
+        break;
+      case 'SECONDARY_AUTHOR':
+        $node['biblio_contributors'][2][$auth_count]['name'] .= $data;
+        break;
+      case 'TERTIARY_AUTHOR':
+        $node['biblio_contributors'][3][$auth_count]['name'] .= $data;
+        break;
+      case 'SUBSIDIARY_AUTHOR':
+        $node['biblio_contributors'][4][$auth_count]['name'] .= $data;
+        break;
+      case 'KEYWORD':
+        $node['biblio_keywords'][$keyword_count] .= $data;
+        break;
+      default:
+        if ($field = en7_field_map(trim($element))) {
+          $node[$field] .= $data;
+        }
+    }
+  }
+}
+function en7_field_map($enfield) {
+  static $fmap = array();
+  if(empty($fmap)) {
+    $fmap = array(
+    'AUTHOR' => 1,            //
+    'SECONDARY_AUTHOR' => 2,  // The 4 author fields map back to the author category
+    'TERTIARY_AUTHOR' => 3,   // rather than a field name.
+    'SUBSIDIARY_AUTHOR' => 4, //
+    'REFERENCE_TYPE'  => 'biblio_type',
+    'REFNUM'          => '',
+    'YEAR'            => 'biblio_year',
+    'TITLE'           => 'title',
+    'SECONDARY_TITLE' => 'biblio_secondary_title',
+    'PLACE_PUBLISHED' => 'biblio_place_published',
+    'PUBLISHER'       => 'biblio_publisher',
+    'VOLUME'          => 'biblio_volume',
+    'ISSUE'           => 'biblio_issue',
+    'NUMBER_OF_VOLUMES' => 'biblio_number_of_volumes',
+    'NUMBER'            => 'biblio_number',
+    'PAGES'             => 'biblio_pages',
+    'SECTION'           => 'biblio_section',
+    'TERTIARY_TITLE'    => 'biblio_tertiary_title',
+    'EDITION'           => 'biblio_edition',
+    'DATE'              => 'biblio_date',
+    'TYPE_OF_WORK'      => 'biblio_type_of_work',
+    'SHORT_TITLE'       => 'biblio_short_title',
+    'ALTERNATE_TITLE'   => 'biblio_alternate_title',
+    'ISBN'              => 'biblio_isbn',
+    'ORIGINAL_PUB'      => 'biblio_original_publication',
+    'REPRINT_EDITION'   => 'biblio_reprint_edition',
+    'REVIEWED_ITEM'     => '',
+    'CUSTOM1'           => 'biblio_custom1',
+    'CUSTOM2'           => 'biblio_custom2',
+    'CUSTOM3'           => 'biblio_custom3',
+    'CUSTOM4'           => 'biblio_custom4',
+    'CUSTOM5'           => 'biblio_custom5',
+    'CUSTOM6'           => 'biblio_custom6',
+    'ACCESSION_NUMBER'  => 'biblio_accession_number',
+    'CALL_NUMBER'       => 'biblio_call_number',
+    'LABEL'             => 'biblio_label',
+    'KEYWORD'           => 'biblio_keywords',
+    'ABSTRACT'          => 'biblio_abst_e',
+    'NOTES'             => 'biblio_notes',
+    'URL'               => 'biblio_url',
+    'AUTHOR_ADDRESS'    => '',
+    'IMAGE'             => '',
+    'CAPTION'           => '',
+    );
+  }
+  return (!empty($fmap[$enfield])) ? $fmap[$enfield] : '';
+}
+function en7_type_map($entype) {
+  static $map = array();
+  if (empty($map)) {
+    module_load_include('inc', 'biblio', 'biblio.type.mapper');
+    $map = biblio_get_type_map('endnote7');
+  }
+  return (isset($map[$entype]))?$map[$entype]:129; //return the biblio type or 129 (Misc) if type not found
+}

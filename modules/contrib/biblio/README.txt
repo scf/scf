@@ -1,7 +1,7 @@
 
                            biblio.module
 
-Author:  Ron Jerome (ron dot jerome at nrc dot ca)
+Author:  Ron Jerome 
 Released under the GPL
 
 

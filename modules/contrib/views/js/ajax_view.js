@@ -1,4 +1,4 @@
-// $Id: ajax_view.js,v 1.13 2008/12/02 18:35:50 merlinofchaos Exp $
+// $Id: ajax_view.js,v 1.18 2009/06/02 19:30:44 merlinofchaos Exp $
 
 /**
  * @file ajaxView.js
@@ -40,12 +40,12 @@ Drupal.Views.Ajax.ajaxViewResponse = function(target, response) {
  * Ajax behavior for views. 
  */
 Drupal.behaviors.ViewsAjaxView = function() {
-  var ajax_path = Drupal.settings.views.ajax_path;
-  // If there are multiple views this might've ended up showing up multiple times.
-  if (ajax_path.constructor.toString().indexOf("Array") != -1) {
-    ajax_path = ajax_path[0];
-  }
   if (Drupal.settings && Drupal.settings.views && Drupal.settings.views.ajaxViews) {
+    var ajax_path = Drupal.settings.views.ajax_path;
+    // If there are multiple views this might've ended up showing up multiple times.
+    if (ajax_path.constructor.toString().indexOf("Array") != -1) {
+      ajax_path = ajax_path[0];
+    }
     $.each(Drupal.settings.views.ajaxViews, function(i, settings) {
       var view = '.view-dom-id-' + settings.view_dom_id;
       if (!$(view).size()) {
@@ -73,7 +73,7 @@ Drupal.behaviors.ViewsAjaxView = function() {
       })
       .addClass('views-processed')
       .submit(function () {
-        $('input[@type=submit]', this).after('<span class="views-throbbing">&nbsp</span>');
+        $('input[type=submit]', this).after('<span class="views-throbbing">&nbsp</span>');
         var object = this;
         $(this).ajaxSubmit({
           url: ajax_path,
@@ -94,75 +94,62 @@ Drupal.behaviors.ViewsAjaxView = function() {
         return false;
       });
 
-      $(view).filter(':not(.views-processed)').each(function() {
-        var target = this;
-        $(this)
-        .addClass('views-processed')
-        // Process pager links.
-        .find('ul.pager > li > a')
-        .each(function () {
-          var viewData = Drupal.Views.parseQueryString($(this).attr('href'));
-          if (!viewData['view_name']) {
-            $.each(settings, function (key, setting) {
-              viewData[key] = setting;
-            });
-          }
-
-          $(this)
-            .click(function () {
-              $(this).addClass('views-throbbing');
-              $.ajax({
-                url: ajax_path,
-                type: 'GET',
-                data: viewData,
-                success: function(response) {
-                  $(this).removeClass('views-throbbing');
-                  // Call all callbacks.
-                  if (response.__callbacks) {
-                    $.each(response.__callbacks, function(i, callback) {
-                      eval(callback)(target, response);
-                    });
-                  }
-                },
-                error: function() { $(this).removeClass('views-throbbing'); alert(Drupal.t("An error occurred at @path.", {'@path': ajax_path})); },
-                dataType: 'json'
-              });
-
-              return false;
-            });
+      $(view).filter(':not(.views-processed)')
+        // Don't attach to nested views. Doing so would attach multiple behaviors
+        // to a given element.
+        .filter(function() {
+          // If there is at least one parent with a view class, this view
+          // is nested (e.g., an attachment). Bail.
+          return !$(this).parents('.view').size();
         })
-        .end()
-        // Process tablesort links.
-        .find('th.views-field a')
-        .each(function () {
-          var viewData = Drupal.Views.parseQueryString($(this).attr('href'));
-          $.each(settings, function (key, setting) {
-            viewData[key] = setting;
-          });
-
+        .each(function() {
+          // Set a reference that will work in subsequent calls.
+          var target = this;
           $(this)
-            .click(function () {
-              $(this).addClass('views-throbbing');
-              $.ajax({
-                url: ajax_path,
-                type: 'GET',
-                data: viewData,
-                success: function(response) {
-                  $(this).removeClass('views-throbbing');
-                  // Call all callbacks.
-                  if (response.__callbacks) {
-                    $.each(response.__callbacks, function(i, callback) {
-                      eval(callback)(target, response);
-                    });
-                  }
-                },
-                error: function() { $(this).removeClass('views-throbbing'); alert(Drupal.t("An error occurred at @path.", {'@path': ajax_path})); },
-                dataType: 'json'
-              });
+            .addClass('views-processed')
+            // Process pager, tablesort, and attachment summary links.
+            .find('ul.pager > li > a, th.views-field a, .attachment .views-summary a')
+            .each(function () {
+              var viewData = {};
+              // Construct an object using the settings defaults and then overriding
+              // with data specific to the link.
+              $.extend(
+                viewData,
+                settings,
+                Drupal.Views.parseQueryString($(this).attr('href')),
+                // Extract argument data from the URL.
+                Drupal.Views.parseViewArgs($(this).attr('href'), settings.view_base_path)
+              );
+              $(this).click(function () {
+                $(this).addClass('views-throbbing');
+                $.ajax({
+                  url: ajax_path,
+                  type: 'GET',
+                  data: viewData,
+                  success: function(response) {
+                    $(this).removeClass('views-throbbing');
+                    // Scroll to the top of the view. This will allow users
+                    // to browse newly loaded content after e.g. clicking a pager
+                    // link.
+                    var offset = $(target).offset();
+                    // Only scroll upward
+                    if (offset.top - 10 < $(window).scrollTop()) {
+                      $('html,body').animate({scrollTop: (offset.top - 10)}, 500);
+                    }
+                    // Call all callbacks.
+                    if (response.__callbacks) {
+                      $.each(response.__callbacks, function(i, callback) {
+                        eval(callback)(target, response);
+                      });
+                    }
+                  },
+                  error: function() { $(this).removeClass('views-throbbing'); alert(Drupal.t("An error occurred at @path.", {'@path': ajax_path})); },
+                  dataType: 'json'
+                });
 
-              return false;
-            });
-        }); // .each 'th.views-field a'
+                return false;
+              });
+            }); // .each function () {
       }); // $view.filter().each
     }); // .each Drupal.settings.views.ajaxViews
   } // if

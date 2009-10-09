@@ -1,8 +1,8 @@
 <?php
-// $Id: views_plugin_access_perm.inc,v 1.2 2008/09/17 22:26:55 merlinofchaos Exp $
+// $Id: views_plugin_access_perm.inc,v 1.3 2009/01/07 23:31:13 merlinofchaos Exp $
 
 /**
- * Access plugin that provides no access control at all.
+ * Access plugin that provides permission-based access control.
  */
 class views_plugin_access_perm extends views_plugin_access {
   function access($account) {

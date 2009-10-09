@@ -3,3 +3,10 @@ name = ImageMagick Advanced Options
 description = Adds advanced options to the ImageMagick image toolkit.
 package = Image
 core = 6.x
+
+; Information added by drupal.org packaging script on 2009-09-13
+version = "6.x-1.0-beta3"
+core = "6.x"
+project = "image"
+datestamp = "1252829730"
+

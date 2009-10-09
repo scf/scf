@@ -1,0 +1,2670 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Biblio-ro\n"
+"POT-Creation-Date: 2009-06-03 14:29-0400\n"
+"PO-Revision-Date: 2009-06-03 14:43-0500\n"
+"Last-Translator: joe <joe@example.com>\n"
+"Language-Team: Andrei Băutu <abautu@anmb.ro>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural = (n!=1);\n"
+"X-Poedit-Language: Romanian\n"
+"X-Poedit-Country: ROMANIA\n"
+"X-Poedit-SourceCharset: utf-8\n"
+"X-Poedit-KeywordsList: t\n"
+"X-Poedit-Basepath: D:\\ANMB\\Site - lucru\\biblio\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: biblio.admin.inc:44
+msgid "Base URL"
+msgstr "Adresa URL"
+
+#: biblio.admin.inc:47
+msgid "This sets the base URL used to access the biblio module (e.g. /biblio )."
+msgstr "Setează adresa URL de bază folosită pentru accesarea modului biblio (e.g. /biblio)."
+
+#: biblio.admin.inc:51
+#, fuzzy
+msgid "Biblio page title"
+msgstr "Setări Biblio"
+
+#: biblio.admin.inc:54
+msgid "The page title shown on the base URL."
+msgstr ""
+
+#: biblio.admin.inc:59
+#, fuzzy
+msgid "Number of results per page"
+msgstr "Numărul de rezultate pe pagină"
+
+#: biblio.admin.inc:63
+msgid "This sets the number of results that will be displayed per page."
+msgstr "Setează numărul de rezultate afişate pe pagină."
+
+#: biblio.admin.inc:67
+msgid "Restrict users such that they can only view their own biblio entries"
+msgstr "Utilizatorii pot să vadă doar intrările biblio proprii"
+
+#: biblio.admin.inc:70
+msgid "This option restricts the users capability to view biblio entries.  They will only be able to see the entries which they have created and own."
+msgstr "Această opţiune limitează vizualizarea intrărilor biblio de către utilizatori. Utilizatorii vor vedea doar intrările care le aparţin."
+
+#: biblio.admin.inc:76;422;434
+#: biblio.pages.inc:618;899
+#: translations/biblio.db.trans.inc:212
+msgid "Author"
+msgstr "Autor"
+
+#: biblio.admin.inc:81
+msgid "Automatically delete orphaned authors"
+msgstr ""
+
+#: biblio.admin.inc:84
+msgid "Orphaned authors are those which are no longer linked to any entries as the result of a biblio update or delete."
+msgstr ""
+
+#: biblio.admin.inc:90
+#, fuzzy
+msgid "BibTex settings"
+msgstr "Setări Biblio"
+
+#: biblio.admin.inc:95
+msgid "Retain bibtex's {Protected} capitalization in the title string, but hide the braces on display"
+msgstr ""
+
+#: biblio.admin.inc:105
+msgid "Block settings"
+msgstr "Opţiuni bloc"
+
+#: biblio.admin.inc:110
+msgid "Title for the \"New Publications\" block"
+msgstr "Titlul blocului \"Publicaţii noi\""
+
+#: biblio.admin.inc:118
+msgid "Number of results in the \"New Publications\" block"
+msgstr "Numărul de intrări în blocul \"Publicaţii noi\""
+
+#: biblio.admin.inc:122
+msgid "This sets the number of results that will be displayed in the \"New Publications\" block."
+msgstr "Setează numărul de rezultate afişate în blocul \"Publicaţii noi\"."
+
+#: biblio.admin.inc:126
+msgid "Order by"
+msgstr "Sortare după"
+
+#: biblio.admin.inc:129
+msgid "Date Created"
+msgstr "Data creării"
+
+#: biblio.admin.inc:130
+msgid "Year Published"
+msgstr "Anul publicării"
+
+#: biblio.admin.inc:140
+msgid "Node ID"
+msgstr ""
+
+#: biblio.admin.inc:148
+msgid "Citekey"
+msgstr ""
+
+#: biblio.admin.inc:149
+msgid "You can alter citekey related settings here."
+msgstr ""
+
+#: biblio.admin.inc:153
+msgid "Show citation key in results"
+msgstr ""
+
+#: biblio.admin.inc:156
+msgid "This will output the citekey as the first item in the citation string"
+msgstr ""
+
+#: biblio.admin.inc:160
+msgid "Auto generate citekeys if not given"
+msgstr ""
+
+#: biblio.admin.inc:163
+msgid "This option will cause \"citekey\" entries to be automatically generated if a value is not provided."
+msgstr ""
+
+#: biblio.admin.inc:167
+msgid "Citekey prefix"
+msgstr ""
+
+#: biblio.admin.inc:171
+msgid "This text will be combined with the field choosen below to form the auto generated citekey."
+msgstr ""
+
+#: biblio.admin.inc:175
+msgid "Primary Citekey  field"
+msgstr ""
+
+#: biblio.admin.inc:178
+msgid "Select the field to be used when generating citekeys."
+msgstr ""
+
+#: biblio.admin.inc:182
+msgid "Secondary Citekey field"
+msgstr ""
+
+#: biblio.admin.inc:185
+msgid "If the field above has no value this field will be used."
+msgstr ""
+
+#: biblio.admin.inc:191
+msgid "PHP code for citekey generation"
+msgstr ""
+
+#: biblio.admin.inc:193
+msgid "Advanced usage only: PHP code that returns the citekey. Should not include &lt;?php ?&gt; delimiters."
+msgstr ""
+
+#: biblio.admin.inc:201;205;210
+msgid "Footnotes"
+msgstr "Footnotes"
+
+#: biblio.admin.inc:202
+msgid "You can integrate with the !url module here."
+msgstr "Puteti integra modulul !url."
+
+#: biblio.admin.inc:205;210;242;371;376
+#: biblio.import.export.inc:124
+msgid "Depends on"
+msgstr "Depinde de:"
+
+#: biblio.admin.inc:205;242;371
+#: biblio.import.export.inc:124
+msgid "disabled"
+msgstr "dezactivat"
+
+#: biblio.admin.inc:210;376
+msgid "enabled"
+msgstr "activat"
+
+#: biblio.admin.inc:215
+msgid "Integration with the footnotes module"
+msgstr "Integrare cu modulul footnotes"
+
+#: biblio.admin.inc:219
+msgid "This will convert &lt;bib&gt; tags into &lt;fn&gt; tags.  This will cause intermingled &lt;bib&gt; and &lt;fn&gt; tags to be sequentially numbered.  For this to work, you must put the &lt;bib&gt; filter ahead of the &lt;fn&gt; filter in the filter chain.  If this option is not set, &lt;bib&gt; and &lt;fn&gt; tags will be handled separately."
+msgstr "Aceasta va transforma marcaje &lt;bib&gt; în marcaje &lt;fn&gt;. Aceasta va permite marcajelor &lt;bib&gt; şi &lt;fn&gt; imbricate să fie numerotate secvenţial. Pentru a lucra corect, trebuie să puneţi filtrul &lt;bib&gt; înaintea filtrului &lt;fn&gt;. Dacă acestă opţiune este dezactivată, marcajele &lt;bib&gt; şi &lt;fn&gt; vor fi numerotate separat."
+
+#: biblio.admin.inc:225
+#: biblio_theme.inc:168
+#: translations/biblio.db.trans.inc:64
+msgid "Keywords"
+msgstr "Cuvinte cheie"
+
+#: biblio.admin.inc:230
+msgid "Keyword separator"
+msgstr "Separator cuvinte cheie"
+
+#: biblio.admin.inc:233
+msgid "Enter the character which will be used to separate multiple keywords in the keyword field"
+msgstr "Introduceţi caracterul folosit pentru separarea cuvintelor cheie"
+
+#: biblio.admin.inc:237
+msgid "Automatically remove orphaned keywords"
+msgstr ""
+
+#: biblio.admin.inc:240
+msgid "This option automatically deletes keywords which are no longer associated with any publications (primarily due to the due to the removal of a publication or editing a keyword)."
+msgstr ""
+
+#: biblio.admin.inc:242
+#: biblio.import.export.inc:124
+msgid "Taxonomy"
+msgstr "Taxonomie"
+
+#: biblio.admin.inc:245
+msgid "Copy any selected taxonomy terms to the biblio keyword database"
+msgstr ""
+
+#: biblio.admin.inc:253
+msgid "Use keywords from biblio entries as taxonomy \"free tags\""
+msgstr "Foloseşte cuvintele cheie din intrările biblio ca taxonomie \"marcare liberă\""
+
+#: biblio.admin.inc:257
+msgid "This option allows user to add keywords (free tags) to describe their documents. These keywords will be registered as taxonomy."
+msgstr "Această opţiune permite utilizatorilor să adauge cuvinte cheie (marcare liberă) pentru a-şi descrie documentele. Cuvintele cheie vor fi înregistrate într-o taxonomie."
+
+#: biblio.admin.inc:262;489
+msgid "none"
+msgstr "nimic"
+
+#: biblio.admin.inc:269
+msgid "Vocabulary"
+msgstr "Vocabular"
+
+#: biblio.admin.inc:272
+msgid "Select vocabulary (category) to use for free tags."
+msgstr "Selectaţi vocabularul (categoria) folosită pentru marcare liberă."
+
+#: biblio.admin.inc:284
+#, fuzzy
+msgid "Links"
+msgstr "Lista"
+
+#: biblio.admin.inc:290
+#, fuzzy
+msgid "Export Links"
+msgstr "Exportă"
+
+#: biblio.admin.inc:294
+#, fuzzy
+msgid "Show export links"
+msgstr "Afişează legături pentru sortare"
+
+#: biblio.admin.inc:297
+#: biblio.import.export.inc:76
+msgid "EndNote Tagged"
+msgstr "Marcaj EndNote"
+
+#: biblio.admin.inc:298
+#, fuzzy
+msgid "EndNote XML"
+msgstr "EndNote 7 XML"
+
+#: biblio.admin.inc:299
+#: biblio.import.export.inc:75
+#: biblio_theme.inc:881;883
+#: biblio.module:1048
+msgid "BibTex"
+msgstr "BibTex"
+
+#: biblio.admin.inc:301
+#, fuzzy
+msgid "You can select which export links to display here."
+msgstr "Puteţi seta valorile implicite pentru taxonomie."
+
+#: biblio.admin.inc:307
+msgid "Google Scholar Link"
+msgstr ""
+
+#: biblio.admin.inc:311
+#, fuzzy
+msgid "Show Google Scholar links"
+msgstr "Afişează legături pentru sortare"
+
+#: biblio.admin.inc:314
+msgid "Selecting this option will display a link to Google Scholar beside each entry.  Clicking this link searches Google Scholar using the title and first author of the current biblio entry."
+msgstr ""
+
+#: biblio.admin.inc:319
+msgid "Links open in new browser"
+msgstr "Deschide legături în fereastră nouă"
+
+#: biblio.admin.inc:322
+msgid "This causes related URLs to open in a new browser window"
+msgstr "URL-urile referite vor fi deschise într-o fereastră nouă a browserului"
+
+#: biblio.admin.inc:326
+msgid "Carry \"inline\" mode through to all links"
+msgstr ""
+
+#: biblio.admin.inc:329
+msgid "This causes the \"inline\" mode to be applied to all links such as titles, authors and keywords"
+msgstr ""
+
+#: biblio.admin.inc:334
+msgid "Hyperlink titles using supplied URL if available"
+msgstr ""
+
+#: biblio.admin.inc:337
+msgid "Selecting this links the titles to the supplied URL (if available) rather than the \"node\" view."
+msgstr ""
+
+#: biblio.admin.inc:341
+msgid "Hyperlink author names"
+msgstr ""
+
+#: biblio.admin.inc:344
+msgid "This creates a hyperlink on author names which, when clicked, will select entries which contain that author"
+msgstr ""
+
+#: biblio.admin.inc:350
+msgid "OpenURL"
+msgstr "OpenURL"
+
+#: biblio.admin.inc:351
+msgid "You can set an <a href=\"http://en.wikipedia.org/wiki/OpenURL\">openurl</a> link here"
+msgstr "Puteţi seta o legătură <a href=\"http://en.wikipedia.org/wiki/OpenURL\">openurl</a>"
+
+#: biblio.admin.inc:355
+msgid "OpenURL Base URL"
+msgstr "Adresa OpenURL"
+
+#: biblio.admin.inc:358
+msgid "This sets your institution's base <a href=\"http://en.wikipedia.org/wiki/OpenURL\">OpenURL</a> gateway, which is used to generate OpenURL links. To implement a \"Universal\" OpenURL system, try using OCLC's <a href=\"http://www.oclc.org/productworks/urlresolver.htm\">OpenURL Resolver Registry</a> gateway: <a href=\"http://worldcatlibraries.org/registry/gateway\">http://worldcatlibraries.org/registry/gateway</a>"
+msgstr "Setări pentru adresa <a href=\"http://en.wikipedia.org/wiki/OpenURL\">OpenURL</a> de bază a instituţiei dumneavoastră, folosită pentru generarea legăturilor OpenURL. Pentru a implementa un sistem OpenURL \"Universal\", încercaţi <a href=\"http://www.oclc.org/productworks/urlresolver.htm\">OpenURL Resolver Registry</a> al OCLC: <a href=\"http://worldcatlibraries.org/registry/gateway\">http://worldcatlibraries.org/registry/gateway</a>"
+
+#: biblio.admin.inc:362
+msgid "OpenURL Image"
+msgstr "Imagine OpenURL"
+
+#: biblio.admin.inc:365
+msgid "Enter a path to your image here, this image will be used as button which when clicked will find the entry via the OpenURL link"
+msgstr "Introduceţi calea către imaginea care va fi folosită ca buton de căutare a intrării prin legătură OpenURL. "
+
+#: biblio.admin.inc:371;376;384
+#, fuzzy
+msgid "Search"
+msgstr "An"
+
+#: biblio.admin.inc:389
+msgid "Enable a search box on the biblio page."
+msgstr ""
+
+#: biblio.admin.inc:392
+msgid "Shows a search box on the biblio page that returns drupal search results in the biblio style."
+msgstr ""
+
+#: biblio.admin.inc:396
+msgid "Search button text"
+msgstr ""
+
+#: biblio.admin.inc:399
+#, fuzzy
+msgid "Biblio search"
+msgstr "Setări Biblio"
+
+#: biblio.admin.inc:400
+msgid "This allows you to customize the text on the search button, it defaults to \"Biblio search\"."
+msgstr ""
+
+#: biblio.admin.inc:405
+msgid "Re-/Index a biblio node when creating or updating."
+msgstr ""
+
+#: biblio.admin.inc:408
+msgid "A biblio node must be indexed for the drupal search to know its content. You need to check this option if you want to search for a biblio node that you just created or updated. Otherwise you must wait for the cron job to reindex nodes."
+msgstr ""
+
+#: biblio.admin.inc:414
+msgid "Sorting"
+msgstr "Sortare"
+
+#: biblio.admin.inc:415
+msgid "You can set the default sorting and ordering for the /biblio page here."
+msgstr "Puteţi seta ordinea implicită de sortare şi ordonare pentru pagina /biblio."
+
+#: biblio.admin.inc:419
+#: biblio.pages.inc:563
+msgid "Sort by"
+msgstr "Sortate după"
+
+#: biblio.admin.inc:423;435;1485
+#: biblio.pages.inc:608;903
+#: biblio.views.inc:162;183
+#: biblio_theme.inc:1062
+#, fuzzy
+msgid "Keyword"
+msgstr "Cuvinte cheie"
+
+#: biblio.admin.inc:424;436
+#: biblio_theme.inc:202;782
+#: biblio.module:1076
+msgid "Title"
+msgstr "Titlu"
+
+#: biblio.admin.inc:425;437
+#: biblio.pages.inc:631;901
+#: biblio.module:1299
+#: translations/biblio.db.trans.inc:101
+msgid "Type"
+msgstr "Tip"
+
+#: biblio.admin.inc:426;438
+#: biblio.pages.inc:900
+msgid "Year"
+msgstr "An"
+
+#: biblio.admin.inc:431
+msgid "Show sort links"
+msgstr "Afişează legături pentru sortare"
+
+#: biblio.admin.inc:440
+msgid "You turn the sorting links at the top of the /biblio page here."
+msgstr "Puteţi seta legăturile pentru sortare din partea superioară a pagini /biblio."
+
+#: biblio.admin.inc:444
+#, fuzzy
+msgid "Show sort links as \"tabs\""
+msgstr "Afişează legături pentru sortare"
+
+#: biblio.admin.inc:447
+msgid "This changes the sort links from text links to tabs"
+msgstr ""
+
+#: biblio.admin.inc:451
+msgid "Order"
+msgstr "Ordine"
+
+#: biblio.admin.inc:454
+msgid "Descending"
+msgstr "Descendent"
+
+#: biblio.admin.inc:455
+msgid "Ascending"
+msgstr "Ascendent"
+
+#: biblio.admin.inc:462
+msgid "Styling"
+msgstr "Stilizare"
+
+#: biblio.admin.inc:463
+msgid "You can set the default style for the /biblio page here."
+msgstr "Setează stilul implicit al paginii /biblio."
+
+#: biblio.admin.inc:467;993
+#: biblio_handler_citation.inc:24
+#: biblio_handler_field_contributor.inc:20
+msgid "Style"
+msgstr "Stil"
+
+#: biblio.admin.inc:470;996
+msgid "Set the bibliographic style of the \"list\" view."
+msgstr ""
+
+#: biblio.admin.inc:475
+msgid "Node Layout"
+msgstr "Format pagină"
+
+#: biblio.admin.inc:478
+msgid "Original"
+msgstr "Original"
+
+#: biblio.admin.inc:479
+msgid "Only Fulltext if available"
+msgstr "Doar Text complet este disponibil"
+
+#: biblio.admin.inc:480
+msgid "Tabular"
+msgstr "Tabelar"
+
+#: biblio.admin.inc:482
+msgid "This alters the layout of the \"node\" (full) view."
+msgstr "Setează modul de afişare al nodului."
+
+#: biblio.admin.inc:486
+msgid "Annotations"
+msgstr "Adnotări"
+
+#: biblio.admin.inc:490
+msgid "notes"
+msgstr "note"
+
+#: biblio.admin.inc:491
+msgid "custom1"
+msgstr "personal1"
+
+#: biblio.admin.inc:492
+msgid "custom2"
+msgstr "personal2"
+
+#: biblio.admin.inc:493
+msgid "custom3"
+msgstr "personal3"
+
+#: biblio.admin.inc:494
+msgid "custom4"
+msgstr "personal4"
+
+#: biblio.admin.inc:495
+msgid "custom5"
+msgstr "personal5"
+
+#: biblio.admin.inc:496
+msgid "custom6"
+msgstr "personal6"
+
+#: biblio.admin.inc:497
+msgid "custom7"
+msgstr "personal7"
+
+#: biblio.admin.inc:499
+msgid "Select a field from which an annotation will be displayed below biblo entry in \"short\" listings"
+msgstr "Selectaţi un câmp din care se afişează o adnotare sub intrarea biblio în lista scurtă"
+
+#: biblio.admin.inc:507
+msgid "Syndication"
+msgstr "Sindicare"
+
+#: biblio.admin.inc:508
+msgid "You can set the RSS defaults here."
+msgstr "Puteţi configura resursele RSS."
+
+#: biblio.admin.inc:512
+msgid "Allow RSS feeds of new biblio entries"
+msgstr "Permite furnizarea de resurse RSS cu intrările biblio noi"
+
+#: biblio.admin.inc:515
+msgid "This will create an rss feed of the 10 most recent biblio entries. It will be available at /biblio/rss.xml"
+msgstr "Va fi creată o resursă RSS cu cele mai recente 10 intrări biblio, accesibilă prin /biblio/rss.xml"
+
+#: biblio.admin.inc:519
+msgid "Number of items in the RSS feed."
+msgstr "Numărul implicit de elemente incluse într-un flux."
+
+#: biblio.admin.inc:523
+msgid "Limits the number of items in the /biblio/rss.xml feed to this number."
+msgstr "Limitează numărul de intrări în resursa /biblio/rss.xml."
+
+#: biblio.admin.inc:548
+msgid "On this page you can set type specific \"Titles\" and \"Hints\" which will display on the input form. "
+msgstr ""
+
+#: biblio.admin.inc:550
+msgid "Checking the \"Visible\" box will add the field to the input form, checking \"Required\" will force the user to supply a value for this field and the weight value changes the order which it is rendered on the form with smaller values floating to the top of the form. "
+msgstr ""
+
+#: biblio.admin.inc:551
+msgid "Fields which are grayed out on this page have been set to \"common\" on the "
+msgstr ""
+
+#: biblio.admin.inc:553
+msgid " page."
+msgstr ""
+
+#: biblio.admin.inc:556
+msgid "Checking the \"Common\" box will add the field to all the different publication types. Checking \"Required\" will force the user to supply a value for the field, checking \"Autocomplete\" will enable AJAX type auto complete look up for the field when the user is entering data and the weight value changes the order which it is rendered on the form with smaller values floating to the top of the form. "
+msgstr ""
+
+#: biblio.admin.inc:558
+msgid "Finally, for each author field you can choose a set of author roles. Assigning different roles to authors within the same field, e.g. primary and secondary authors within the authors field, allows to theme them differently."
+msgstr ""
+
+#: biblio.admin.inc:563
+msgid "Help"
+msgstr "Ajutor"
+
+#: biblio.admin.inc:608
+#, fuzzy
+msgid "Field settings related to @type publications"
+msgstr "Trebuie să selectaţi un tip de publicaţie"
+
+#: biblio.admin.inc:617
+msgid "Field settings common to all publication types"
+msgstr ""
+
+#: biblio.admin.inc:695;1094;1347;1521;1556
+msgid "Save"
+msgstr "Salvează"
+
+#: biblio.admin.inc:778
+msgid "The changes have been saved."
+msgstr "Modificările au fost salvate."
+
+#: biblio.admin.inc:791;798;1118
+#: biblio.pages.inc:1136;1170
+msgid "edit"
+msgstr "modifică"
+
+#: biblio.admin.inc:791
+msgid "hide"
+msgstr "ascunde"
+
+#: biblio.admin.inc:791
+msgid "show"
+msgstr "afişează"
+
+#: biblio.admin.inc:798;1121
+msgid "delete"
+msgstr "şterge"
+
+#: biblio.admin.inc:803;1131
+msgid "Type Id"
+msgstr "Identificator tip"
+
+#: biblio.admin.inc:804;819;1077
+msgid "Type Name"
+msgstr "Nume tip"
+
+#: biblio.admin.inc:805;1134
+msgid "Operations"
+msgstr "Operaţiuni"
+
+#: biblio.admin.inc:809;812;1136;1138
+msgid "Add New Type"
+msgstr "Adaugă un tip nou"
+
+#: biblio.admin.inc:810;813
+msgid "Reset all types to defaults"
+msgstr "Resetează toate tipurile"
+
+#: biblio.admin.inc:827;1086;1133
+#: translations/biblio.db.trans.inc:96
+msgid "Description"
+msgstr "Descriere"
+
+#: biblio.admin.inc:834;1094
+msgid "Create New Type"
+msgstr "Crează un tip nou"
+
+#: biblio.admin.inc:886
+msgid "There are @count biblio entries of this type, you should change the type of these entries before proceeding otherwise they will be deleted"
+msgstr "Există @count intrări biblio de acest tip; trebuie să schimbaţi tipul acestor intrări înainte de a continua, altfel vor fi şterse"
+
+#: biblio.admin.inc:894
+msgid "Are you sure you want to delete the custom biblio type:  %title ? "
+msgstr "Sigur doriţi să ştergeţi tipul biblio:  %title ? "
+
+#: biblio.admin.inc:896;1172;1541
+msgid "This action cannot be undone."
+msgstr "Această acţiune nu are cale de întoarcere."
+
+#: biblio.admin.inc:896;1173;1414;1448;1524;1542
+msgid "Delete"
+msgstr "Şterge"
+
+#: biblio.admin.inc:896;913;1174;1543
+msgid "Cancel"
+msgstr "Renunţă"
+
+#: biblio.admin.inc:913
+msgid "Are you sure you want to reset ALL the field definitions to the defaults? "
+msgstr "Sigur doriţi să resetaţi TOATE definiţiile câmpurilor?"
+
+#: biblio.admin.inc:913
+msgid "By doing this, you will loose all customizations you have made to the field titles, <b><u>this action cannot be undone</u></b>!"
+msgstr ""
+
+#: biblio.admin.inc:913
+#, fuzzy
+msgid "Reset!"
+msgstr "Resetează"
+
+#: biblio.admin.inc:934
+#, fuzzy
+msgid "My publications"
+msgstr "Publicaţii noi"
+
+#: biblio.admin.inc:934
+msgid "Profile pages"
+msgstr ""
+
+#: biblio.admin.inc:939
+msgid "Allow users to override these settings on their \"My account\" page"
+msgstr ""
+
+#: biblio.admin.inc:941
+msgid "If this is selected, a form similar to this section will be available to the user when they edit their own account information.  This will allow them to override the global preferences set here."
+msgstr ""
+
+#: biblio.admin.inc:947
+msgid "Show my publications on my profile page"
+msgstr ""
+
+#: biblio.admin.inc:947
+msgid "Show publications on users profile pages"
+msgstr ""
+
+#: biblio.admin.inc:950
+msgid "Selecting this will create a listing of your publications on your profile page"
+msgstr ""
+
+#: biblio.admin.inc:950
+msgid "This sets the site wide default, users may change this in their profile"
+msgstr ""
+
+#: biblio.admin.inc:960
+msgid "Show \"My publications\" item in the navigation menu"
+msgstr ""
+
+#: biblio.admin.inc:975;1203
+#, fuzzy
+msgid "(None)"
+msgstr "nimic"
+
+#: biblio.admin.inc:982
+msgid "Link My Profile with this Author from the Biblio database"
+msgstr ""
+
+#: biblio.admin.inc:986
+msgid "This will link your profile to the selected author from the biblio database, then all publications containing this author to be displayed on your \"Publications\" tab."
+msgstr ""
+
+#: biblio.admin.inc:989
+msgid "System default"
+msgstr ""
+
+#: biblio.admin.inc:1006
+msgid "CrossRef Login Information"
+msgstr ""
+
+#: biblio.admin.inc:1012
+msgid "CrossRef OpenURL Account ID"
+msgstr ""
+
+#: biblio.admin.inc:1015
+msgid "Enter your CrossRef OpenURL account ID which you can obtain here "
+msgstr ""
+
+#: biblio.admin.inc:1132
+msgid "Contributor Type"
+msgstr ""
+
+#: biblio.admin.inc:1170
+#, fuzzy
+msgid "Are you sure you want to delete the author type: %title ?"
+msgstr "Sigur doriţi să ştergeţi tipul biblio:  %title ? "
+
+#: biblio.admin.inc:1209
+msgid "Drupal User ID"
+msgstr ""
+
+#: biblio.admin.inc:1217
+#, fuzzy
+msgid "Complete Name"
+msgstr "Nume tip"
+
+#: biblio.admin.inc:1226
+msgid "Prefix"
+msgstr ""
+
+#: biblio.admin.inc:1235
+#, fuzzy
+msgid "First Name"
+msgstr "Nume câmp"
+
+#: biblio.admin.inc:1244
+msgid "Initials"
+msgstr ""
+
+#: biblio.admin.inc:1253
+msgid "Last Name"
+msgstr ""
+
+#: biblio.admin.inc:1262
+msgid "Suffix"
+msgstr ""
+
+#: biblio.admin.inc:1271
+#: biblio_theme.inc:1031
+msgid "Affiliation"
+msgstr ""
+
+#: biblio.admin.inc:1298
+#, fuzzy
+msgid "Author Merge"
+msgstr "Autor"
+
+#: biblio.admin.inc:1299
+msgid "Select other author names which will be merged.  Merging removes all the selected authors, then replaces any references to these authors with the author being edited above.  You should only do this if you are sure the other authors represent the same author as the one being edited. <B>THIS CANNOT BE UNDONE!</B>"
+msgstr ""
+
+#: biblio.admin.inc:1307
+msgid "Similar authors"
+msgstr ""
+
+#: biblio.admin.inc:1314;1376
+#, fuzzy
+msgid "Merge"
+msgstr "unde"
+
+#: biblio.admin.inc:1320
+#, fuzzy
+msgid "Author Link"
+msgstr "Autor"
+
+#: biblio.admin.inc:1321
+msgid "Select other author names which will be linked.  Linking relates all the selected authors to the author being edited above, and and keeps each instance in the database.  You should only do this if you are sure the other authors represent the same author as the one being edited. "
+msgstr ""
+
+#: biblio.admin.inc:1329
+msgid "This author has already been linked to these authors"
+msgstr ""
+
+#: biblio.admin.inc:1338
+msgid "Other authors which could be linked to this author"
+msgstr ""
+
+#: biblio.admin.inc:1423;1457
+#, fuzzy
+msgid "No items selected."
+msgstr "Nu am găsit intrări."
+
+#: biblio.admin.inc:1466
+msgid "%count orphaned keywords have been deleted."
+msgstr ""
+
+#: biblio.admin.inc:1503
+#, fuzzy
+msgid "Keyword Merge"
+msgstr "Cuvinte cheie"
+
+#: biblio.admin.inc:1504
+msgid "Select other keywords which will be merged with the one above.  You should only do this if you are sure the other keywords represent the same keyword as the one being edited."
+msgstr ""
+
+#: biblio.admin.inc:1511
+msgid "Similar keywords"
+msgstr ""
+
+#: biblio.admin.inc:1539
+#, fuzzy
+msgid "Are you sure you want to delete the keyword: %title from ALL publications?"
+msgstr "Sigur doriţi să ştergeţi tipul biblio:  %title ? "
+
+#: biblio.import.export.inc:46
+msgid "Set user ID of entries in this file to"
+msgstr ""
+
+#: biblio.import.export.inc:65
+msgid "Import file"
+msgstr "Importă fişier"
+
+#: biblio.import.export.inc:71
+msgid "File Type"
+msgstr "Tip fişier"
+
+#: biblio.import.export.inc:74
+#, fuzzy
+msgid "Select type"
+msgstr "Tip fişier"
+
+#: biblio.import.export.inc:77
+msgid "EndNote 7 XML (and previous versions)"
+msgstr ""
+
+#: biblio.import.export.inc:78
+msgid "EndNote 8 XML (and newer versions)"
+msgstr ""
+
+#: biblio.import.export.inc:79
+msgid "MARC"
+msgstr ""
+
+#: biblio.import.export.inc:80
+msgid "RIS"
+msgstr "RIS"
+
+#: biblio.import.export.inc:85
+msgid "Batch Process"
+msgstr ""
+
+#: biblio.import.export.inc:87
+msgid "You should use batch processing if your import file contains more than about 20 records, or if you are experiencing script timeouts during import"
+msgstr ""
+
+#: biblio.import.export.inc:97
+msgid "Taxonomy Settings"
+msgstr "Setări taxonomie"
+
+#: biblio.import.export.inc:98
+msgid "Typically you don't have to do anything here, however if you wish, you may select terms to be assigned to imported records. This effectively adds a keyword to all entries being imported."
+msgstr ""
+
+#: biblio.import.export.inc:103
+#, fuzzy
+msgid "<b>NOTE:</b> Keyword \"free tagging\" is turned on, consequently all incomming keywords will be added to the <b>@name</b> vocabulary as specified in the \"Keyword\" section of the !url page."
+msgstr "Cuvintele cheie vor fi adăugate la vocabularul <b>@name</b> specificat în secţiunea Taxonomie de pe pagina !url."
+
+#: biblio.import.export.inc:103;105
+msgid "admin/settings/biblio"
+msgstr "admin/settings/biblio"
+
+#: biblio.import.export.inc:105
+#, fuzzy
+msgid "<b>NOTE:</b> Keyword \"free tagging\" is turned off, consequently keywords will <b>NOT</b> be added to the vocabulary as specified in the Taxonomy section of the !url page."
+msgstr "Cuvintele cheie <b>NU</b> vor fi adăugate la vocabular cum a fost specificat în secţiune Taxonomi de pe pagina !url."
+
+#: biblio.import.export.inc:110
+#, fuzzy
+msgid "Select taxonomy term to be assigned to imported entries"
+msgstr "Selectaţi termenul de taxonomie asociat intrărilor importate"
+
+#: biblio.import.export.inc:114
+#: biblio.module:955
+msgid "Copy these terms to the biblio keyword database"
+msgstr ""
+
+#: biblio.import.export.inc:122
+msgid "There are currently no vocabularies assigned to the biblio node type, please go the the !url page to fix this"
+msgstr "Nu sunt asociate vocabulare pentru acest tip biblio, accesaţi pagina !url pentru a corecta această situaţie."
+
+#: biblio.import.export.inc:122
+#, fuzzy
+msgid "admin/content/taxonomy"
+msgstr "admin/taxonomy"
+
+#: biblio.import.export.inc:134;166;176
+msgid "Import"
+msgstr "Importă"
+
+#: biblio.import.export.inc:150
+msgid "The uploaded file exceeds the upload_max_filesize directive in php.ini."
+msgstr ""
+
+#: biblio.import.export.inc:152
+msgid "The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form."
+msgstr ""
+
+#: biblio.import.export.inc:154
+msgid "The uploaded file was only partially uploaded."
+msgstr ""
+
+#: biblio.import.export.inc:156
+#, fuzzy
+msgid "No file was uploaded."
+msgstr "@file a fost încărcat"
+
+#: biblio.import.export.inc:158
+msgid "Missing a temporary folder."
+msgstr ""
+
+#: biblio.import.export.inc:160
+msgid "Failed to write file to disk."
+msgstr ""
+
+#: biblio.import.export.inc:162
+msgid "File upload stopped by extension."
+msgstr ""
+
+#: biblio.import.export.inc:167
+msgid "You must select a file type"
+msgstr "Trebuie să selectaţi un tip de fişier"
+
+#: biblio.import.export.inc:180
+msgid "@file was uploaded"
+msgstr "@file a fost încărcat"
+
+#: biblio.import.export.inc:212
+msgid "Parsing file..."
+msgstr ""
+
+#: biblio.import.export.inc:213
+msgid "Saving nodes..."
+msgstr ""
+
+#: biblio.import.export.inc:228
+msgid "File was NOT successfully uploaded"
+msgstr "Fişierul NU s-a încărcat corect"
+
+#: biblio.import.export.inc:264
+msgid "Import finished with an error."
+msgstr ""
+
+#: biblio.import.export.inc:290
+msgid "Error occurred: Failed to open "
+msgstr ""
+
+#: biblio.import.export.inc:302
+#, fuzzy
+msgid "POT Export"
+msgstr "Exportă"
+
+#: biblio.import.export.inc:303
+msgid "Here you may export a \".pot\" file which contains the titles and hints from the database which are not normally captured by translation extractors)"
+msgstr ""
+
+#: biblio.import.export.inc:307;313
+msgid "Export translation data"
+msgstr ""
+
+#: biblio.import.export.inc:340
+msgid "Parsing file"
+msgstr ""
+
+#: biblio.import.export.inc:783
+msgid "Could not open crossref.org for XML input"
+msgstr ""
+
+#: biblio.import.export.inc:261
+msgid "One node saved."
+msgid_plural "@count nodes saved."
+msgstr[0] ""
+msgstr[1] ""
+
+#: biblio.pages.inc:287
+msgid "These publications by %author are part of the works listed at %sitename"
+msgstr ""
+
+#: biblio.pages.inc:330
+msgid "These publications, containing the keyword: %keyword, are part of the works listed at %sitename"
+msgstr ""
+
+#: biblio.pages.inc:464
+msgid "Export @count results"
+msgstr "Export @count rezultate"
+
+#: biblio.pages.inc:466
+msgid "Found @count results"
+msgstr "Am găsit @count rezultate"
+
+#: biblio.pages.inc:499;883
+#: biblio_handler_citation.inc:52
+#: biblio_theme.inc:145
+#: biblio.module:1453;1461
+msgid "In Press"
+msgstr "În curs de apariţie"
+
+#: biblio.pages.inc:500;884
+#: biblio_handler_citation.inc:53
+#: biblio_theme.inc:148
+#: biblio.module:1454;1462
+msgid "Submitted"
+msgstr ""
+
+#: biblio.pages.inc:512
+msgid "No items found"
+msgstr "Nu am găsit intrări."
+
+#: biblio.pages.inc:514
+msgid "!modify_link or !remove_link your filters and try again."
+msgstr "!modify_link sau !remove_link filtrele şi încercaţi din nou."
+
+#: biblio.pages.inc:514
+msgid "Modify"
+msgstr "Modificăţi"
+
+#: biblio.pages.inc:514
+msgid "remove"
+msgstr "ştergeţi"
+
+#: biblio.pages.inc:541
+msgid "Click a second time to reverse the sort order"
+msgstr "Daţi clic din nou pentru a inversa ordinea sortării"
+
+#: biblio.pages.inc:559
+#, fuzzy
+msgid "!title"
+msgstr "Titlu"
+
+#: biblio.pages.inc:600
+#, fuzzy
+msgid "Taxonomy term"
+msgstr "Termen taxonomie"
+
+#: biblio.pages.inc:613
+msgid "Drupal user"
+msgstr ""
+
+#: biblio.pages.inc:622
+msgid "First letter of last name"
+msgstr ""
+
+#: biblio.pages.inc:626
+msgid "First letter of title"
+msgstr ""
+
+#: biblio.pages.inc:636
+msgid "<em> and</em> <strong>%a</strong> is <strong>%b</strong>"
+msgstr "<em> şi </em> <strong>%a</strong> este <strong>%b</strong>"
+
+#: biblio.pages.inc:636
+msgid "<strong>%a</strong> is <strong>%b</strong>"
+msgstr "<strong>%a</strong> este <strong>%b</strong>"
+
+#: biblio.pages.inc:639
+msgid "Search results for "
+msgstr ""
+
+#: biblio.pages.inc:642;646
+msgid "Filters"
+msgstr "Filtre"
+
+#: biblio.pages.inc:660
+msgid "Reset Search"
+msgstr ""
+
+#: biblio.pages.inc:662
+msgid "Clear All Filters"
+msgstr "Şterge filtrele"
+
+#: biblio.pages.inc:714
+#, fuzzy
+msgid "No Keywords"
+msgstr "Cuvinte cheie"
+
+#: biblio.pages.inc:782
+msgid "You must include at least one positive keyword with @count characters or more."
+msgstr ""
+
+#: biblio.pages.inc:902
+msgid "Term"
+msgstr "Termen"
+
+#: biblio.pages.inc:927
+msgid "Show only items where"
+msgstr "Afişează numai articolele unde"
+
+#: biblio.pages.inc:956;979
+msgid "Refine"
+msgstr "Rafinează"
+
+#: biblio.pages.inc:956;978
+msgid "Filter"
+msgstr "Filtru"
+
+#: biblio.pages.inc:958;996
+msgid "Undo"
+msgstr "Anulează"
+
+#: biblio.pages.inc:959;999
+msgid "Reset"
+msgstr "Resetează"
+
+#: biblio.pages.inc:1045
+msgid "Sorry, citekey @cite not found"
+msgstr "Ne pare rău, cheia @cite nu a fost găsită"
+
+#: biblio.pages.inc:1085
+msgid " (whose last name starts with the letter \"@letter\") "
+msgstr ""
+
+#: biblio.pages.inc:1143
+msgid " (which start with the letter \"@letter\") "
+msgstr ""
+
+#: biblio.views.inc:44;112;143;174
+#: biblio.module:267
+#: biblio.info:0;0
+#, fuzzy
+msgid "Biblio"
+msgstr "biblio"
+
+#: biblio.views.inc:54
+#, fuzzy
+msgid "Biblio Citation"
+msgstr "Setări Biblio"
+
+#: biblio.views.inc:55
+msgid "Display the complete citation for a given node"
+msgstr ""
+
+#: biblio.views.inc:90
+#, fuzzy
+msgid "Type of Publication"
+msgstr "Publicaţii noi"
+
+#: biblio.views.inc:91
+msgid "The type of publication: Journal, Book, Conference Paper, etc."
+msgstr ""
+
+#: biblio.views.inc:131
+msgid "Contributors"
+msgstr ""
+
+#: biblio.views.inc:132
+msgid "Filter by any kind of contributor."
+msgstr ""
+
+#: biblio.views.inc:163
+msgid "Filter by any keyword."
+msgstr ""
+
+#: biblio.views.inc:184
+msgid "Display the keyword from a Biblio node"
+msgstr ""
+
+#: biblio_handler_citation.inc:27
+#: biblio_handler_field_contributor.inc:23
+#, fuzzy
+msgid "Define the layout of author lists."
+msgstr "Setează modul de afişare al listei scurte."
+
+#: biblio_handler_field.inc:33
+#, fuzzy
+msgid "biblio settings"
+msgstr "Setări Biblio"
+
+#: biblio_handler_filter_type.inc:15
+#, fuzzy
+msgid "Publication type"
+msgstr "Tip publicaţie"
+
+#: biblio_style_apa.inc:58
+#: biblio_style_cse.inc:56
+msgid "Anonymous"
+msgstr ""
+
+#: biblio_theme.inc:42
+msgid "Find It Via OpenURL!"
+msgstr "Caută prin OpenURL!"
+
+#: biblio_theme.inc:113;206
+#: biblio.module:1064
+msgid "Publication Type"
+msgstr "Tip publicaţie"
+
+#: biblio_theme.inc:114
+#: translations/biblio.db.trans.inc:39
+msgid "Authors"
+msgstr "Autori"
+
+#: biblio_theme.inc:115
+msgid "Source"
+msgstr "Sursă"
+
+#: biblio_theme.inc:125
+#: translations/biblio.db.trans.inc:56
+#, fuzzy
+msgid "Volume"
+msgstr "Volum "
+
+#: biblio_theme.inc:129
+#: translations/biblio.db.trans.inc:69
+#, fuzzy
+msgid "Issue"
+msgstr "Număr "
+
+#: biblio_theme.inc:133
+#: translations/biblio.db.trans.inc:57
+#, fuzzy
+msgid "Number"
+msgstr "Număr"
+
+#: biblio_theme.inc:154
+#: translations/biblio.db.trans.inc:102
+msgid "ISBN"
+msgstr "ISBN"
+
+#: biblio_theme.inc:156
+#: translations/biblio.db.trans.inc:48
+msgid "Call Number"
+msgstr "Număr de apel"
+
+#: biblio_theme.inc:158
+#: translations/biblio.db.trans.inc:46
+msgid "Accession Number"
+msgstr "Număr de acces"
+
+#: biblio_theme.inc:160
+msgid "Other Number"
+msgstr "Alt număr"
+
+#: biblio_theme.inc:165
+#: translations/biblio.db.trans.inc:67
+msgid "URL"
+msgstr "URL"
+
+#: biblio_theme.inc:171
+#: translations/biblio.db.trans.inc:62
+msgid "Abstract"
+msgstr "Abstract"
+
+#: biblio_theme.inc:175
+#: translations/biblio.db.trans.inc:68
+msgid "Notes"
+msgstr "Note"
+
+#: biblio_theme.inc:177;276
+#: biblio.module:1179;1185
+msgid "Full Text"
+msgstr "Text întreg"
+
+#: biblio_theme.inc:269
+msgid "Export"
+msgstr "Exportă"
+
+#: biblio_theme.inc:715
+msgid "and"
+msgstr "şi"
+
+#: biblio_theme.inc:715
+msgid "where"
+msgstr "unde"
+
+#: biblio_theme.inc:720
+msgid "is"
+msgstr "este"
+
+#: biblio_theme.inc:782;785
+msgid "Field Name"
+msgstr "Nume câmp"
+
+#: biblio_theme.inc:782;785
+msgid "Hint"
+msgstr "Sfat"
+
+#: biblio_theme.inc:782
+#, fuzzy
+msgid "Visible"
+msgstr "dezactivat"
+
+#: biblio_theme.inc:782;785
+msgid "Required"
+msgstr "Necesar"
+
+#: biblio_theme.inc:782;785;910;911
+msgid "Weight"
+msgstr "Greutate"
+
+#: biblio_theme.inc:785
+msgid "Default Title"
+msgstr "Titlul implicit"
+
+#: biblio_theme.inc:785
+msgid "Common"
+msgstr "Comun"
+
+#: biblio_theme.inc:785
+msgid "Autocomplete"
+msgstr "Autocompletare"
+
+#: biblio_theme.inc:800
+msgid "Download"
+msgstr ""
+
+#: biblio_theme.inc:852
+msgid "Google Scholar"
+msgstr ""
+
+#: biblio_theme.inc:852;867
+msgid "Click to download the EndNote Tagged formatted file"
+msgstr ""
+
+#: biblio_theme.inc:865;867
+msgid "Tagged"
+msgstr "Tagged"
+
+#: biblio_theme.inc:865
+msgid "Click to get the EndNote Tagged output "
+msgstr ""
+
+#: biblio_theme.inc:881
+msgid "Click to get the BibTEX output "
+msgstr ""
+
+#: biblio_theme.inc:883
+msgid "Click to download the BibTEX formatted file"
+msgstr ""
+
+#: biblio_theme.inc:897;899
+msgid "XML"
+msgstr "XML"
+
+#: biblio_theme.inc:897
+msgid "Click to get the XML output "
+msgstr ""
+
+#: biblio_theme.inc:899
+msgid "Click to download the XML formatted file"
+msgstr ""
+
+#: biblio_theme.inc:910;911
+#: biblio.module:1291
+#, fuzzy
+msgid "Name"
+msgstr "Nume tip"
+
+#: biblio_theme.inc:911
+msgid "Role"
+msgstr ""
+
+#: biblio_theme.inc:954;960;966
+msgid "Show ALL"
+msgstr ""
+
+#: biblio_theme.inc:1031
+#, fuzzy
+msgid "Author Name"
+msgstr "Autor"
+
+#: biblio_theme.inc:1045
+msgid "There are no orphaned authors in the database."
+msgstr ""
+
+#: biblio_theme.inc:1075
+msgid "There are no orphaned keywords in the database."
+msgstr ""
+
+#: ris_parser.inc:47
+#, fuzzy
+msgid "Untitled"
+msgstr "Titlu"
+
+#: biblio.module:223
+msgid "General:"
+msgstr "General:"
+
+#: biblio.module:224
+msgid "By default, the !url page will list all of the entries in the database sorted by Year in descending order. If you wish to sort by \"Title\" or \"Type\",  you may do so by clicking on the appropriate links at the top of the page.  To reverse the sort order, simply click the link a second time."
+msgstr "În mod implicit, pagina de la adresa !url va lista toate intrările biblio din baza de date sortate descrescător după an. Dacă doriţi, puteţi sorta după \"Titlu\" sau \"Tip\"  folosind legăturile din partea superioară a paginii. Pentru a inversa ordinea de sortare, daţi clic din nou pe aceeaşi legătură."
+
+#: biblio.module:228
+msgid "Filtering Search Results:"
+msgstr "Filtrează rezultatele căutării:"
+
+#: biblio.module:229
+msgid "If you wish to filter the results, click on the \"Filter\" tab at the top of the page.  To add a filter, click the radio button to the left of the filter type you wish to apply, then select the filter criteria from the drop down list on the right, then click the filter button."
+msgstr "Dacă doriţi să filtraţi rezultatele, daţi clic pe secţiunea \"Filtru\" din partea superioară a paginii. Pentru a adăuga un filtru, activaţi butonul radio din stânga filtrului, selectaţi criteriul de filtrare din lista derulantă şi daţi clic pe butonul de filtrare."
+
+#: biblio.module:230
+msgid "It is possible to create complex filters by returning to the <i>Filter</i> tab and adding additional filters.  Simply follow the steps outlined above and press the \"Refine\" button."
+msgstr "Puteţi crea filtre complexe prin adăugarea de filtre adiţionale în secţiunea <i>Filtru</i>. Urmaţi paşi anteriori şi apăsaţi butonul \"Rafinează\"."
+
+#: biblio.module:231
+msgid "All filters can be removed by clicking the <i>Clear All Filters</i> link at the top of the result page, or on the <i>Filter</i> tab they can be removed one at a time using the <i>Undo</i> button, or you can remove them all using the <i>Clear All</i> button."
+msgstr "Filtrele pot fi eliminate complet prin acţionarea legăturii <i>Şterge filtrele</i> din partea superioară a paginii de căutare, sau în secţiunea <i>Filtru</i> pot fi eliminate pe rând folosind butonul <i>Anulează</i>,  sau toate deodată folosind butonul <i>Şterge tot</i>."
+
+#: biblio.module:232
+msgid "You may also construct URLs which filter.  For example, /biblio/year/2005 will show all of the entries for 2005.  /biblio/year/2005/author/smith will show all of entries from 2005 for smith."
+msgstr "Puteţi construi URL-uri pentru filtrare. De exemplu, /biblio/year/2005 will va afişa intrările din 2005. /biblio/year/2005/author/smith va afişa intrările din 2005 ale lui smith."
+
+#: biblio.module:233
+msgid "Exporting Search Results:"
+msgstr "Exportă rezultatele căutării"
+
+#: biblio.module:234
+msgid "Assuming this option has been enabled by the administrator, you can export search results directly into EndNote.  The link at the top of the result page will export all of the search results, and the links on individual entries will export the information related to that single entry."
+msgstr "Dacă opţiunea a fost activată de administrator, puteţi exporta rezultatele căutării în EndNote. Legătura din partea superioară a paginii va exporta toate rezultatele căutării, şi legăturile individuale vor exporta informaţia  intrărilor corespunzătoare."
+
+#: biblio.module:235
+msgid "The information is exported in EndNote \"Tagged\" format similar to this..."
+msgstr "Informaţia exportată cu marcaje EndNote \"Tagged\" arată astfel..."
+
+#: biblio.module:235
+#, fuzzy
+msgid ""
+"\n"
+"                  %0  Book\n"
+"                  %A  John Smith\n"
+"                  %D  1959\n"
+"                  %T  The Works of John Smith\n"
+"                  ..."
+msgstr ""
+"\n"
+"              %0  Book\n"
+"              %A  John Smith \n"
+"              %D  1959\n"
+"              %T  The Works of John Smith\n"
+"              ..."
+
+#: biblio.module:241
+msgid "Clicking on one of the export links should cause your browser to ask you whether you want to Open, or Save To Disk, the file endnote.enw.  If you choose to open it, Endnote should start and ask you which library you would like store the results in.  Alternatively, you can save the file to disk and manually import it into EndNote."
+msgstr "Dând clic pe una dintre legăturile de export, browserul vă va întreba dacă să deschidă sau să salveze pe disc fişierul endnote.enw. Dacă alegeţi să-l deschideţi, programul Endnote va porni şi veţi fi întrebaţi în ce bibliotecă să salveze rezultatele. Alternativ, puteţi salva fişierul pe disc şi să-l importaţi manual în EndNote."
+
+#: biblio.module:258
+msgid "Manages a list of scholarly papers on your site"
+msgstr "Gestionează o listă de lucrări academice pe sit"
+
+#: biblio.module:261
+msgid "This allows you to add a bibliographic entry to the database"
+msgstr "Acesta permite adăugarea de referinţe bibliografice în baza de date"
+
+#: biblio.module:269
+#, fuzzy
+msgid "Manages bibliographies"
+msgstr "Menţine o listă bibliografică"
+
+#: biblio.module:345
+msgid "edit this entry"
+msgstr "editează această intrare"
+
+#: biblio.module:381
+#, fuzzy
+msgid "You did not supply an associated biblio author."
+msgstr "Trebuie să introduceţi macăr un autor"
+
+#: biblio.module:946
+#, fuzzy
+msgid "Vocabularies"
+msgstr "Vocabular"
+
+#: biblio.module:952
+#, fuzzy
+msgid "Select taxonomy terms which will be related to this "
+msgstr "Selectaţi termenul de taxonomie asociat intrărilor importate"
+
+#: biblio.module:952
+msgid " entry."
+msgstr ""
+
+#: biblio.module:1007
+msgid "DOI Lookup"
+msgstr ""
+
+#: biblio.module:1017
+msgid " and then enter your CrossRef UserID in the \"<i>CrossRef Login Information</i>\" section of your account profile "
+msgstr ""
+
+#: biblio.module:1023
+#: translations/biblio.db.trans.inc:89
+msgid "DOI"
+msgstr ""
+
+#: biblio.module:1026
+msgid "Enter a DOI name in the form: <b>10.1000/123456</b>"
+msgstr ""
+
+#: biblio.module:1035;1385;1387
+msgid "Populate using DOI"
+msgstr ""
+
+#: biblio.module:1041
+msgid "Paste"
+msgstr ""
+
+#: biblio.module:1051
+msgid "Paste a BibTex entry here"
+msgstr ""
+
+#: biblio.module:1058;1402
+msgid "Populate using BibTex"
+msgstr ""
+
+#: biblio.module:1095
+#, fuzzy
+msgid "Other Biblio Fields"
+msgstr "Alte câmpuri disponibile"
+
+#: biblio.module:1135
+#, fuzzy
+msgid "Separate keywords using the \" @sep \" character"
+msgstr "Separaţi cuvintele cheie prin caracterul <b>!sep</b>"
+
+#: biblio.module:1189
+msgid "You may enter a full text or HTML version of the publication here."
+msgstr "Aici puteţi introduce textul complet sau versiunea HTML a publicării."
+
+#: biblio.module:1236
+msgid "Enter a single name per line using a format such as \"Smith, John K\" or \"John K Smith\" or \"J.K. Smith\""
+msgstr ""
+
+#: biblio.module:1267
+msgid "More @title"
+msgstr ""
+
+#: biblio.module:1268
+msgid "If there aren't enough boxes above, click here to add more."
+msgstr ""
+
+#: biblio.module:1398
+msgid "This does not appear to be a valid DOI name, it should start with \"10.\" "
+msgstr ""
+
+#: biblio.module:1408
+msgid "There does not appear to be any bibtex data to work with "
+msgstr ""
+
+#: biblio.module:1437
+#, fuzzy
+msgid "Year of Publication must be a number between 1 and @thisyear or the words \"In Press\" or \"Submitted\" "
+msgstr "Anul publicării trebuie să fie între 1 şi @thisyear"
+
+#: biblio.module:1446
+msgid "No single keyword can be greater than 255 characters in length, the word: @kw exceeds this length"
+msgstr ""
+
+#: biblio.module:1601
+msgid "Home"
+msgstr "Acasă"
+
+#: biblio.module:1613
+msgid "Most recent publications"
+msgstr "Cel mai recente publicaţii"
+
+#: biblio.module:1643;1661
+#, fuzzy
+msgid "Recently Added Publications"
+msgstr "Cel mai recente publicaţii"
+
+#: biblio.module:1645
+msgid "more..."
+msgstr ""
+
+#: biblio.module:1663
+msgid "This feed lists the %num most recently added publications on %site"
+msgstr ""
+
+#: biblio.module:1719
+msgid "Citekey @cite not found"
+msgstr "Cheia @cite nu a fost găsită"
+
+#: biblio.module:1734
+#, fuzzy
+msgid "You can cite references directly into texts with <code>&lt;bib&gt;<i>citekey</i>&lt;/bib&gt; <b><i>or</i></b> [bib]<i>citekey</i>[/bib]</code>. This will be replaced with a running number (the publication reference) and the publication referenced by the citekey within the &lt;bib&gt; tags will be printed at the bottom of the page (the reference)."
+msgstr "Puteţi cita referinţe direct în text cu <code>&lt;bib&gt;cheie&lt;/bib&gt;</code>. Aceasta va fi înlocuită cu un număr (referinţa publicaţiei) şi de publicaţia referită de cheie din marcajul &lt;bib&gt; va fi afişată la sfârşitul paginii (referinţă)."
+
+#: biblio.module:1737
+#, fuzzy
+msgid "Use &lt;bib&gt;<i>citekey</i>&lt;/bib&gt; <b><i>or</i></b> [bib]<i>citekey</i>[/bib] to insert automatically numbered references."
+msgstr "Folosiţi &lt;bib&gt;...&lt;/bib&gt; pentru a insera o referinţă autonumerotată."
+
+#: biblio.module:1754
+msgid "Biblio module references &lt;bib&gt; <i>or</i> [bib]"
+msgstr ""
+
+#: biblio.module:1770
+#, fuzzy
+msgid "Use &lt;bib&gt;citekey&lt;/bib&gt; or [bib]citebkey[/bib]to insert automatically numbered references."
+msgstr "Folosiţi &lt;bib&gt;...&lt;/bib&gt; pentru a insera o referinţă autonumerotată."
+
+#: biblio.module:1823
+#: translations/biblio.db.trans.inc:194
+msgid "References"
+msgstr "Referinţe"
+
+#: biblio.module:2107
+#, fuzzy
+msgid "Biblio: Publication year"
+msgstr "Tip publicaţie"
+
+#: biblio.module:2108
+#, fuzzy
+msgid "Biblio: Authors"
+msgstr "Autori"
+
+#: biblio.module:2109
+msgid "Biblio: Type ID (e.g.: 100)"
+msgstr ""
+
+#: biblio.module:2110
+msgid "Biblio: Type Name (e.g.: book)"
+msgstr ""
+
+#: biblio.install:19
+msgid "The biblio module has successfully added its tables to the database."
+msgstr ""
+
+#: biblio.install:22
+msgid "Drupal encountered some errors while attempting to install the database tables for the biblio module."
+msgstr ""
+
+#: biblio.install:148
+#, fuzzy
+msgid "Default"
+msgstr "Titlul implicit"
+
+#: biblio.install:149
+msgid "This is the collection that all biblio entries will be a part of if no other collection is selected. Deleting this term will render all your biblio entries inaccessable. (You've been warned!)"
+msgstr ""
+
+#: biblio.install:843
+msgid "Relational table linking keywords to biblio nodes"
+msgstr ""
+
+#: biblio.install:850
+msgid "Primary Key: The {biblio_keyword_data}.kid of the keyword of the node "
+msgstr ""
+
+#: biblio.install:857;925
+msgid "The {node}.nid of the node."
+msgstr ""
+
+#: biblio.install:864;911
+msgid "Primary Key: The {node}.vid of the node."
+msgstr ""
+
+#: biblio.install:875
+msgid "Stores the keywords related to nodes."
+msgstr ""
+
+#: biblio.install:881
+msgid "Primary Key: The id of the keyword assigned to the node "
+msgstr ""
+
+#: biblio.install:888
+#, fuzzy
+msgid "The keyword"
+msgstr "Cuvinte cheie"
+
+#: biblio.install:897
+msgid "Relational table grouping biblio nodes into collections"
+msgstr ""
+
+#: biblio.install:904
+msgid "Primary Key: The {biblio_collection_data}.cid of the collection"
+msgstr ""
+
+#: biblio.install:918
+msgid "The parent id of the collection"
+msgstr ""
+
+#: biblio.install:935
+msgid "Descriptions of the collections."
+msgstr ""
+
+#: biblio.install:942
+msgid "Primary Key: The id of the collection "
+msgstr ""
+
+#: biblio.install:949
+msgid "The name of the collection"
+msgstr ""
+
+#: biblio.install:956
+msgid "The description of the collection"
+msgstr ""
+
+#: biblio.install:965
+msgid "Relational table linking possible duplicate biblio nodes"
+msgstr ""
+
+#: biblio.install:972
+msgid "Primary Key: The {biblio}.nid of the original node "
+msgstr ""
+
+#: biblio.install:979
+msgid "The {biblio}.nid of the newly imported node which may be a duplicate."
+msgstr ""
+
+#: biblio.install:986
+msgid "The type of duplicate 0=biblio, 1=author."
+msgstr ""
+
+#: biblio.install:1007
+msgid "A collection of data to cache."
+msgstr ""
+
+#: biblio.info:0
+#, fuzzy
+msgid "Maintains biblographic lists."
+msgstr "Menţine o listă bibliografică"
+
+#: translations/biblio.db.trans.inc:5
+#, fuzzy
+msgid "Select Type..."
+msgstr "Tip fişier"
+
+#: translations/biblio.db.trans.inc:6
+msgid "Book"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:7
+msgid "Book Chapter"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:8
+msgid "Journal Article"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:9
+msgid "Conference Paper"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:10
+msgid "Conference Proceedings"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:11
+msgid "Newspaper Article"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:12
+msgid "Magazine Article"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:13
+msgid "Web Article"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:14
+msgid "Thesis"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:15
+#, fuzzy
+msgid "Report"
+msgstr "Exportă"
+
+#: translations/biblio.db.trans.inc:16
+#, fuzzy
+msgid "Film"
+msgstr "Filtru"
+
+#: translations/biblio.db.trans.inc:17
+msgid "Broadcast"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:18
+#, fuzzy
+msgid "Artwork"
+msgstr "Autor"
+
+#: translations/biblio.db.trans.inc:19
+msgid "Software"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:20
+msgid "Audiovisual"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:21
+msgid "Hearing"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:22
+#, fuzzy
+msgid "Case"
+msgstr "Renunţă"
+
+#: translations/biblio.db.trans.inc:23
+msgid "Bill"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:24
+msgid "Statute"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:25
+msgid "Patent"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:26
+msgid "Personal"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:27
+msgid "Manuscript"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:28
+msgid "Map"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:29
+msgid "Chart"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:30
+#, fuzzy
+msgid "Unpublished"
+msgstr "Anul publicării"
+
+#: translations/biblio.db.trans.inc:31
+msgid "Database"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:32
+msgid "Government Report"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:33
+msgid "Classical"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:34
+msgid "Legal Ruling"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:35
+msgid "Miscellaneous"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:36
+msgid "Miscellaneous Section"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:37
+#, fuzzy
+msgid "Test Type"
+msgstr "Tip fişier"
+
+#: translations/biblio.db.trans.inc:38
+msgid "this is a test"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:40
+msgid "Secondary Authors"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:41
+#, fuzzy
+msgid "Tertiary Authors"
+msgstr "Autori"
+
+#: translations/biblio.db.trans.inc:42
+msgid "Subsidiary Authors"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:43
+msgid "Corporate Authors"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:44
+msgid "Secondary Title"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:45
+msgid "Tertiary Title"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:47
+#, fuzzy
+msgid "ISBN Number"
+msgstr "Număr"
+
+#: translations/biblio.db.trans.inc:49
+#, fuzzy
+msgid "Other Numbers"
+msgstr "Alt număr"
+
+#: translations/biblio.db.trans.inc:50
+msgid "Other Author Affiliations"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:51
+#, fuzzy
+msgid "Publisher"
+msgstr "Anul publicării"
+
+#: translations/biblio.db.trans.inc:52
+#, fuzzy
+msgid "Place Published"
+msgstr "Anul publicării"
+
+#: translations/biblio.db.trans.inc:53
+#, fuzzy
+msgid "Year of Publication"
+msgstr "Publicaţii noi"
+
+#: translations/biblio.db.trans.inc:54
+msgid "Enter YYYY, Submitted or In Press"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:55
+#, fuzzy
+msgid "Edition"
+msgstr "Sindicare"
+
+#: translations/biblio.db.trans.inc:58
+msgid "Pagination"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:59
+#, fuzzy
+msgid "Date Published"
+msgstr "Anul publicării"
+
+#: translations/biblio.db.trans.inc:60
+msgid "(mm/yyyy)"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:61
+#, fuzzy
+msgid "Publication Language"
+msgstr "Tip publicaţie"
+
+#: translations/biblio.db.trans.inc:63
+#, fuzzy
+msgid "French Abstract"
+msgstr "Abstract"
+
+#: translations/biblio.db.trans.inc:65
+msgid "Type of Work"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:66
+msgid "Masters Thesis"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:70
+msgid "Reseach Notes"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:71
+#, fuzzy
+msgid "Custom 1"
+msgstr "personal1"
+
+#: translations/biblio.db.trans.inc:72
+#, fuzzy
+msgid "Custom 2"
+msgstr "personal2"
+
+#: translations/biblio.db.trans.inc:73
+#, fuzzy
+msgid "Custom 3"
+msgstr "personal3"
+
+#: translations/biblio.db.trans.inc:74
+#, fuzzy
+msgid "Custom 4"
+msgstr "personal4"
+
+#: translations/biblio.db.trans.inc:75
+#, fuzzy
+msgid "Custom 5"
+msgstr "personal5"
+
+#: translations/biblio.db.trans.inc:76
+#, fuzzy
+msgid "Custom 6"
+msgstr "personal6"
+
+#: translations/biblio.db.trans.inc:77
+#, fuzzy
+msgid "Custom 7"
+msgstr "personal7"
+
+#: translations/biblio.db.trans.inc:78
+msgid "Number of Volumes"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:79
+#, fuzzy
+msgid "Short Title"
+msgstr "Importă fişier"
+
+#: translations/biblio.db.trans.inc:80
+#, fuzzy
+msgid "Alternate Title"
+msgstr "Titlul implicit"
+
+#: translations/biblio.db.trans.inc:81
+#, fuzzy
+msgid "Translated Title"
+msgstr "Titlul implicit"
+
+#: translations/biblio.db.trans.inc:82
+#, fuzzy
+msgid "Original Publication"
+msgstr "Publicaţii noi"
+
+#: translations/biblio.db.trans.inc:83
+msgid "Reprint Edition"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:84
+#, fuzzy
+msgid "Section"
+msgstr "Acţiune"
+
+#: translations/biblio.db.trans.inc:85
+msgid "Citation Key"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:86
+msgid "COinS Data"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:87
+msgid "This will be automatically generated"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:88
+#, fuzzy
+msgid "ISSN Number"
+msgstr "Număr"
+
+#: translations/biblio.db.trans.inc:90
+#, fuzzy
+msgid "Author Address"
+msgstr "Autori"
+
+#: translations/biblio.db.trans.inc:91
+msgid "Remote Database Name"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:92
+msgid "Remote Database Provider"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:93
+msgid "Label"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:94
+msgid "Access Date"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:95
+msgid "City"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:97
+msgid "Series Title"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:98
+msgid "Series Editor"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:99
+msgid "Performers"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:100
+msgid "Extent of Work"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:103
+#, fuzzy
+msgid "Contents"
+msgstr "note"
+
+#: translations/biblio.db.trans.inc:104
+msgid "Cast"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:105
+#, fuzzy
+msgid "Credits"
+msgstr "modifică"
+
+#: translations/biblio.db.trans.inc:106
+msgid "Format"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:107
+msgid "Code"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:108
+msgid "Legislative Body"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:109
+msgid "Sponsor"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:110
+#, fuzzy
+msgid "Code Volume"
+msgstr "Volum "
+
+#: translations/biblio.db.trans.inc:111
+#, fuzzy
+msgid "Bill Number"
+msgstr "Număr de apel"
+
+#: translations/biblio.db.trans.inc:112
+msgid "Code Pages"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:113
+msgid "Code Section"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:114
+msgid "Session"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:115
+msgid "History"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:116
+msgid "Translator"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:117
+msgid "Abbreviation"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:118
+#, fuzzy
+msgid "Series Volume"
+msgstr "Volum "
+
+#: translations/biblio.db.trans.inc:119
+#, fuzzy
+msgid "Number of Pages"
+msgstr "Număr"
+
+#: translations/biblio.db.trans.inc:120
+#, fuzzy
+msgid "Book Title"
+msgstr "Titlu"
+
+#: translations/biblio.db.trans.inc:121
+#, fuzzy
+msgid "Editor"
+msgstr "modifică"
+
+#: translations/biblio.db.trans.inc:122
+msgid "Chapter"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:123
+msgid "Reporter"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:124
+msgid "Abbreviated Case Name"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:125
+#, fuzzy
+msgid "Counsel"
+msgstr "Renunţă"
+
+#: translations/biblio.db.trans.inc:126
+msgid "Court"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:127
+msgid "Reporter Volume"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:128
+msgid "Reporter Abbreviation"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:129
+msgid "First Page"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:130
+#, fuzzy
+msgid "Page Cited"
+msgstr "Data creării"
+
+#: translations/biblio.db.trans.inc:131
+#, fuzzy
+msgid "Date Decided"
+msgstr "Data creării"
+
+#: translations/biblio.db.trans.inc:132
+#, fuzzy
+msgid "ISSN/ISBN"
+msgstr "ISBN"
+
+#: translations/biblio.db.trans.inc:133
+msgid "Version"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:134
+msgid "Computer"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:135
+msgid "Conference Name"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:136
+msgid "Conference Location"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:137
+msgid "Year of Conference"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:138
+msgid "Image Source Program"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:139
+msgid "Name of File"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:140
+msgid "Image Size"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:141
+#, fuzzy
+msgid "Type of Image"
+msgstr "Nume tip"
+
+#: translations/biblio.db.trans.inc:142
+#, fuzzy
+msgid "Year Released"
+msgstr "Anul publicării"
+
+#: translations/biblio.db.trans.inc:143
+msgid "Series Director"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:144
+#, fuzzy
+msgid "Producer"
+msgstr "Ordine"
+
+#: translations/biblio.db.trans.inc:145
+msgid "Country"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:146
+msgid "Running Time"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:147
+#, fuzzy
+msgid "Date Released"
+msgstr "Data creării"
+
+#: translations/biblio.db.trans.inc:148
+#, fuzzy
+msgid "Medium"
+msgstr "modifică"
+
+#: translations/biblio.db.trans.inc:149
+#, fuzzy
+msgid "Genre"
+msgstr "General:"
+
+#: translations/biblio.db.trans.inc:150
+msgid "Synopsis"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:151
+msgid "Department"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:152
+#, fuzzy
+msgid "Report Number"
+msgstr "Alt număr"
+
+#: translations/biblio.db.trans.inc:153
+msgid "Government Body"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:154
+#, fuzzy
+msgid "Congress Number"
+msgstr "Număr de acces"
+
+#: translations/biblio.db.trans.inc:155
+msgid "Congress Session"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:156
+msgid "Committee"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:157
+#, fuzzy
+msgid "Document Number"
+msgstr "Număr de acces"
+
+#: translations/biblio.db.trans.inc:158
+msgid "Journal"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:159
+msgid "Alternate Journal"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:160
+msgid "Start Page"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:161
+msgid "Type of Article"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:162
+#, fuzzy
+msgid "ISSN"
+msgstr "ISBN"
+
+#: translations/biblio.db.trans.inc:163
+msgid "Issuing Organization"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:164
+#, fuzzy
+msgid "Rule Number"
+msgstr "Număr de apel"
+
+#: translations/biblio.db.trans.inc:165
+#, fuzzy
+msgid "Session Number"
+msgstr "Număr de acces"
+
+#: translations/biblio.db.trans.inc:166
+#, fuzzy
+msgid "Section Number"
+msgstr "Număr de acces"
+
+#: translations/biblio.db.trans.inc:167
+msgid "Date of Code Edition"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:168
+msgid "Magazine"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:169
+msgid "Alternate Magazine"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:170
+msgid "Frequency"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:171
+#, fuzzy
+msgid "Issue Number"
+msgstr "Număr "
+
+#: translations/biblio.db.trans.inc:172
+msgid "Collection Title"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:173
+msgid "Library/Archive"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:174
+msgid "Volume/Storage Container"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:175
+msgid "Manuscript Number"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:176
+#, fuzzy
+msgid "Folio Number"
+msgstr "Număr de apel"
+
+#: translations/biblio.db.trans.inc:177
+#, fuzzy
+msgid "Scale"
+msgstr "Salvează"
+
+#: translations/biblio.db.trans.inc:178
+msgid "Newspaper"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:179
+#, fuzzy
+msgid "Issue Date"
+msgstr "Număr "
+
+#: translations/biblio.db.trans.inc:180
+#, fuzzy
+msgid "Date Accessed"
+msgstr "Data creării"
+
+#: translations/biblio.db.trans.inc:181
+#, fuzzy
+msgid "Published Source"
+msgstr "Anul publicării"
+
+#: translations/biblio.db.trans.inc:182
+msgid "International Title"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:183
+msgid "International Author"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:184
+msgid "Assignee"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:185
+#, fuzzy
+msgid "Patent Version Number"
+msgstr "Număr de acces"
+
+#: translations/biblio.db.trans.inc:186
+#, fuzzy
+msgid "Application Number"
+msgstr "Număr de acces"
+
+#: translations/biblio.db.trans.inc:187
+msgid "International Patent Number"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:188
+msgid "International Patent Classification"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:189
+#, fuzzy
+msgid "Patent Type"
+msgstr "Tip publicaţie"
+
+#: translations/biblio.db.trans.inc:190
+#, fuzzy
+msgid "Patent Number"
+msgstr "Alt număr"
+
+#: translations/biblio.db.trans.inc:191
+msgid "Priority Numbers"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:192
+msgid "Designated States"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:193
+msgid "Attorney/Agent"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:195
+msgid "Legal Status"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:196
+#, fuzzy
+msgid "Recipient"
+msgstr "Descriere"
+
+#: translations/biblio.db.trans.inc:197
+#, fuzzy
+msgid "Communication Number"
+msgstr "Număr de acces"
+
+#: translations/biblio.db.trans.inc:198
+msgid "Institution"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:199
+#, fuzzy
+msgid "Code Number"
+msgstr "Număr de apel"
+
+#: translations/biblio.db.trans.inc:200
+#, fuzzy
+msgid "Statute Number"
+msgstr "Alt număr"
+
+#: translations/biblio.db.trans.inc:201
+msgid "Public Law Number"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:202
+#, fuzzy
+msgid "Sections"
+msgstr "Acţiune"
+
+#: translations/biblio.db.trans.inc:203
+#, fuzzy
+msgid "Date Enacted"
+msgstr "Data creării"
+
+#: translations/biblio.db.trans.inc:204
+msgid "Academic Department"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:205
+msgid "Advisor"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:206
+msgid "University"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:207
+#, fuzzy
+msgid "Degree"
+msgstr "Şterge"
+
+#: translations/biblio.db.trans.inc:208
+#, fuzzy
+msgid "Thesis Type"
+msgstr "Tip fişier"
+
+#: translations/biblio.db.trans.inc:209
+#, fuzzy
+msgid "Access Year"
+msgstr "Număr de acces"
+
+#: translations/biblio.db.trans.inc:210
+msgid "Last Update Date"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:211
+msgid "Type of Medium"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:213
+msgid "Secondary Author"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:214
+msgid "Tertiary Author"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:215
+msgid "Subsidiary Author"
+msgstr ""
+
+#: translations/biblio.db.trans.inc:216
+msgid "Corporate Author"
+msgstr ""
+
+#~ msgid "Normalize author names when displaying biblio records"
+#~ msgstr "Normalizează numele autorilor la afişare"
+#~ msgid ""
+#~ "Tries (doesn't always work) to reformat author names so that they are "
+#~ "displayed in the format \"Lastname, Initials\" e.g. Smith, J.S. (Note: "
+#~ "This setting does not modify the entry in the database, it only reformats "
+#~ "it's presentation. This option can be turned off at any time to diplay "
+#~ "the oringal format.)"
+#~ msgstr ""
+#~ "Încearcă (nu merge întotdeauna) să reformateze numele autorilor astfel "
+#~ "încât să fie afişate ca \"Nume, Iniţiale\" e.g. Smith, J.S. (Notă: "
+#~ "Această opţiune nu modifică intrarea în baza de date, doar schimbă modul "
+#~ "de afişare. Această opţiune poate fi dezactivată în orice moment pentru a "
+#~ "afişa informaţia originală.)"
+#~ msgid "Bibliography"
+#~ msgstr "Bibliografie"
+#~ msgid "Configure default behavior of the biblio module."
+#~ msgstr "Setări implicite ale modulului biblio."
+#~ msgid "Preferences"
+#~ msgstr "Preferinţe"
+#~ msgid "File Import"
+#~ msgstr "Import de fişiere "
+#~ msgid "Type Customization"
+#~ msgstr "Particularizare tip"
+#~ msgid "Field Defaults"
+#~ msgstr "Predefinit câmp"
+#~ msgid "RSS feed"
+#~ msgstr "resurse RSS"
+#~ msgid ""
+#~ "This action will reset any and all field customizations to the defaults, "
+#~ "and cannot be undone!"
+#~ msgstr ""
+#~ "Această acţiune va reseta toate particularizările câmpurilor şi nu poate "
+#~ "fi anulată!"
+#~ msgid "Click Here"
+#~ msgstr "Clic aici"
+#~ msgid "You must supply the year of publication"
+#~ msgstr "Trebuie să introduceţi anul publicării"
+#~ msgid "EndNote 8+ XML"
+#~ msgstr "EndNote 8+ XML"
+#~ msgid ""
+#~ "Here you may select terms to be assigned to imported records (if any "
+#~ "vocabularies are assigned to the biblio node type)"
+#~ msgstr ""
+#~ "Puteţi selecta termenii asociaţi înregistrărilor importate (dacă sunt "
+#~ "vocabulare asociate tipului biblio)"
+#~ msgid "You must provide a file name"
+#~ msgstr "Trebuie să specificaţi un nume de fişier"
+#~ msgid "Succesfully imported @count entries."
+#~ msgstr "Am importat @count intrări."
+#~ msgid "References &lt;bib&gt;"
+#~ msgstr "Referinţe &lt;bib&gt;"
+

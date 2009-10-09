@@ -1,9 +1,11 @@
-# $Id: image_attach.pot,v 1.2 2008/04/14 18:20:46 hass Exp $
+# $Id: image_attach.pot,v 1.4 2008/12/27 11:08:36 hass Exp $
 #
-# LANGUAGE translation of Drupal (general)
+# LANGUAGE translation of Drupal (contrib-image_attach)
 # Copyright YEAR NAME <EMAIL@ADDRESS>
 # Generated from files:
-#  image_attach.module,v 1.37 2008/02/12 21:11:43 drewish
+#  image_attach.views.inc,v 1.3 2008/10/20 23:52:48 drewish
+#  image_attach.module,v 1.44 2008/12/27 06:58:41 drewish
+#  contrib/image_attach/image_attach_views_handler_field_iid.inc: n/a
 #  image_attach.info,v 1.4 2008/01/06 22:15:24 drewish
 #  image_attach.install,v 1.12 2008/01/06 22:15:24 drewish
 #
@@ -11,7 +13,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2008-04-14 20:16+0200\n"
+"POT-Creation-Date: 2008-12-27 12:04+0100\n"
 "PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
 "Last-Translator: NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
@@ -20,175 +22,163 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: image_attach.module:16 image_attach.info:0
-msgid "Allows easy attaching of image nodes to other content types."
-msgstr ""
-
-#: image_attach.module:49
-msgid "Attach existing images"
-msgstr ""
-
-#: image_attach.module:52
-msgid "When enabled, will allow existing image nodes to be attached instead of uploading new images."
-msgstr ""
-
-#: image_attach.module:65;82;183
-msgid "Attached Images"
-msgstr ""
-
-#: image_attach.module:99
-msgid "Image size"
-msgstr ""
-
-#: image_attach.module:102
-msgid "This determines the size of the image that appears in the block."
-msgstr ""
-
-#: image_attach.module:126
-msgid "<Hidden>"
-msgstr ""
-
-#: image_attach.module:133
-msgid "Image Attach settings"
-msgstr ""
-
-#: image_attach.module:139
-msgid "Attach Images"
-msgstr ""
-
-#: image_attach.module:141
-msgid "Disabled"
-msgstr ""
-
-#: image_attach.module:141
-msgid "Enabled"
-msgstr ""
-
-#: image_attach.module:142
-msgid "Should this node allows users to upload an image?"
-msgstr ""
-
-#: image_attach.module:146
-msgid "Teaser image size"
-msgstr ""
-
-#: image_attach.module:149
-msgid "This determines the size of the image that appears when the node is displayed as a teaser. 'Hidden' will not show the image."
-msgstr ""
-
-#: image_attach.module:153
-msgid "Teaser image weight"
-msgstr ""
-
-#: image_attach.module:155
-msgid "This value determines the order of the image when displayed in the teaser."
-msgstr ""
-
-#: image_attach.module:159
-msgid "Full node image size"
-msgstr ""
-
-#: image_attach.module:162
-msgid "This determines the size of the image that appears when the full node is displayed. 'Hidden' will not show the image."
-msgstr ""
-
-#: image_attach.module:166
-msgid "Full node image weight"
-msgstr ""
-
-#: image_attach.module:168
-msgid "This value determines the order of the image when displayed in the body."
-msgstr ""
-
-#: image_attach.module:191
-msgid "Thumbnail"
-msgstr ""
-
-#: image_attach.module:198
-msgid "Existing Image"
-msgstr ""
-
-#: image_attach.module:201
-msgid "Choose an image already existing on the server if you do not upload a new one."
-msgstr ""
-
-#: image_attach.module:205
-msgid "-or-"
-msgstr ""
-
-#: image_attach.module:217
-msgid "Upload Image"
-msgstr ""
-
-#: image_attach.module:221
-msgid "Image title"
-msgstr ""
-
-#: image_attach.module:223
-msgid "The title the image will be shown with."
-msgstr ""
-
-#: image_attach.module:333
-msgid "None"
-msgstr ""
-
-#: image_attach.module:357
-msgid "Image Attach: Display Image"
-msgstr ""
-
-#: image_attach.module:359 image_attach.info:0
-msgid "Image"
-msgstr ""
-
-#: image_attach.module:360
-msgid "Image with link to attaching node"
-msgstr ""
-
-#: image_attach.module:361
-msgid "Image with link to attached image"
-msgstr ""
-
-#: image_attach.module:372
-msgid "Image Attach: Attached image"
-msgstr ""
-
-#: image_attach.module:373
-msgid "Exists"
-msgstr ""
-
-#: image_attach.module:377
-msgid "Filter by whether or not the node has an attached image."
-msgstr ""
-
-#: image_attach.module:27
-msgid "Image Attachment View"
-msgstr ""
-
-#: image_attach.module:33
+#: contrib/image_attach/image_attach.views.inc:13 contrib/image_attach/image_attach.module:33
 msgid "Image attach"
 msgstr ""
 
-#: image_attach.module:34
-msgid "Enable image attach for content"
+#: contrib/image_attach/image_attach.views.inc:27
+msgid "Attached image"
 msgstr ""
 
-#: image_attach.module:0
+#: contrib/image_attach/image_attach.views.inc:32
+msgid "An image attached to a node."
+msgstr ""
+
+#: contrib/image_attach/image_attach_views_handler_field_iid.inc:28 contrib/image_attach/image_attach.module:102
+msgid "Image size"
+msgstr ""
+
+#: contrib/image_attach/image_attach_views_handler_field_iid.inc:36
+msgid "No link"
+msgstr ""
+
+#: contrib/image_attach/image_attach_views_handler_field_iid.inc:36
+msgid "Node"
+msgstr ""
+
+#: contrib/image_attach/image_attach_views_handler_field_iid.inc:36
+msgid "Image node"
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:16 contrib/image_attach/image_attach.info:0
+msgid "Allows easy attaching of image nodes to other content types."
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:49
+msgid "Attach existing images"
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:52;144
+msgid "Disabled"
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:53;144
+msgid "Enabled"
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:55
+msgid "When enabled, will allow existing image nodes to be attached instead of uploading new images."
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:68;85;186
+msgid "Attached images"
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:105
+msgid "This determines the size of the image that appears in the block."
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:129
+msgid "<Hidden>"
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:136
+msgid "Image Attach settings"
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:142
+msgid "Attach images"
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:145
+msgid "Should this node allows users to upload an image?"
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:149
+msgid "Teaser image size"
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:152
+msgid "This determines the size of the image that appears when the node is displayed as a teaser. 'Hidden' will not show the image."
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:156
+msgid "Teaser image weight"
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:158
+msgid "This value determines the order of the image when displayed in the teaser."
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:162
+msgid "Full node image size"
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:165
+msgid "This determines the size of the image that appears when the full node is displayed. 'Hidden' will not show the image."
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:169
+msgid "Full node image weight"
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:171
+msgid "This value determines the order of the image when displayed in the body."
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:204
+msgid "Existing image"
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:207
+msgid "Choose an image already existing on the server if you do not upload a new one."
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:211
+msgid "-or-"
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:223
+msgid "Upload image"
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:229
+msgid "The title the image will be shown with."
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:250
+msgid "Created new image to attach to this node. !image_link"
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:324
+msgid "None"
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:27
+msgid "Image attachment view"
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:34
+msgid "Enable image attach for content."
+msgstr ""
+
+#: contrib/image_attach/image_attach.module:0
 msgid "image_attach"
 msgstr ""
 
-#: image_attach.install:9
+#: contrib/image_attach/image_attach.install:9
 msgid "Stores the image/node relationship."
 msgstr ""
 
-#: image_attach.install:12
+#: contrib/image_attach/image_attach.install:12
 msgid "Primary Key: The {node}.nid of the node."
 msgstr ""
 
-#: image_attach.install:18
+#: contrib/image_attach/image_attach.install:18
 msgid "TODO"
 msgstr ""
 
-#: image_attach.info:0
+#: contrib/image_attach/image_attach.info:0
 msgid "Image Attach"
 msgstr ""
 

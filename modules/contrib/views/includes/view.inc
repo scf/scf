@@ -1,5 +1,5 @@
 <?php
-// $Id: view.inc,v 1.143 2008/12/16 19:03:48 merlinofchaos Exp $
+// $Id: view.inc,v 1.159 2009/06/04 18:40:45 merlinofchaos Exp $
 /**
  * @file view.inc
  * Provides the view object type and associated methods.
@@ -28,6 +28,9 @@ class view extends views_db_object {
   var $build_info = array();
 
   var $use_ajax = FALSE;
+
+  // Where the results of a query will go.
+  var $result = array();
 
   // pager variables
   var $pager = array(
@@ -467,12 +470,16 @@ class view extends views_db_object {
           $argument->query();
         }
 
+        // Add this argument's substitution
+        $substitutions['%' . ($position + 1)] = $arg_title;
+
         // Since we're really generating the breadcrumb for the item above us,
         // check the default action of this argument.
         if ($this->display_handler->uses_breadcrumb() && $argument->uses_breadcrumb()) {
           $path = $this->get_url($breadcrumb_args);
           if (strpos($path, '%') === FALSE) {
-            $this->build_info['breadcrumb'][$path] = str_replace(array_keys($substitutions), $substitutions, $title);
+            $breadcrumb = !empty($argument->options['breadcrumb'])? $argument->options['breadcrumb'] : $title;
+            $this->build_info['breadcrumb'][$path] = str_replace(array_keys($substitutions), $substitutions, $breadcrumb);
           }
         }
 
@@ -483,9 +490,6 @@ class view extends views_db_object {
         if (!empty($argument->options['title'])) {
           $title = $argument->options['title'];
         }
-
-        // Add this argument's substitution
-        $substitutions['%' . ($position + 1)] = $arg_title;
 
         $breadcrumb_args[] = $arg;
       }
@@ -503,6 +507,9 @@ class view extends views_db_object {
     if (!empty($title)) {
       $this->build_info['title'] = str_replace(array_keys($substitutions), $substitutions, $title);
     }
+
+    // Store the arguments for later use.
+    $this->build_info['substitutions'] = $substitutions;
 
     return $status;
   }
@@ -546,7 +553,11 @@ class view extends views_db_object {
 
     $start = views_microtime();
     // If that fails, let's build!
-    $this->build_info = array();
+    $this->build_info = array(
+      'query' => '',
+      'count_query' => '',
+      'query_args' => array(),
+    );
 
     $this->init_query();
 
@@ -563,6 +574,10 @@ class view extends views_db_object {
 
     if ($this->display_handler->uses_exposed()) {
       $this->exposed_widgets = $this->render_exposed_form();
+      if (form_set_error() || !empty($this->build_info['abort'])) {
+        $this->built = TRUE;
+        return empty($this->build_info['fail']);
+      }
     }
 
     // Build all the relationships first thing.
@@ -620,6 +635,9 @@ class view extends views_db_object {
     $this->build_info['query_args'] = $this->query->get_where_args();
     $this->built = TRUE;
     $this->build_time = views_microtime() - $start;
+
+    // Attach displays
+    $this->attach_displays();
     return TRUE;
   }
 
@@ -671,73 +689,90 @@ class view extends views_db_object {
 
     vpr($query);
 
-    $items = array();
-    if ($query) {
-      $replacements = module_invoke_all('views_query_substitutions', $this);
-      $query = str_replace(array_keys($replacements), $replacements, $query);
-      $count_query = 'SELECT COUNT(*) FROM (' . str_replace(array_keys($replacements), $replacements, $count_query) . ') count_alias';
 
-      if (is_array($args)) {
-        foreach ($args as $id => $arg) {
-          $args[$id] = str_replace(array_keys($replacements), $replacements, $arg);
-        }
-      }
+    // Check for already-cached results.
+    if (!empty($this->live_preview)) {
+      $cache = FALSE;
+    }
+    else {
+      $cache = $this->display_handler->get_cache_plugin();
+    }
+    if ($cache && $cache->cache_get('results')) {
+      vpr('Used cached results');
+    }
+    else {
+      $items = array();
+      if ($query) {
+        $replacements = module_invoke_all('views_query_substitutions', $this);
+        $query = str_replace(array_keys($replacements), $replacements, $query);
+        $count_query = 'SELECT COUNT(*) FROM (' . str_replace(array_keys($replacements), $replacements, $count_query) . ') count_alias';
 
-      // Allow for a view to query an external database.
-      if (isset($this->base_database)) {
-        db_set_active($this->base_database);
-        $external = TRUE;
-      }
-
-      $start = views_microtime();
-      if (!empty($this->pager['items_per_page'])) {
-        // We no longer use pager_query() here because pager_query() does not
-        // support an offset. This is fine as we don't actually need pager
-        // query; we've already been doing most of what it does, and we
-        // just need to do a little more playing with globals.
-        if (!empty($this->pager['use_pager']) || !empty($this->get_total_rows)) {
-          $this->total_rows = db_result(db_query($count_query, $args)) - $this->pager['offset'];
-        }
-
-        if (!empty($this->pager['use_pager'])) {
-          // dump information about what we already know into the globals
-          global $pager_page_array, $pager_total, $pager_total_items;
-          // total rows in query
-          $pager_total_items[$this->pager['element']] = $this->total_rows;
-          // total pages
-          $pager_total[$this->pager['element']] = ceil($pager_total_items[$this->pager['element']] / $this->pager['items_per_page']);
-
-          // What page was requested:
-          $pager_page_array = isset($_GET['page']) ? explode(',', $_GET['page']) : array();
-
-          // If the requested page was within range. $this->pager['current_page']
-          // defaults to 0 so we don't need to set it in an out-of-range condition.
-          if (!empty($pager_page_array[$this->pager['element']])) {
-            $page = intval($pager_page_array[$this->pager['element']]);
-            if ($page > 0 && $page < $pager_total[$this->pager['element']]) {
-              $this->pager['current_page'] = $page;
-            }
+        if (is_array($args)) {
+          foreach ($args as $id => $arg) {
+            $args[$id] = str_replace(array_keys($replacements), $replacements, $arg);
           }
-          $pager_page_array[$this->pager['element']] = $this->pager['current_page'];
         }
 
-        $offset = $this->pager['current_page'] * $this->pager['items_per_page'] + $this->pager['offset'];
-        $result = db_query_range($query, $args, $offset, $this->pager['items_per_page']);
+        // Allow for a view to query an external database.
+        if (isset($this->base_database)) {
+          db_set_active($this->base_database);
+          $external = TRUE;
+        }
 
-      }
-      else {
-        $result = db_query($query, $args);
-      }
+        $start = views_microtime();
+        if (!empty($this->pager['items_per_page'])) {
+          // We no longer use pager_query() here because pager_query() does not
+          // support an offset. This is fine as we don't actually need pager
+          // query; we've already been doing most of what it does, and we
+          // just need to do a little more playing with globals.
+          if (!empty($this->pager['use_pager']) || !empty($this->get_total_rows)) {
+            $this->total_rows = db_result(db_query($count_query, $args)) - $this->pager['offset'];
+          }
 
-      $this->result = array();
-      while ($item = db_fetch_object($result)) {
-        $this->result[] = $item;
+          if (!empty($this->pager['use_pager'])) {
+            // dump information about what we already know into the globals
+            global $pager_page_array, $pager_total, $pager_total_items;
+            // total rows in query
+            $pager_total_items[$this->pager['element']] = $this->total_rows;
+            // total pages
+            $pager_total[$this->pager['element']] = ceil($pager_total_items[$this->pager['element']] / $this->pager['items_per_page']);
+
+            // What page was requested:
+            $pager_page_array = isset($_GET['page']) ? explode(',', $_GET['page']) : array();
+
+            // If the requested page was within range. $this->pager['current_page']
+            // defaults to 0 so we don't need to set it in an out-of-range condition.
+            if (!empty($pager_page_array[$this->pager['element']])) {
+              $page = intval($pager_page_array[$this->pager['element']]);
+              if ($page > 0 && $page < $pager_total[$this->pager['element']]) {
+                $this->pager['current_page'] = $page;
+              }
+            }
+            $pager_page_array[$this->pager['element']] = $this->pager['current_page'];
+          }
+
+          $offset = $this->pager['current_page'] * $this->pager['items_per_page'] + $this->pager['offset'];
+          $result = db_query_range($query, $args, $offset, $this->pager['items_per_page']);
+
+        }
+        else {
+          $result = db_query($query, $args);
+        }
+
+        $this->result = array();
+        while ($item = db_fetch_object($result)) {
+          $this->result[] = $item;
+        }
+        if (!empty($external)) {
+          db_set_active();
+        }
+        $this->execute_time = views_microtime() - $start;
       }
-      if (!empty($external)) {
-        db_set_active();
+      if ($cache) {
+        $cache->cache_set('results');
       }
     }
-    $this->execute_time = views_microtime() - $start;
+
     $this->executed = TRUE;
   }
 
@@ -745,13 +780,10 @@ class view extends views_db_object {
    * Render this view for display.
    */
   function render($display_id = NULL) {
-    // Check for cached output.
-    // @todo: Implement this
-
     $this->execute($display_id);
 
     // Check to see if the build failed.
-    if (!isset($this->result)) {
+    if (!empty($this->build_info['fail'])) {
       return;
     }
 
@@ -760,39 +792,75 @@ class view extends views_db_object {
       $this->start_query_capture();
     }
 
-    // Initialize the style plugin.
-    $this->init_style();
-
-    $this->style_plugin->pre_render($this->result);
-
-    // Let modules modify the view just prior to executing it.
-    foreach (module_implements('views_pre_render') as $module) {
-      $function = $module . '_views_pre_render';
-      $function($this);
+    // Check for already-cached output.
+    if (!empty($this->live_preview)) {
+      $cache = FALSE;
     }
+    else {
+      $cache = $this->display_handler->get_cache_plugin();
+    }
+    if ($cache && $cache->cache_get('output')) {
+      vpr('Used cached output');
+    }
+    else {
+      if ($cache) {
+        $cache->cache_start();
+      }
 
-    // Give field handlers the opportunity to perform additional queries
-    // using the entire resultset prior to rendering.
-    if ($this->style_plugin->uses_fields()) {
-      foreach ($this->field as $id => $handler) {
-        if (!empty($this->field[$id])) {
-          $this->field[$id]->pre_render($this->result);
+      // Initialize the style plugin.
+      $this->init_style();
+
+      $this->style_plugin->pre_render($this->result);
+
+      // Let modules modify the view just prior to executing it.
+      foreach (module_implements('views_pre_render') as $module) {
+        $function = $module . '_views_pre_render';
+        $function($this);
+      }
+
+      // Give field handlers the opportunity to perform additional queries
+      // using the entire resultset prior to rendering.
+      if ($this->style_plugin->uses_fields()) {
+        foreach ($this->field as $id => $handler) {
+          if (!empty($this->field[$id])) {
+            $this->field[$id]->pre_render($this->result);
+          }
         }
+      }
+      $this->display_handler->output = $this->display_handler->render();
+      if ($cache) {
+        $cache->cache_set('output');
       }
     }
 
-    $output = $this->display_handler->render();
     if (!empty($this->live_preview) && variable_get('views_show_additional_queries', FALSE)) {
       $this->end_query_capture();
     }
     $this->render_time = views_microtime() - $start;
-    return $output;
+
+    return $this->display_handler->output;
+  }
+
+  /**
+   * Render a specific field via the field ID and the row #.
+   */
+  function render_field($field, $row) {
+    if (isset($this->field[$field]) && isset($this->result[$row])) {
+      return $this->field[$field]->advanced_render($this->result[$row]);
+    }
   }
 
   /**
    * Execute the given display, with the given arguments.
    * To be called externally by whatever mechanism invokes the view,
    * such as a page callback, hook_block, etc.
+   *
+   * This function should NOT be used by anything external as this
+   * returns data in the format specified by the display. It can also
+   * have other side effects that are only intended for the 'proper'
+   * use of the display, such as setting page titles and breadcrumbs.
+   *
+   * If you simply want to view the display, use view::preview() instead.
    */
   function execute_display($display_id = NULL, $args = array()) {
     if (empty($this->current_display) || $this->current_display != $this->choose_display($display_id)) {
@@ -840,6 +908,7 @@ class view extends views_db_object {
   function pre_execute($args = array()) {
     $this->old_view[] = views_get_current_view();
     views_set_current_view($this);
+    $display_id = $this->current_display;
 
     // Let modules modify the view just prior to executing it.
     foreach (module_implements('views_pre_view') as $module) {
@@ -853,7 +922,7 @@ class view extends views_db_object {
       $this->set_arguments($args);
     }
 
-    $this->attach_displays();
+//    $this->attach_displays();
 
     // Allow the display handler to set up for execution
     $this->display_handler->pre_execute();
@@ -872,20 +941,27 @@ class view extends views_db_object {
 
     views_set_current_view(isset($old_view) ? $old_view : FALSE);
   }
+
   /**
    * Run attachment displays for the view.
    */
   function attach_displays() {
+    if (!empty($this->is_attachment)) {
+      return;
+    }
+
     if (!$this->display_handler->accept_attachments()) {
       return;
     }
 
+    $this->is_attachment = TRUE;
     // Give other displays an opportunity to attach to the view.
     foreach ($this->display as $id => $display) {
       if (!empty($this->display[$id]->handler)) {
         $this->display[$id]->handler->attach_to($this->current_display);
       }
     }
+    $this->is_attachment = FALSE;
   }
 
   /**
@@ -1073,7 +1149,9 @@ class view extends views_db_object {
           $base = FALSE;
           $title = t('Home');
         }
-        $breadcrumb[] = l($title, $path, array('html' => true));
+        if ($title) {
+          $breadcrumb[] = l($title, $path, array('html' => true));
+        }
       }
 
       if ($set) {
@@ -1393,7 +1471,7 @@ class view extends views_db_object {
   function clone_view() {
     $clone = version_compare(phpversion(), '5.0') < 0 ? $this : clone($this);
 
-    $keys = array('current_display', 'display_handler', 'build_info', 'built', 'executed', 'attachment_before', 'attachment_after');
+    $keys = array('current_display', 'display_handler', 'build_info', 'built', 'executed', 'attachment_before', 'attachment_after', 'field', 'argument', 'filter', 'sort', 'relationship', 'query', 'inited', 'style_plugin', 'plugin_name', 'exposed_data', 'exposed_input', 'many_to_one_tables');
     foreach ($keys as $key) {
       if (isset($clone->$key)) {
         unset($clone->$key);
@@ -1403,6 +1481,7 @@ class view extends views_db_object {
     $clone->build_info = array();
     $clone->attachment_before = '';
     $clone->attachment_after = '';
+    $clone->result = array();
 
     // shallow cloning means that all the display objects
     // *were not cloned*. We must clone them ourselves.

@@ -1,6 +1,0 @@
-; $Id: print_pdf.info,v 1.1.2.3 2008/05/13 00:12:55 jcnventura Exp $
-name = "PDF version"
-description = "Adds the capability to export pages as PDF."
-dependencies[] = print
-core=6.x
-package = "Printer-friendly pages"

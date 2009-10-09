@@ -1,4 +1,4 @@
-// $Id: dependent.js,v 1.5 2008/06/23 20:00:58 merlinofchaos Exp $
+// $Id: dependent.js,v 1.8 2009/06/02 17:12:13 merlinofchaos Exp $
 /**
  * @file dependent.js
  *
@@ -21,20 +21,18 @@
  *   override it.
  */
 
-Drupal.Views.dependent = {};
+Drupal.Views = Drupal.Views || {};
 
-Drupal.Views.dependent.bindings = {};
-Drupal.Views.dependent.activeBindings = {};
-Drupal.Views.dependent.activeTriggers = [];
+Drupal.Views.dependent = { bindings: {}, activeBindings: {}, activeTriggers: [] };
 
 Drupal.Views.dependent.inArray = function(array, search_term) {
   var i = array.length;
   if (i > 0) {
-	 do {
-		if (array[i] == search_term) {
-		   return true;
-		}
-	 } while (i--);
+   do {
+    if (array[i] == search_term) {
+       return true;
+    }
+   } while (i--);
   }
   return false;
 }
@@ -75,7 +73,7 @@ Drupal.Views.dependent.autoAttach = function() {
       // Drupal.settings.viewsAjax.formRelationships[id].values[bind_id] holds the possible values
 
       if (bind_id.substring(0, 6) == 'radio:') {
-        var trigger_id = "input[@name='" + bind_id.substring(6) + "']";
+        var trigger_id = "input[name='" + bind_id.substring(6) + "']";
       }
       else {
         var trigger_id = '#' + bind_id;
@@ -107,7 +105,7 @@ Drupal.Views.dependent.autoAttach = function() {
 
           for (i in Drupal.Views.dependent.bindings[bind_id]) {
             var id = Drupal.Views.dependent.bindings[bind_id][i];
-            
+
             // Fix numerous errors
             if (typeof id != 'string') {
               continue;

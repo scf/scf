@@ -9,3 +9,7 @@
 .node {
   clear: both;
 }
+.image-unpublished {
+  background-color:#FFF4F4;
+  padding: 1em;
+}

@@ -1,7 +1,7 @@
-<!-- $Id: api-plugins.html,v 1.5 2008/09/03 19:21:29 merlinofchaos Exp $ -->
+<!-- $Id: api-plugins.html,v 1.7 2009/01/09 16:47:07 merlinofchaos Exp $ -->
 In Views, a plugin is a bit like a handler, but plugins are not directly responsible for building the query. Instead, they are objects that are used to display the view or make other modifications.
 
-There are 5 types of plugins in Views:
+There are 6 types of plugins in Views:
 <dl>
 <dt>Display</dt>
 <dd>Display plugins are responsible for controlling <strong>where</strong> a view lives. Page and block are the most common displays, as well as the ubiquitous 'default' display which is likely what will be embedded.</dd>
@@ -13,6 +13,8 @@ There are 5 types of plugins in Views:
 <dd>Argument default plugins allow pluggable ways of providing arguments for blocks. Views includes plugins to extract node and user IDs from the URL; additional plugins could be used for a wide variety of tasks.</dd>
 <dt>Argument validator</dt>
 <dd>Validator plugins can ensure arguments are valid, and even do transformations on the arguments.</dd>
+<dt>Access</dt>
+<dd>Access plugins are responsible for controlling access to the view.</dd>
 </dl>
 
 Plugins are registered by implementing <strong>hook_views_plugins()</strong> in your modulename.views.inc file and returning an array of data.
@@ -35,8 +37,11 @@ The array will look something like this:
     'argument validator' => array(
       // ... list of argument validator plugins,
      ),
+     'access' => array(
+      // ... list of access plugins,
+     ),
   );
-<code>
+</code>
 
 Each plugin will be registered with an identifier for the plugin, plus a fairly lengthy list of items that can define how and where the plugin is used. Here is an example from Views core:
 

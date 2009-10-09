@@ -1,4 +1,4 @@
-<!-- $Id: view-type.html,v 1.4 2008/09/10 21:33:13 merlinofchaos Exp $ -->
+<!-- $Id: view-type.html,v 1.5 2009/02/20 20:46:48 merlinofchaos Exp $ -->
 <p>The <strong>view type</strong> describes how this view is stored; Views is capable of having Views entirely in code that are not in the database. This allows modules to easily ship with Views built in, and it allows you to create a module to store your views for easy deployment between development and production servers.</p>
 
 <dl>
@@ -18,5 +18,5 @@ You may store your views in code with the following procedure:
 <li> Add the function <em>MODULENAME_views_default_views()</em> to this module. </li>
 <li> Export the view you wish to store in your module in code. Cut and paste that into the abovenamed function. Make sure the last line of the view is: <em>$views[$view-&gt;name] = $view;</em></li>
 <li> Make sure the last line of the function is <em>return $views;</em></li>
-<li> After you make any changes, be sure to <strong>clear the Views' cache</strong>. You may do this from the <strong>Tools</strong> menu.
+<li> After you make any changes, be sure to <strong>clear the Views' cache</strong>. You may do this from the <strong>Tools</strong> menu.</li>
 </ol>

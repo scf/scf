@@ -1,5 +1,5 @@
 <?php
-// $Id: views_handler_field_term_node_tid.inc,v 1.2 2008/09/22 18:13:51 merlinofchaos Exp $
+// $Id: views_handler_field_term_node_tid.inc,v 1.3 2009/04/07 22:02:40 merlinofchaos Exp $
 
 /**
  * Field handler for terms.
@@ -71,7 +71,9 @@ class views_handler_field_term_node_tid extends views_handler_field_prerender_li
     $this->field_alias = $this->aliases['vid'];
     $vids = array();
     foreach ($values as $result) {
-      $vids[] = $result->{$this->aliases['vid']};
+      if (!empty($result->{$this->aliases['vid']})) {
+        $vids[] = $result->{$this->aliases['vid']};
+      }
     }
 
     if ($vids) {

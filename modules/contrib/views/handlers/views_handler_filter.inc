@@ -1,5 +1,5 @@
 <?php
-// $Id: views_handler_filter.inc,v 1.4 2008/10/20 19:35:53 merlinofchaos Exp $
+// $Id: views_handler_filter.inc,v 1.9 2009/06/03 00:05:05 merlinofchaos Exp $
 /**
  * @defgroup views_filter_handlers Views' filter handlers
  * @{
@@ -163,8 +163,8 @@ class views_handler_filter extends views_handler {
   function show_value_form(&$form, &$form_state) {
     $this->value_form($form, $form_state);
     if (empty($this->no_operator)) {
-      $form['value']['#prefix'] = '<div class="views-right-70">';
-      $form['value']['#suffix'] = '</div>';
+      $form['value']['#prefix'] = '<div class="views-right-70">' . (isset($form['value']['#prefix']) ? $form['value']['#prefix'] : '');
+      $form['value']['#suffix'] = (isset($form['value']['#suffix']) ? $form['value']['#suffix'] : '') . '</div>';
     }
   }
 
@@ -230,7 +230,7 @@ class views_handler_filter extends views_handler {
     }
 
     $form['expose'] = array(
-      '#prefix' => '<div class="views-expose-options clear">',
+      '#prefix' => '<div class="views-expose-options clear-block">',
       '#suffix' => '</div>',
     );
     $this->expose_form($form, $form_state);
@@ -462,7 +462,8 @@ class views_handler_filter extends views_handler {
     }
 
     if ($type == 'value' && !empty($this->options['expose']['optional']) && $form['#type'] == 'select' && empty($form['#multiple'])) {
-      $form['#options'] = array('All' => t('<Any>')) + $form['#options'];
+      $any_label = variable_get('views_exposed_filter_any_label', 'old_any') == 'old_any' ? t('<Any>') : t('- Any -');
+      $form['#options'] = array('All' => $any_label) + $form['#options'];
       $form['#default_value'] = 'All';
     }
   }

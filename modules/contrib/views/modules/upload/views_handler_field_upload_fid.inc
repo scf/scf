@@ -1,11 +1,15 @@
 <?php
-// $Id: views_handler_field_upload_fid.inc,v 1.3 2008/11/19 22:44:30 merlinofchaos Exp $
+// $Id: views_handler_field_upload_fid.inc,v 1.6 2009/04/07 22:48:03 merlinofchaos Exp $
 /**
  * Field handler to provide a list of roles.
  */
 class views_handler_field_upload_fid extends views_handler_field_prerender_list {
   function construct() {
     parent::construct();
+  }
+
+  function allow_advanced_render() {
+    return FALSE;
   }
 
   function option_definition() {
@@ -34,7 +38,6 @@ class views_handler_field_upload_fid extends views_handler_field_prerender_list 
     $vids = array();
     $this->items = array();
 
-    $data = array();
     foreach ($values as $result) {
       $vids[] = $result->{$this->field_alias};
     }
@@ -61,8 +64,6 @@ class views_handler_field_upload_fid extends views_handler_field_prerender_list 
     if (!empty($this->options['link_to_file']) && $data !== NULL && $data !== '') {
       return l($data, file_create_url($values->filepath), array('html' => TRUE));
     }
-    else {
-      return $data;
-    }
+    return $data;
   }
 }

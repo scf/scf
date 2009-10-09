@@ -1,5 +1,5 @@
 <?php
-// $Id: views_handler_filter_vocabulary_vid.inc,v 1.2 2008/09/22 18:13:51 merlinofchaos Exp $
+// $Id: views_handler_filter_vocabulary_vid.inc,v 1.3 2009/06/10 22:04:58 merlinofchaos Exp $
 
 /**
  * Filter by vocabulary id
@@ -13,7 +13,7 @@ class views_handler_filter_vocabulary_vid extends views_handler_filter_in_operat
     $this->value_options = array();
     $vocabularies = taxonomy_get_vocabularies();
     foreach ($vocabularies as $voc) {
-      $this->value_options[$voc->vid] = check_plain($voc->name);
+      $this->value_options[$voc->vid] = $voc->name;
     }
   }
 }

@@ -1,8 +1,8 @@
 <?php
-// $Id: views_plugin_access_role.inc,v 1.1 2008/09/08 22:50:17 merlinofchaos Exp $
+// $Id: views_plugin_access_role.inc,v 1.2 2009/01/07 23:31:13 merlinofchaos Exp $
 
 /**
- * Access plugin that provides no access control at all.
+ * Access plugin that provides role-based access control.
  */
 class views_plugin_access_role extends views_plugin_access {
   function access($account) {

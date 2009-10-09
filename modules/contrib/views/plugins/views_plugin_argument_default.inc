@@ -1,8 +1,18 @@
 <?php
-// $Id: views_plugin_argument_default.inc,v 1.1 2008/09/03 19:21:30 merlinofchaos Exp $
+// $Id: views_plugin_argument_default.inc,v 1.2 2009/06/01 23:34:55 merlinofchaos Exp $
 /**
  * @file
  * Contains the fixed argument default plugin.
+ */
+
+/**
+ * @defgroup views_argument_default_plugins Views' argument default plugins
+ * @{
+ *
+ * Allow specialized methods of filling in arguments when they aren't
+ * provided.
+ *
+ * @see hook_views_plugins
  */
 
 /**
@@ -62,3 +72,8 @@ class views_plugin_argument_default extends views_plugin {
     return isset($this->argument->options[$this->option_name]) ? $this->argument->options[$this->option_name] : '';
   }
 }
+
+/**
+ * @}
+ */
+

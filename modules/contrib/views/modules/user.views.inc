@@ -1,5 +1,5 @@
 <?php
-//$Id: user.views.inc,v 1.55 2008/12/02 19:37:08 merlinofchaos Exp $
+//$Id: user.views.inc,v 1.57 2009/06/02 20:18:26 merlinofchaos Exp $
 /**
  * @file
  * Provide views data and handlers for user.module
@@ -98,6 +98,22 @@ function user_views_data() {
     'help' => t('Email address for a given user. This field is normally not shown to users, so be cautious when using it.'), // The help that appears on the UI,
     'field' => array(
       'handler' => 'views_handler_field_user_mail',
+      'click sortable' => TRUE,
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_string',
+    ),
+  );
+
+  // language
+  $data['users']['language'] = array(
+    'title' => t('Language'), // The item it appears as on the UI,
+    'help' => t('Language of the user'),
+    'field' => array(
+      'handler' => 'views_handler_field_user_language',
       'click sortable' => TRUE,
     ),
     'sort' => array(
@@ -312,6 +328,13 @@ function user_views_plugins() {
         'parent' => 'fixed', // so that the parent class is included
       ),
     ),
+    'argument validator' => array(
+      'user' => array(
+        'title' => t('User'),
+        'handler' => 'views_plugin_argument_validate_user',
+        'path' => drupal_get_path('module', 'views') . '/modules/user', // not necessary for most modules
+      ),
+    ),
   );
 }
 
@@ -344,6 +367,9 @@ function user_views_handlers() {
         'parent' => 'views_handler_field_user_link',
       ),
       'views_handler_field_user_mail' => array(
+        'parent' => 'views_handler_field_user',
+      ),
+      'views_handler_field_user_language' => array(
         'parent' => 'views_handler_field_user',
       ),
       'views_handler_field_user_picture' => array(

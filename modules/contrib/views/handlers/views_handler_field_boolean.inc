@@ -1,5 +1,6 @@
 <?php
-// $Id: views_handler_field_boolean.inc,v 1.1 2008/09/03 19:21:28 merlinofchaos Exp $
+// $Id: views_handler_field_boolean.inc,v 1.2 2009/01/30 00:01:41 merlinofchaos Exp $
+
 /**
  * A handler to provide proper displays for dates.
  *

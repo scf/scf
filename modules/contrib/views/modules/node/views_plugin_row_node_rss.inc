@@ -1,5 +1,5 @@
 <?php
-// $Id: views_plugin_row_node_rss.inc,v 1.3 2008/12/02 22:17:42 merlinofchaos Exp $
+// $Id: views_plugin_row_node_rss.inc,v 1.7 2009/06/02 20:14:43 merlinofchaos Exp $
 /**
  * @file
  * Contains the node RSS row style plugin.
@@ -10,6 +10,10 @@
  * and formats it as an RSS item.
  */
 class views_plugin_row_node_rss extends views_plugin_row {
+  // Basic properties that let the row style follow relationships.
+  var $base_table = 'node';
+  var $base_field = 'nid';
+
   function option_definition() {
     $options = parent::option_definition();
 
@@ -19,6 +23,8 @@ class views_plugin_row_node_rss extends views_plugin_row {
   }
 
   function options_form(&$form, &$form_state) {
+    parent::options_form($form, $form_state);
+
     $form['item_length'] = array(
       '#type' => 'select',
       '#title' => t('Display type'),
@@ -36,13 +42,22 @@ class views_plugin_row_node_rss extends views_plugin_row {
     // For the most part, this code is taken from node_feed() in node.module
     global $base_url;
 
+    $nid = $row->{$this->field_alias};
+    if (!is_numeric($nid)) {
+      return;
+    }
+
     $item_length = $this->options['item_length'];
     if ($item_length == 'default') {
       $item_length = variable_get('feed_item_length', 'teaser');
     }
 
     // Load the specified node:
-    $node = node_load($row->nid);
+    $node = node_load($nid);
+    if (empty($node)) {
+      return;
+    }
+
     $node->build_mode = NODE_BUILD_RSS;
 
     if ($item_length != 'title') {
@@ -59,6 +74,21 @@ class views_plugin_row_node_rss extends views_plugin_row {
       // Allow modules to change $node->teaser before viewing.
       node_invoke_nodeapi($node, 'view', $teaser, FALSE);
     }
+
+    // Set the proper node part, then unset unused $node part so that a bad
+    // theme can not open a security hole.
+    $content = drupal_render($node->content);
+    if ($teaser) {
+      $node->teaser = $content;
+      unset($node->body);
+    }
+    else {
+      $node->body = $content;
+      unset($node->teaser);
+    }
+
+    // Allow modules to modify the fully-built node.
+    node_invoke_nodeapi($node, 'alter', $teaser, FALSE);
 
     $item = new stdClass();
     $item->title = $node->title;

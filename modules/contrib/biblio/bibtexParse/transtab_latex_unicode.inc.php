@@ -1,5 +1,5 @@
 <?php
-//$Id: transtab_latex_unicode.inc.php,v 1.1.2.5 2008/06/09 17:47:01 rjerome Exp $
+//$Id: transtab_latex_unicode.inc.php,v 1.1.2.6 2009/02/06 03:09:40 rjerome Exp $
 // Copyright:  Matthias Steffens
 //             This code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY.
 //             Please see the GNU General Public License for more details.

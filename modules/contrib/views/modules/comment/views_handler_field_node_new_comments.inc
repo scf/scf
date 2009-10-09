@@ -1,5 +1,5 @@
 <?php
-// $Id: views_handler_field_node_new_comments.inc,v 1.3 2008/11/19 22:44:29 merlinofchaos Exp $
+// $Id: views_handler_field_node_new_comments.inc,v 1.6 2009/04/07 23:02:07 merlinofchaos Exp $
 
 /**
  * Field handler to display the number of new comments
@@ -7,7 +7,7 @@
 class views_handler_field_node_new_comments extends views_handler_field_numeric {
   function construct() {
     parent::construct();
-    $this->additional_fields['nid'] = 'nid';
+    $this->additional_fields = array('nid' => 'nid', 'type' => 'type');
   }
 
   function option_definition() {
@@ -23,6 +23,7 @@ class views_handler_field_node_new_comments extends views_handler_field_numeric 
     parent::options_form($form, $form_state);
     $form['link_to_comment'] = array(
       '#title' => t('Link this field to new comments'),
+      '#description' => t('This will override any other link you have set.'),
       '#type' => 'checkbox',
       '#default_value' => $this->options['link_to_comment'],
     );
@@ -71,16 +72,24 @@ class views_handler_field_node_new_comments extends views_handler_field_numeric 
 
   function render_link($data, $values) {
     if (!empty($this->options['link_to_comment']) && $data !== NULL && $data !== '') {
-      return l($data, "node/" . $values->{$this->aliases['nid']}, array('html' => TRUE, 'fragment' => "new"));
+      $node = new stdClass();
+      $node->nid = $values->{$this->aliases['nid']};
+      $node->type = $values->{$this->aliases['type']};
+      $this->options['alter']['make_link'] = TRUE;
+      $this->options['alter']['path'] = 'node/' . $node->nid;
+      $this->options['alter']['query'] = comment_new_page_count($values->node_comment_statistics_comment_count, $values->node_new_comments, $node);
+      $this->options['alter']['fragment'] = 'new';
     }
-    else {
-      return $data;
-    }
+
+    return $data;
   }
 
   function render($values) {
     if (!empty($values->{$this->field_alias}) || empty($this->options['no_empty'])) {
       return $this->render_link(parent::render($values), $values);
+    }
+    else {
+      $this->options['alter']['make_link'] = FALSE;
     }
   }
 }

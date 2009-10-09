@@ -1,12 +1,37 @@
 <?php
-// $Id: endnote8_parser.inc,v 1.10.2.4 2008/05/20 02:01:01 rjerome Exp $
+// $Id: endnote8_parser.inc,v 1.10.2.23 2009/07/22 18:20:51 rjerome Exp $
 function en8_startElement($parser, $name, $attrs) {
-  global $node_array, $node_template, $node_id, $element, $contributors, $contrib_count, $titles, $periodical, $dates, $urls;
+  global $node, $element, $contributors, $contrib_count, $titles, $periodical, $dates, $urls, $keyword_count, $font_attr;
   switch ($name) {
     case 'record' :
-      $node_id = array_push($node_array, $node_template) - 1;
+      $node = array();
       break;
     case 'style' :
+      $font_attr = explode(' ',$attrs['face']);
+      foreach ($font_attr as $fatt) {
+        switch ($fatt) {
+          case 'normal':
+            break;
+          case 'bold':
+            en8_characterData(NULL, '<b>');
+            break;
+          case 'italic':
+            en8_characterData(NULL, '<i>');
+            break;
+          case 'underline':
+            en8_characterData(NULL, '<u>');
+            break;
+          case 'superscript':
+            en8_characterData(NULL, '<sup>');
+            break;
+          case 'subscript':
+            en8_characterData(NULL, '<sub>');
+            break;
+        }
+      }
+      break;
+    case 'keywords' :
+      $keyword_count = 0;
       break;
     case 'authors' :
     case 'secondary-authors' :
@@ -34,24 +59,33 @@ function en8_startElement($parser, $name, $attrs) {
   }
 }
 function en8_endElement($parser, $name) {
-  global $element, $contributors, $contrib_count, $dates, $urls;
+  global $node, $nids, $element, $terms, $batch_proc, $session_id, $contributors, $contrib_count, $dates, $urls, $keyword_count, $font_attr;
   switch ($name) {
+    case 'record' :
+      $element = $contributors = $contrib_count = $dates = $urls = '';
+      if (!empty($terms)) {
+        if (!isset($node['taxonomy'])) $node['taxonomy'] = array();
+        $node['taxonomy'] = array_merge($terms,$node['taxonomy']);
+      }
+      $nids[] = biblio_save_node($node, $batch_proc, $session_id);
+      break;
     case 'authors' :
     case 'secondary-authors' :
     case 'tertiary-authors' :
     case 'subsidiary-authors' :
     case 'translated-authors' :
       $contributors = '';
-      $element = '';
       break;
     case 'author' :
       $contrib_count++;
+      break;
+    case 'keyword' :
+      $keyword_count++;
       break;
     case 'year' :
     case 'pub-dates' :
     case 'copyright-dates' :
       $dates = '';
-      $element = '';
       break;
     case 'web-urls' :
     case 'pdf-urls' :
@@ -59,303 +93,88 @@ function en8_endElement($parser, $name) {
     case 'related-urls' :
     case 'image-urls' :
       $urls = '';
-      $element = '';
       break;
+    case 'ref-type':
+       $node['biblio_type'] = en8_parser_type_map($node['biblio_type']);
+        $element = '';
+       break;
     case 'style' :
+      foreach ($font_attr as $fatt) {
+        switch ($fatt) {
+          case 'normal':
+            break;
+          case 'bold':
+            en8_characterData(NULL, '</b>');
+            break;
+          case 'italic':
+            en8_characterData(NULL, '</i>');
+            break;
+          case 'underline':
+            en8_characterData(NULL, '</u>');
+            break;
+          case 'superscript':
+            en8_characterData(NULL, '</sup>');
+            break;
+          case 'subscript':
+            en8_characterData(NULL, '</sub>');
+            break;
+        }
+      }
+      $font_attr = array();
       break;
     default :
       $element = '';
   }
+
+
 }
 function en8_characterData($parser, $data) {
-  global $node_array, $node_id, $element, $contributors, $contrib_count, $dates, $urls;
+  global $node, $element, $contributors, $contrib_count, $dates, $urls, $keyword_count;
   if (trim($data)) {
     switch ($element) {
-      case 'source-app' :
-        break;
-      case 'rec-number' :
-        break;
-      case 'ref-type' :
-        switch ((int) $data) {
-          case 8 : // Journal Article
-          case 11 :
-          case 15 :
-          case 16 :
-          case 17 :
-          case 18 :
-          case 22 :
-          case 24 :
-          case 29 :
-          case 30 :
-          case 33 :
-            $node_array[$node_id]['biblio_type'] = 102;
-            break;
-          case 6 : // Book
-            $node_array[$node_id]['biblio_type'] = 100;
-            break;
-          case 5 : // Book Section
-            $node_array[$node_id]['biblio_type'] = 101;
-            break;
-          case 49 : // conference_paper
-            $node_array[$node_id]['biblio_type'] = 103;
-            break;
-          case 47 : // Conference Proceeding
-            $node_array[$node_id]['biblio_type'] = 104;
-            break;
-          case 10 : // proceedings_article
-            $node_array[$node_id]['biblio_type'] = 103;
-            break;
-          case 23 : // newspaper_article
-            $node_array[$node_id]['biblio_type'] = 105;
-            break;
-          case 19 : // magazine_article
-            $node_array[$node_id]['biblio_type'] = 106;
-            break;
-          case 12 : // web_article
-            $node_array[$node_id]['biblio_type'] = 107;
-            break;
-          case 32 : // Thesis
-            $node_array[$node_id]['biblio_type'] = 108;
-            break;
-          case 27 : // Report
-            $node_array[$node_id]['biblio_type'] = 109;
-            break;
-          case 21 : // film
-            $node_array[$node_id]['biblio_type'] = 110;
-            break;
-          case 21 : // broadcast
-            $node_array[$node_id]['biblio_type'] = 111;
-            break;
-          case 2 : // artwork
-            $node_array[$node_id]['biblio_type'] = 112;
-            break;
-          case 9 : // software
-            $node_array[$node_id]['biblio_type'] = 113;
-            break;
-          case 14 : // hearing
-            $node_array[$node_id]['biblio_type'] = 115;
-            break;
-          case 7 : // case
-            $node_array[$node_id]['biblio_type'] = 116;
-            break;
-          case 4 : // bill
-            $node_array[$node_id]['biblio_type'] = 117;
-            break;
-          case 31 : // statute
-            $node_array[$node_id]['biblio_type'] = 118;
-            break;
-          case 25 : // patent
-            $node_array[$node_id]['biblio_type'] = 119;
-            break;
-          case 26 : // personal
-            $node_array[$node_id]['biblio_type'] = 120;
-            break;
-          case 36 : // manuscript
-            $node_array[$node_id]['biblio_type'] = 121;
-            break;
-          case 20 : // map
-            $node_array[$node_id]['biblio_type'] = 122;
-            break;
-          case 38 : // chart
-            $node_array[$node_id]['biblio_type'] = 123;
-            break;
-          case 34 : // unpublished
-            $node_array[$node_id]['biblio_type'] = 124;
-            break;
-          case 45 : // database
-            $node_array[$node_id]['biblio_type'] = 125;
-            break;
-          case 46 : // government_report
-            $node_array[$node_id]['biblio_type'] = 126;
-            break;
-          case 50 : // legal_ruling
-            $node_array[$node_id]['biblio_type'] = 128;
-            break;
-          case 13 : // miscellaneous
-            $node_array[$node_id]['biblio_type'] = 129;
-            break;
-          case 10 : // Conference Proceeding
-            //$node_array[$node_id]['biblio_type'] = 2;
-            break;
-          default :
-            $node_array[$node_id]['biblio_type'] = 129;
-            break;
-        }
-        break;
         //Author information
       case 'author' :
-        $node_array[$node_id]['biblio_contributors'][$contrib_count]['name'] .= $data;
         switch ($contributors) {
           case 'authors' :
-            $node_array[$node_id]['biblio_contributors'][$contrib_count]['type'] = 1;
+            $node['biblio_contributors'][1][$contrib_count]['name'] .= $data;
+            $node['biblio_contributors'][1][$contrib_count]['auth_type'] = _biblio_get_auth_type(1, $node['biblio_type']);
             break;
           case 'secondary-authors' :
-            $node_array[$node_id]['biblio_contributors'][$contrib_count]['type'] = 2;
+            $node['biblio_contributors'][2][$contrib_count]['name'] .= $data;
+            $node['biblio_contributors'][2][$contrib_count]['auth_type'] = _biblio_get_auth_type(2, $node['biblio_type']);
             break;
           case 'tertiary-authors' :
-            $node_array[$node_id]['biblio_contributors'][$contrib_count]['type'] = 3;
+            $node['biblio_contributors'][3][$contrib_count]['name'] .= $data;
+            $node['biblio_contributors'][3][$contrib_count]['auth_type'] = _biblio_get_auth_type(3, $node['biblio_type']);
             break;
           case 'subsidiary-authors' :
-            $node_array[$node_id]['biblio_contributors'][$contrib_count]['type'] = 4;
+            $node['biblio_contributors'][4][$contrib_count]['name'] .= $data;
+            $node['biblio_contributors'][4][$contrib_count]['auth_type'] = _biblio_get_auth_type(4, $node['biblio_type']);
             break;
           case 'translated-authors' :
-            $node_array[$node_id]['biblio_contributors'][$contrib_count]['type'] = 5;
+            $node['biblio_contributors'][5][$contrib_count]['name'] .= $data;
+            $node['biblio_contributors'][5][$contrib_count]['auth_type'] = _biblio_get_auth_type(5, $node['biblio_type']);
             break;
         }
         break;
-      case 'auth-address' :
-        $node_array[$node_id]['biblio_auth_address'] .= $data;
-        break;
-      case 'auth-affiliaton' :
-        break;
-        // Title information
-      case 'title' :
-        $node_array[$node_id]['title'] .= $data;
-        break;
-      case 'secondary-title' :
-        $node_array[$node_id]['biblio_secondary_title'] .= $data;
-        break;
-      case 'tertiary-title' :
-        $node_array[$node_id]['biblio_tertiary_title'] .= $data;
-        break;
-      case 'alt-title' :
-        $node_array[$node_id]['biblio_alternate_title'] .= $data;
-        break;
-      case 'short-title' :
-        $node_array[$node_id]['biblio_short_title'] .= $data;
-        break;
-      case 'translated-title' :
-        $node_array[$node_id]['biblio_translated_title'] .= $data;
-        break;
-        // Periodical information
-      case 'full-title' :
-        break;
-      case 'abbr-1' :
-        break;
-      case 'abbr-2' :
-        break;
-      case 'abbr-3' :
-        $node_array[$node_id][$periodical] .= $data;
-        break;
-      case 'pages' :
-        $node_array[$node_id]['biblio_pages'] .= $data;
-        break;
-        //Volume, issue, and edition information
-      case 'volume' :
-        $node_array[$node_id]['biblio_volume'] .= $data;
-        break;
-      case 'number' :
-        $node_array[$node_id]['biblio_number'] .= $data;
-        break;
-      case 'issue' :
-        $node_array[$node_id]['biblio_issue'] .= $data;
-        break;
-      case 'secondary-volume' :
-        break;
-      case 'secondary-issue' :
-        break;
-      case 'num-vols' :
-        $node_array[$node_id]['biblio_number_of_volumes'] .= $data;
-        break;
-      case 'edition' :
-        $node_array[$node_id]['biblio_edition'] .= $data;
-        break;
-      case 'section' :
-        $node_array[$node_id]['biblio_section'] .= $data;
-        break;
-      case 'reprint-edition' :
-        $node_array[$node_id]['biblio_reprint_edition'] .= $data;
-        break;
-      case 'reprint-status' :
-        break;
       case 'keyword' :
-        $node_array[$node_id]['biblio_keywords'] .= (empty ($node_array[$node_id]['biblio_keywords'])) ? $data : ", $data";
-        //        $node_array[$node_id]['biblio_keywords'][] = $data;
+        $node['biblio_keywords'][$keyword_count] .= $data;
         break;
       case 'dates' :
         switch ($dates) {
           case 'year' :
-            $node_array[$node_id]['biblio_year'] .= $data;
+            $node['biblio_year'] .= $data;
             break;
         }
         break;
       case 'date' :
         switch ($dates) {
           case 'pub-dates' :
-            $node_array[$node_id]['biblio_date'] .= $data;
+            $node['biblio_date'] .= $data;
             break;
           case 'copyright-dates' :
             break;
         }
-        break;
-      case 'pub-location' :
-        $node_array[$node_id]['biblio_place_published'] .= $data;
-        break;
-      case 'publisher' :
-        $node_array[$node_id]['biblio_publisher'] .= $data;
-        break;
-      case 'orig-pub' :
-        break;
-      case 'isbn' :
-        $node_array[$node_id]['biblio_isbn'] .= $data;
-        break;
-      case 'accession-num' :
-        $node_array[$node_id]['biblio_accession_number'] .= $data;
-        break;
-      case 'call-num' :
-        $node_array[$node_id]['biblio_call_number'] .= $data;
-        break;
-      case 'report-id' :
-        break;
-      case 'coden' :
-        break;
-      case 'electronic-resource-num' :
-        break;
-      case 'abstract' :
-        $node_array[$node_id]['biblio_abst_e'] .= $data;
-        break;
-      case 'label' :
-        $node_array[$node_id]['biblio_label'] .= $data;
-        break;
-      case 'image' :
-        break;
-      case 'caption' :
-        break;
-      case 'notes' :
-        $node_array[$node_id]['biblio_notes'] .= $data;
-        break;
-      case 'research-notes' :
-        $node_array[$node_id]['biblio_notes'] .= $data;
-        break;
-      case 'work-type' :
-        $node_array[$node_id]['biblio_type_of_work'] .= $data;
-        break;
-      case 'reviewed-item' :
-        break;
-      case 'availability' :
-        break;
-      case 'remote-source' :
-        break;
-      case 'meeting-place' :
-        break;
-      case 'work-location' :
-        break;
-      case 'work-extent' :
-        break;
-      case 'pack-method' :
-        break;
-      case 'size' :
-        break;
-      case 'repro-ratio' :
-        break;
-      case 'remote-database-name' :
-        $node_array[$node_id]['biblio_remote_db_name'] .= $data;
-        break;
-      case 'remote-database-provider' :
-        $node_array[$node_id]['biblio_remote_db_provider'] .= $data;
-        break;
-      case 'language' :
-        $node_array[$node_id]['biblio_lang'] .= $data;
         break;
       case 'urls' :
       case 'url' :
@@ -366,43 +185,108 @@ function en8_characterData($parser, $data) {
           case 'image-urls' :
             break;
           case 'related-urls' :
-            $node_array[$node_id]['biblio_url'] .= $data;
+            $node['biblio_url'] .= $data;
             break;
         }
         break;
-      case 'access-date' :
-        $node_array[$node_id]['biblio_access_date'] .= $data;
-        break;
-      case 'modified-date' :
-        break;
-      case 'custom1' :
-        $node_array[$node_id]['biblio_custom1'] .= $data;
-        break;
-      case 'custom2' :
-        $node_array[$node_id]['biblio_custom2'] .= $data;
-        break;
-      case 'custom3' :
-        $node_array[$node_id]['biblio_custom3'] .= $data;
-        break;
-      case 'custom4' :
-        $node_array[$node_id]['biblio_custom4'] .= $data;
-        break;
-      case 'custom5' :
-        $node_array[$node_id]['biblio_custom5'] .= $data;
-        break;
-      case 'custom6' :
-        $node_array[$node_id]['biblio_custom6'] .= $data;
-        break;
-      case 'custom7' :
-        $node_array[$node_id]['biblio_custom7'] .= $data;
-        break;
-      case 'misc1' :
-        break;
-      case 'misc2' :
-        break;
-      case 'misc3' :
-        break;
+
+      default:
+        if ($field = en8_parser_field_map(trim($element))) {
+          $node[$field] .= $data;
+        }
     }
   }
 }
 
+function en8_parser_field_map($enfield) {
+  static $fmap = array();
+  if(empty($fmap)) {
+    $fmap = array(
+       'source-app'               => '',
+       'rec-number'               => '',
+       'ref-type'                 => 'biblio_type',
+       'auth-address'             => 'biblio_auth_address',
+       'auth-affiliaton'          => '',
+       'title'                    => 'title',
+       'secondary-title'          =>'biblio_secondary_title',
+       'tertiary-title'           => 'biblio_tertiary_title',
+       'alt-title'                => 'biblio_alternate_title',
+       'short-title'              => 'biblio_short_title',
+       'translated-title'         => 'biblio_translated_title',
+       'full-title'               => '',
+       'abbr-1'                   => '',
+       'abbr-2'                   => '',
+       'abbr-3'                   => '',
+       'pages'                    => 'biblio_pages',
+       'volume'                   => 'biblio_volume',
+       'number'                   => 'biblio_number',
+       'issue'                    => 'biblio_issue',
+       'secondary-volume'         => '',
+       'secondary-issue'          => '',
+       'num-vols'                 => 'biblio_number_of_volumes',
+       'edition'                  => 'biblio_edition',
+       'section'                  => 'biblio_section',
+       'reprint-edition'          => 'biblio_reprint_edition',
+       'reprint-status'           => '',
+       'year'                     => 'biblio_year',
+       'pub-dates'                => 'biblio_date',
+       'copyright-dates'          => '',
+       'pub-location'             => 'biblio_place_published',
+       'publisher'                => 'biblio_publisher',
+       'orig-pub'                 => 'biblio_original_publication',
+       'isbn'                     => 'biblio_isbn',
+       'accession-num'            => 'biblio_accession_number',
+       'call-num'                 => 'biblio_call_number',
+       'report-id'                => '',
+       'coden'                    => '',
+       'electronic-resource-num'  => '',
+       'abstract'                 => 'biblio_abst_e',
+       'label'                    => 'biblio_label',
+       'image'                    => '',
+       'caption'                  => '',
+       'notes'                    => 'biblio_notes',
+       'research-notes'           => 'biblio_research_notes',
+       'work-type'                => 'biblio_type_of_work',
+       'reviewed-item'            => '',
+       'availability'             => '',
+       'remote-source'            => '',
+       'meeting-place'            => '',
+       'work-location'            => '',
+       'work-extent'              => '',
+       'pack-method'              => '',
+       'size'                     => '',
+       'repro-ratio'              => '',
+       'remote-database-name'     => 'biblio_remote_db_name',
+       'remote-database-provider' => 'biblio_remote_db_provider',
+       'language'                 => 'biblio_lang',
+       'web-urls'                 => '',
+       'pdf-urls'                 => '',
+       'text-urls'                => '',
+       'image-urls'               => '',
+       'related-urls'             => 'biblio_url',
+       'access-date'              => 'biblio_access_date',
+       'modified-date'            => '',
+       'custom1'                  => 'biblio_custom1',
+       'custom2'                  => 'biblio_custom2',
+       'custom3'                  => 'biblio_custom3',
+       'custom4'                  => 'biblio_custom4',
+       'custom5'                  => 'biblio_custom5',
+       'custom6'                  => 'biblio_custom6',
+       'custom7'                  => 'biblio_custom7',
+       'misc1'                    => '',
+       'misc2'                    => '',
+       'misc3'                    => '',
+    );
+  }
+  return (!empty($fmap[$enfield])) ? $fmap[$enfield] : '';
+
+}
+
+function en8_parser_type_map($en8type){
+  static $map = array();
+  if (empty($map)) {// first check to see if there are user settings else load the defaults
+    module_load_include('inc', 'biblio', 'biblio.type.mapper');
+    $map = biblio_get_type_map('endnote8');
+  }
+  return (isset($map[$en8type]))?$map[$en8type]:129; //return the biblio type or 129 (Misc) if type not found
+}

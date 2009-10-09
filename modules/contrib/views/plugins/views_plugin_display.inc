@@ -1,5 +1,5 @@
 <?php
-// $Id: views_plugin_display.inc,v 1.17 2008/12/02 20:23:21 merlinofchaos Exp $
+// $Id: views_plugin_display.inc,v 1.24 2009/06/10 22:01:31 merlinofchaos Exp $
 /**
  * @file
  * Contains the base display plugin.
@@ -130,6 +130,16 @@ class views_plugin_display extends views_plugin {
   }
 
   /**
+   * Does the display have custom link text?
+   */
+  function use_more_text() {
+    if (!empty($this->definition['use more'])) {
+      return $this->get_option('use_more_text');
+    }
+    return FALSE;
+  }
+
+  /**
    * Can this display accept attachments?
    */
   function accept_attachments() {
@@ -148,6 +158,7 @@ class views_plugin_display extends views_plugin {
   function defaultable_sections($section = NULL) {
     $sections = array(
       'access' => array('access'),
+      'cache' => array('cache'),
       'title' => array('title'),
       'header' => array('header', 'header_format', 'header_empty'),
       'footer' => array('footer', 'footer_format', 'footer_empty'),
@@ -155,7 +166,7 @@ class views_plugin_display extends views_plugin {
       'use_ajax' => array('use_ajax'),
       'items_per_page' => array('items_per_page', 'offset', 'use_pager', 'pager_element'),
       'use_pager' => array('items_per_page', 'offset', 'use_pager', 'pager_element'),
-      'use_more' => array('use_more'),
+      'use_more' => array('use_more', 'use_more_text'),
       'link_display' => array('link_display'),
       'distinct' => array('distinct'),
       'exposed_block' => array('exposed_block'),
@@ -212,6 +223,7 @@ class views_plugin_display extends views_plugin {
       'defaults' => array(
         'default' => array(
           'access' => TRUE,
+          'cache' => TRUE,
           'title' => TRUE,
           'header' => TRUE,
           'header_format' => TRUE,
@@ -228,6 +240,7 @@ class views_plugin_display extends views_plugin {
           'use_pager' => TRUE,
           'pager_element'  => TRUE,
           'use_more' => TRUE,
+          'use_more_text' => TRUE,
           'distinct' => TRUE,
           'exposed_block' => TRUE,
 
@@ -266,6 +279,11 @@ class views_plugin_display extends views_plugin {
         'export' => 'export_item',
       ),
       'access' => array(
+        'contains' => array(
+          'type' => array('default' => 'none'),
+         ),
+      ),
+      'cache' => array(
         'contains' => array(
           'type' => array('default' => 'none'),
          ),
@@ -318,6 +336,10 @@ class views_plugin_display extends views_plugin {
       ),
       'use_more' => array(
         'default' => FALSE,
+      ),
+      'use_more_text' => array(
+        'default' => 'more',
+        'translatable' => TRUE,
       ),
       'link_display' => array(
         'default' => '',
@@ -482,6 +504,22 @@ class views_plugin_display extends views_plugin {
   }
 
   /**
+   * Get the cache plugin
+   */
+  function get_cache_plugin($name = NULL) {
+    if (!$name) {
+      $cache = $this->get_option('cache');
+      $name = $cache['type'];
+    }
+
+    $plugin = views_get_plugin('cache', $name);
+    if ($plugin) {
+      $plugin->init($this->view, $this->display);
+      return $plugin;
+    }
+  }
+
+  /**
    * Get the handler object for a single handler.
    */
   function &get_handler($type, $id) {
@@ -554,7 +592,7 @@ class views_plugin_display extends views_plugin {
       $text = '<span>' . $text . '</span>';
     }
 
-    if (empty($text)) {
+    if (!trim($text)) {
       $text = t('Broken field');
     }
 
@@ -578,7 +616,7 @@ class views_plugin_display extends views_plugin {
     $options['display_title'] = array(
       'category' => 'basic',
       'title' => t('Name'),
-      'value' => $this->display->display_title,
+      'value' => check_plain($this->display->display_title),
       'desc' => t('Change the name of this display.'),
     );
 
@@ -687,6 +725,25 @@ class views_plugin_display extends views_plugin {
       $options['access']['links']['access_options'] = t('Change settings for this access type.');
     }
 
+    $cache_plugin = $this->get_cache_plugin();
+    if (!$cache_plugin) {
+      // default to the no cache control plugin.
+      $cache_plugin = views_get_plugin('cache', 'none');
+    }
+
+    $cache_str = $cache_plugin->summary_title();
+
+    $options['cache'] = array(
+      'category' => 'basic',
+      'title' => t('Caching'),
+      'value' => $cache_str,
+      'desc' => t('Specify caching type for this display.'),
+    );
+
+    if (!empty($cache_plugin->definition['uses options'])) {
+      $options['cache']['links']['cache_options'] = t('Change settings for this caching type.');
+    }
+
     if ($this->uses_link_display()) {
       // Only show the 'link display' if there is more than one option.
       $count = 0;
@@ -701,7 +758,7 @@ class views_plugin_display extends views_plugin {
 
       if ($count > 1) {
         $display_id = $this->get_link_display();
-        $link_display = empty($this->view->display[$display_id]) ? t('None') : $this->view->display[$display_id]->display_title;
+        $link_display = empty($this->view->display[$display_id]) ? t('None') : check_plain($this->view->display[$display_id]->display_title);
         $options['link_display'] = array(
           'category' => 'basic',
           'title' => t('Link display'),
@@ -731,7 +788,7 @@ class views_plugin_display extends views_plugin {
         $format_val = filter_resolve_format($fmt_string);
         $format = filter_formats($format_val);
         if ($format) {
-          $field = $format->name;
+          $field = check_plain($format->name);
         }
         else {
           $field = t('Unknown/missing format');
@@ -841,6 +898,13 @@ class views_plugin_display extends views_plugin {
           '#description' => t("This will add a more link to the bottom of this view, which will link to the page view. If you have more than one page view, the link will point to the display specified in 'Link display' above."),
           '#default_value' => $this->get_option('use_more'),
         );
+        $form['#title'] .= t('Text to use for the more link.');
+        $form['use_more_text'] = array(
+          '#type' => 'textfield',
+          '#title' => t('More link text'),
+          '#description' => t("The text to display for the more link."),
+          '#default_value' => $this->get_option('use_more_text'),
+        );
         break;
       case 'distinct':
         $form['#title'] .= t('Display only distinct items, without duplicates.');
@@ -891,6 +955,47 @@ class views_plugin_display extends views_plugin {
             '#value' => $access['type'],
           );
           $plugin->options_form($form['access_options'], $form_state);
+        }
+        break;
+      case 'cache':
+        $form['#title'] .= t('Caching');
+        $form['cache'] = array(
+          '#prefix' => '<div class="clear-block">',
+          '#suffix' => '</div>',
+          '#tree' => TRUE,
+        );
+
+        $cache = $this->get_option('cache');
+        $form['cache']['type'] =  array(
+          '#type' => 'radios',
+          '#options' => views_fetch_plugin_names('cache'),
+          '#default_value' => $cache['type'],
+        );
+
+        $cache_plugin = views_fetch_plugin_data('cache', $cache['type']);
+        if (!empty($cache_plugin['uses options'])) {
+          $form['markup'] = array(
+            '#prefix' => '<div class="form-item description">',
+            '#suffix' => '</div>',
+            '#value' => t('You may also adjust the !settings for the currently selected style by clicking on the icon.', array('!settings' => $this->option_link(t('settings'), 'cache_options'))),
+          );
+        }
+        break;
+      case 'cache_options':
+        $cache = $this->get_option('cache');
+        $plugin = $this->get_cache_plugin();
+        $form['#title'] .= t('Caching options');
+        if ($plugin) {
+          $form['#help_topic'] = $plugin->definition['help topic'];
+
+          $form['cache_options'] = array(
+            '#tree' => TRUE,
+          );
+          $form['cache_options']['type'] = array(
+            '#type' => 'value',
+            '#value' => $cache['type'],
+          );
+          $plugin->options_form($form['cache_options'], $form_state);
         }
         break;
       case 'header':
@@ -1018,8 +1123,19 @@ class views_plugin_display extends views_plugin {
       case 'analyze-theme':
         $form['#title'] .= t('Theming information');
         $form['#help_topic'] = 'analyze-theme';
-        $funcs = array();
 
+        if (isset($_POST['theme'])) {
+          $this->view->theme = $_POST['theme'];
+        }
+        else if (empty($this->view->theme)) {
+          $this->view->theme = variable_get('theme_default', 'garland');
+        }
+
+        global $custom_theme;
+        $custom_theme = $this->view->theme;
+        init_theme();
+
+        $funcs = array();
         // Get theme functions for the display. Note that some displays may
         // not have themes. The 'feed' display, for example, completely
         // delegates to the style.
@@ -1067,6 +1183,26 @@ class views_plugin_display extends views_plugin {
           '#prefix' => '<div class="form-item description">',
           '#suffix' => '</div>',
           '#value' => '<p>' . t('This section lists all possible templates for the display plugin and for the style plugins, ordered roughly from the least specific to the most specific. The active template for each plugin -- which is the most specific template found on the system -- is highlighted in bold.') . '</p>',
+        );
+
+        foreach (list_themes() as $key => $theme) {
+          $options[$key] = $theme->info['name'];
+        }
+
+        $form['box'] = array(
+          '#prefix' => '<div class="container-inline">',
+          '#suffix' => '</div>',
+        );
+        $form['box']['theme'] = array(
+          '#type' => 'select',
+          '#options' => $options,
+          '#default_value' => $this->view->theme,
+        );
+
+        $form['box']['change'] = array(
+          '#type' => 'submit',
+          '#value' => t('Change theme'),
+          '#submit' => array('views_ui_edit_display_form_change_theme'),
         );
 
         $form['analysis'] = array(
@@ -1215,7 +1351,6 @@ class views_plugin_display extends views_plugin {
    * Format a list of theme templates for output by the theme info helper.
    */
   function format_themes($themes) {
-    init_theme();
     $registry = theme_get_registry();
 
     // Run through the theme engine variables, if necessary
@@ -1269,6 +1404,12 @@ class views_plugin_display extends views_plugin {
           $plugin->options_validate($form['access_options'], $form_state);
         }
         break;
+      case 'cache_options':
+        $plugin = $this->get_cache_plugin();
+        if ($plugin) {
+          $plugin->options_validate($form['cache_options'], $form_state);
+        }
+        break;
     }
   }
 
@@ -1277,6 +1418,12 @@ class views_plugin_display extends views_plugin {
    * There is no need for this function to actually store the data.
    */
   function options_submit(&$form, &$form_state) {
+    // Not sure I like this being here, but it seems (?) like a logical place.
+    $cache_plugin = $this->get_cache_plugin();
+    if ($cache_plugin) {
+      $cache_plugin->cache_flush();
+    }
+
     $section = $form_state['section'];
     switch ($section) {
       case 'display_title':
@@ -1304,6 +1451,28 @@ class views_plugin_display extends views_plugin {
           $this->set_option('access', $form_state['values'][$section]);
         }
         break;
+      case 'cache':
+        $cache = $this->get_option('cache');
+        if ($cache['type'] != $form_state['values']['cache']['type']) {
+          $plugin = views_get_plugin('cache', $form_state['values']['cache']['type']);
+          if ($plugin) {
+            $cache = array('type' => $form_state['values']['cache']['type']);
+            $plugin->option_defaults($cache);
+            $this->set_option('cache', $cache);
+            if (!empty($plugin->definition['uses options'])) {
+              views_ui_add_form_to_stack('display', $this->view, $this->display->id, array('cache_options'));
+            }
+          }
+        }
+
+        break;
+      case 'cache_options':
+        $plugin = views_get_plugin('cache', $form_state['values'][$section]['type']);
+        if ($plugin) {
+          $plugin->options_submit($form['cache_options'], $form_state);
+          $this->set_option('cache', $form_state['values'][$section]);
+        }
+        break;
       case 'title':
       case 'link_display':
         $this->set_option($section, $form_state['values'][$section]);
@@ -1320,6 +1489,8 @@ class views_plugin_display extends views_plugin {
         $this->set_option('offset', intval($form_state['values']['offset']));
         break;
       case 'use_more':
+        $this->set_option($section, intval($form_state['values'][$section]));
+        $this->set_option('use_more_text', $form_state['values']['use_more_text']);
       case 'distinct':
         $this->set_option($section, $form_state['values'][$section]);
         break;
@@ -1487,10 +1658,9 @@ class views_plugin_display extends views_plugin {
         if (!empty($this->view->exposed_raw_input)) {
           $url_options['query'] = $this->view->exposed_raw_input;
         }
-
         $theme = views_theme_functions('views_more', $this->view, $this->display);
         $path = check_url(url($path, $url_options));
-        return theme($theme, $path);
+        return theme($theme, $path, $this->use_more_text());
       }
     }
   }
@@ -1618,6 +1788,12 @@ class views_plugin_display extends views_plugin {
    */
   function get_style_type() { return 'normal'; }
 
+  /**
+   * Make sure the display and all associated handlers are valid.
+   *
+   * @return
+   *   Empty array if the display is valid; an array of error strings if it is not.
+   */
   function validate() {
     $errors = array();
     // Make sure displays that use fields HAVE fields.
@@ -1638,6 +1814,7 @@ class views_plugin_display extends views_plugin {
       $errors[] = t('Display "@display" uses a path but the path is undefined.', array('@display' => $this->display->display_title));
     }
 
+    // Validate style plugin
     $style = $this->get_plugin();
     if (empty($style)) {
       $errors[] = t('Display "@display" has an invalid style plugin.', array('@display' => $this->display->display_title));
@@ -1648,6 +1825,22 @@ class views_plugin_display extends views_plugin {
         $errors = array_merge($errors, $result);
       }
     }
+
+    // Validate handlers
+    foreach (views_object_types() as $type => $info) {
+      $plural = $info['plural'];
+      // Skip handlers which are defaulted as there is no point in
+      // validating them again.
+      if (!$this->is_defaulted($plural)) {
+        foreach ($this->get_handlers($type) as $handler) {
+          $result = $handler->validate();
+          if (!empty($result) && is_array($result)) {
+            $errors = array_merge($errors, $result);
+          }
+        }
+      }
+    }
+
     return $errors;
   }
 

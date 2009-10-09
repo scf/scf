@@ -1,5 +1,5 @@
 <?php
-// $Id: views_plugin_row_comment_rss.inc,v 1.2 2008/12/02 22:17:42 merlinofchaos Exp $
+// $Id: views_plugin_row_comment_rss.inc,v 1.3 2009/01/08 19:40:44 merlinofchaos Exp $
 /**
  * @file
  * Contains the comment RSS row style plugin.
@@ -25,7 +25,7 @@ class views_plugin_row_comment_rss extends views_plugin_row {
       array('key' => 'dc:creator', 'value' => $comment->name),
       array(
         'key' => 'guid',
-        'value' => 'comment ' .  $item->cid . ' at ' . $base_url,
+        'value' => 'comment ' .  $row->cid . ' at ' . $base_url,
         'attributes' => array('isPermaLink' => 'false'),
         'namespace' => array('xmlns:dc' => 'http://purl.org/dc/elements/1.1/'),
       ),

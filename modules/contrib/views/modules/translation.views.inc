@@ -1,5 +1,5 @@
 <?php
-// $Id: translation.views.inc,v 1.7 2008/12/03 00:25:59 merlinofchaos Exp $
+// $Id: translation.views.inc,v 1.8 2009/01/07 23:13:46 merlinofchaos Exp $
 
 /**
  * @file
@@ -123,7 +123,7 @@ function translation_views_data_alter(&$data) {
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_boolean_operator',
-      'label' => t('Published'),
+      'label' => t('Outdated'),
       'type' => 'yes-no',
     ),
     'sort' => array(

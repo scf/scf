@@ -1,5 +1,5 @@
 <?php
-// $Id: views_export.module,v 1.3 2008/12/02 16:12:50 merlinofchaos Exp $
+// $Id: views_export.module,v 1.6 2009/06/02 19:36:25 merlinofchaos Exp $
 
 /**
  * @file views_export.module
@@ -57,6 +57,7 @@ function views_export_export() {
   foreach (module_implements('views_exportables') as $module) {
     $function = $module . '_views_exportables';
     $exportables[$module] = $function('list', $tags);
+    asort($exportables[$module]);
   }
 
   if ($exportables) {
@@ -178,6 +179,7 @@ function views_export_export_form_submit(&$form, &$form_state) {
 
   foreach ($form_state['values']['modules'] as $module => $views) {
     $views = array_filter($views);
+    asort($views);
     if ($views) {
       $code .= module_invoke($module, 'views_exportables', 'export', $views, $form_state['values']['name']) . "\n\n";
     }
@@ -187,7 +189,28 @@ function views_export_export_form_submit(&$form, &$form_state) {
 
   $types = system_elements();
 
-  $api = "/**\n";
+  $info  = '; $Id: views_export.module,v 1.6 2009/06/02 19:36:25 merlinofchaos Exp $'."\n";
+  $info .= "\n";
+  $info .= t("name = @module Export Module\n", array('@module' => $form_state['values']['name']));
+  $info .= t("description = Exports some views of @module\n", array('@module' => $form_state['values']['name']));
+  $info .= "dependencies[] = views\n";
+  $info .= "core = 6.x\n";
+
+
+  $element_info = array(
+    '#title' => t('Put this in @module.info in your modules/@module directory',  array('@module' => $form_state['values']['name'])),
+    '#type' => 'textarea',
+    '#id' => 'export-info-textarea',
+    '#name' => 'export-info-textarea',
+    '#attributes' => array(),
+    '#rows' => 9,
+    '#cols' => 60,
+    '#value' => $info,
+    '#parents' => array('dummy'),
+    '#required' => FALSE,
+  ) + $types['textarea'];
+
+  $api  = "/**\n";
   $api .= " * Implementation of hook_views_api().\n";
   $api .= " */\n";
   $api .= "function @module_views_api() {\n";
@@ -226,7 +249,8 @@ function views_export_export_form_submit(&$form, &$form_state) {
   ) + $types['textarea'];
 
 
-  $form_state['output'] = theme('textarea', $element_api);
+  $form_state['output'] = theme('textarea', $element_info);
+  $form_state['output'] .= theme('textarea', $element_api);
   $form_state['output'] .= theme('textarea', $element_hook);
 }
 

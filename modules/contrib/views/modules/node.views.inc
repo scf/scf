@@ -1,5 +1,5 @@
 <?php
-// $Id: node.views.inc,v 1.91 2008/12/02 22:17:41 merlinofchaos Exp $
+// $Id: node.views.inc,v 1.96 2009/06/03 02:16:48 merlinofchaos Exp $
 /**
  * @file
  * Provide views data and handlers for node.module
@@ -321,6 +321,60 @@ function node_views_data() {
     ),
   );
 
+  $data['node']['changed_fulldate'] = array(
+    'title' => t('Updated date'),
+    'help' => t('In the form of CCYYMMDD.'),
+    'argument' => array(
+      'field' => 'changed',
+      'handler' => 'views_handler_argument_node_created_fulldate',
+    ),
+  );
+
+  $data['node']['changed_year_month'] = array(
+    'title' => t('Updated year + month'),
+    'help' => t('In the form of YYYYMM.'),
+    'argument' => array(
+      'field' => 'changed',
+      'handler' => 'views_handler_argument_node_created_year_month',
+    ),
+  );
+
+  $data['node']['changed_year'] = array(
+    'title' => t('Updated year'),
+    'help' => t('In the form of YYYY.'),
+    'argument' => array(
+      'field' => 'changed',
+      'handler' => 'views_handler_argument_node_created_year',
+    ),
+  );
+
+  $data['node']['changed_month'] = array(
+    'title' => t('Updated month'),
+    'help' => t('In the form of MM (01 - 12).'),
+    'argument' => array(
+      'field' => 'changed',
+      'handler' => 'views_handler_argument_node_created_month',
+    ),
+  );
+
+  $data['node']['changed_day'] = array(
+    'title' => t('Updated day'),
+    'help' => t('In the form of DD (01 - 31).'),
+    'argument' => array(
+      'field' => 'changed',
+      'handler' => 'views_handler_argument_node_created_day',
+    ),
+  );
+
+  $data['node']['changed_week'] = array(
+    'title' => t('Updated week'),
+    'help' => t('In the form of WW (01 - 53).'),
+    'argument' => array(
+      'field' => 'changed',
+      'handler' => 'views_handler_argument_node_created_week',
+    ),
+  );
+
   // ----------------------------------------------------------------------
   // Node revisions table
 
@@ -463,6 +517,39 @@ function node_views_data() {
     ),
   );
 
+  // input format id
+  $data['node_revisions']['format'] = array(
+    'title' => t('Input format id'), // The item it appears as on the UI,
+    'help' => t('The numeric input format of the node revision. !default means the default input format.', array('!default' => FILTER_FORMAT_DEFAULT)), // The help that appears on the UI,
+     // Information for displaying an input format as a field
+    'field' => array(
+      'handler' => 'views_handler_field_numeric',
+      'click sortable' => TRUE,
+    ),
+    // Information for sorting on input format
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+    // Information for accepting input format as a filter
+    'filter' => array(
+      'handler' => 'views_handler_filter_numeric',
+    ),
+  );
+
+  // input format name
+  // A (numeric) format of 0 means the default; Drupal also applies the default
+  // if the format specifed for a node revision has been deleted.
+  // This complexity makes sorting and filtering by format name tricky,
+  // hence these are not yet supported.
+  $data['node_revisions']['format_name'] = array(
+    'title' => t('Input format'), // The item it appears as on the UI,
+    'help' => t('The name of the input format of the node revision.'), // The help that appears on the UI,
+     // Information for displaying an input format as a field
+    'field' => array(
+      'handler' => 'views_handler_field_filter_format_name',
+    ),
+  );
+
   $data['node_revisions']['revert_revision'] = array(
     'field' => array(
       'title' => t('Revert link'),
@@ -476,6 +563,31 @@ function node_views_data() {
       'title' => t('Delete link'),
       'help' => t('Provide a simple link to delete the node revision.'),
       'handler' => 'views_handler_field_node_revision_link_delete',
+    ),
+  );
+
+  // ----------------------------------------------------------------------
+  // Node access table
+
+  // Define the base group of this table. Fields that don't
+  // have a group defined will go into this field by default.
+  $data['node_access']['table']['group']  = t('Node access');
+
+  // For other base tables, explain how we join
+  $data['node_access']['table']['join'] = array(
+    // Directly links to node table.
+    'node' => array(
+      'left_field' => 'nid',
+      'field' => 'nid',
+    ),
+  );
+  // nid field
+  $data['node_access']['nid'] = array(
+    'title' => t('Access'),
+    'help' => t('Filter by access.'),
+    'filter' => array(
+      'handler' => 'views_handler_filter_node_access',
+      'help' => t('Filter for nodes by view access. <strong>Not necessary if you are using node as your base table.</strong>'),
     ),
   );
 
@@ -604,7 +716,9 @@ function node_views_handlers() {
       'views_handler_filter_node_status' => array(
         'parent' => 'views_handler_filter',
       ),
-
+      'views_handler_filter_node_access' => array(
+        'parent' => 'views_handler_filter',
+      ),
     ),
   );
 }
@@ -662,21 +776,26 @@ function node_views_plugins() {
  */
 function template_preprocess_views_view_row_node(&$vars) {
   $options = $vars['options'];
-  $vars['node'] = ''; // make sure var is defined.
-  $nid = $vars['row']->nid;
+
+  // Make sure the variables are defined.
+  $vars['node'] = '';
+  $vars['comments'] = '';
+
+  $nid = $vars['row']->{$vars['field_alias']};
   if (!is_numeric($nid)) {
     return;
   }
 
   $node = node_load($nid);
-  $node->view = $vars['view'];
 
   if (empty($node)) {
     return;
   }
 
-  $vars['node'] = node_view($node, $options['teaser'], FALSE, $options['links']);
-  $vars['comments'] = NULL;
+  $node->view = $vars['view'];
+  $node->build_mode = ($options['build_mode'] == 'teaser' || $options['build_mode'] == 'full') ? NODE_BUILD_NORMAL : $options['build_mode'];
+  $vars['node'] = node_view($node, $options['build_mode'] == 'teaser', FALSE, $options['links']);
+
   if (!empty($options['comments']) && function_exists('comment_render')) {
     $vars['comments'] = comment_render($node);
   }

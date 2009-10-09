@@ -1,4 +1,4 @@
-// $Id: ajax.js,v 1.24 2008/12/16 18:52:04 merlinofchaos Exp $
+// $Id: ajax.js,v 1.25 2009/03/24 23:03:32 merlinofchaos Exp $
 /**
  * @file ajax_admin.js
  *
@@ -193,7 +193,7 @@ Drupal.Views.updatePreviewForm = function() {
   var url = $(this).attr('action');
   url = url.replace('nojs', 'ajax');
 
-  $('input[@type=submit]', this).after('<span class="views-throbbing">&nbsp</span>');
+  $('input[type=submit]', this).after('<span class="views-throbbing">&nbsp</span>');
   $(this).ajaxSubmit({
     url: url,
     data: '',
@@ -210,8 +210,8 @@ Drupal.Views.updatePreviewFilterForm = function() {
   var url = $(this).attr('action');
   url = url.replace('nojs', 'ajax');
 
-  $('input[@type=submit]', this).after('<span class="views-throbbing">&nbsp</span>');
-  $('input[@name=q]', this).remove(); // remove 'q' for live preview.
+  $('input[type=submit]', this).after('<span class="views-throbbing">&nbsp</span>');
+  $('input[name=q]', this).remove(); // remove 'q' for live preview.
   $(this).ajaxSubmit({
     url: url,
     data: '',

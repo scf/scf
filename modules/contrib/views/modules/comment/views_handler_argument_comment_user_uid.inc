@@ -1,5 +1,5 @@
 <?php
-// $Id: views_handler_argument_comment_user_uid.inc,v 1.1 2008/09/03 19:21:29 merlinofchaos Exp $
+// $Id: views_handler_argument_comment_user_uid.inc,v 1.2 2009/06/02 18:50:56 merlinofchaos Exp $
 
 /**
  * Argument handler to accept a user id to check for nodes that
@@ -36,6 +36,6 @@ class views_handler_argument_comment_user_uid extends views_handler_argument {
 
   function query() {
     $this->ensure_my_table();
-    $this->query->add_where(0, "$this->table_alias.uid = %d OR (SELECT COUNT(*) FROM {comments} c WHERE c.uid = %d AND c.nid = $this->table_alias.nid)", $this->argument, $this->argument);
+    $this->query->add_where(0, "$this->table_alias.uid = %d OR ((SELECT COUNT(*) FROM {comments} c WHERE c.uid = %d AND c.nid = $this->table_alias.nid) > 0)", $this->argument, $this->argument);
   }
 }

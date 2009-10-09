@@ -1,5 +1,5 @@
 <?php
-// $Id: comment.views.inc,v 1.28 2008/12/02 22:17:41 merlinofchaos Exp $
+// $Id: comment.views.inc,v 1.32 2009/04/08 06:38:41 merlinofchaos Exp $
 /**
  * @file
  * Provide views data and handlers for comment.module
@@ -198,6 +198,14 @@ function comment_views_data() {
     ),
   );
 
+  $data['comments']['node_link'] = array(
+    'field' => array(
+      'title' => t('Node link'),
+      'help' => t('Display the standard comment link used on regular nodes.'),
+      'handler' => 'views_handler_field_comment_node_link',
+    ),
+  );  
+
   $data['comments']['thread'] = array(
     'field' => array(
       'title' => t('Depth'),
@@ -259,6 +267,7 @@ function comment_views_data() {
   $data['node_comment_statistics']['table']['join'] = array(
     //...to the node table
     'node' => array(
+      'type' => 'INNER',      
       'left_field' => 'nid',
       'field' => 'nid',
      ),
@@ -363,12 +372,18 @@ function comment_views_data_alter(&$data) {
 
   $data['node']['uid_touch'] = array(
     'title' => t('User posted or commented'),
-    'help' => t('Display comments only if a user posted the node or commented on the node.'),
+    'help' => t('Display nodes only if a user posted the node or commented on the node.'),
     'argument' => array(
       'field' => 'uid',
       'name table' => 'users',
       'name field' => 'name',
       'handler' => 'views_handler_argument_comment_user_uid',
+    ),
+    'filter' => array(
+      'field' => 'uid',
+      'name table' => 'users',
+      'name field' => 'name',
+      'handler' => 'views_handler_filter_comment_user_uid'
     ),
   );
 
@@ -437,6 +452,9 @@ function comment_views_handlers() {
       'views_handler_field_comment_link_reply' => array(
         'parent' => 'views_handler_field_comment_link',
       ),
+      'views_handler_field_comment_node_link' => array(
+       'parent' => 'views_handler_field',
+      ),
       'views_handler_field_ncs_last_comment_name' => array(
         'parent' => 'views_handler_field',
       ),
@@ -465,14 +483,14 @@ function comment_views_handlers() {
       'views_handler_filter_ncs_last_updated' => array(
         'parent' => 'views_handler_filter_date',
       ),
-      'views_handler_filter_ncs_last_updated' => array(
-        'parent' => 'views_handler_filter_in_operator',
-      ),
-
-      // argument handlers
       'views_handler_filter_node_comment' => array(
         'parent' => 'views_handler_filter_in_operator',
       ),
+      'views_handler_filter_comment_user_uid' => array(
+        'parent' => 'views_handler_filter_user_name',
+      ),
+
+      // argument handlers
       'views_handler_argument_comment_user_uid' => array(
         'parent' => 'views_handler_argument',
       ),

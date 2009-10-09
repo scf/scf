@@ -1,5 +1,5 @@
 <?php
-// $Id: theme.inc,v 1.65 2008/12/02 22:17:42 merlinofchaos Exp $
+// $Id: theme.inc,v 1.76 2009/06/02 20:28:52 merlinofchaos Exp $
 
 /**
  * @file theme.inc
@@ -24,6 +24,7 @@ function _views_theme_functions($hook, $view, $display = NULL) {
   if ($display) {
     $themes[] = $hook . '__' . $view->name . '__' . $display->id;
     $themes[] = $hook . '__' . $display->id;
+    $themes[] = $hook . '__' . preg_replace('/[^a-z0-9]/', '-', strtolower($view->tag));
     if ($display->id != $display->display_plugin) {
       $themes[] = $hook . '__' . $view->name . '__' . $display->display_plugin;
       $themes[] = $hook . '__' . $display->display_plugin;
@@ -38,6 +39,8 @@ function _views_theme_functions($hook, $view, $display = NULL) {
  * Preprocess the primary theme implementation for a view.
  */
 function template_preprocess_views_view(&$vars) {
+  global $base_path;
+
   $view = $vars['view'];
 
   $vars['rows']       = !empty($view->result) || !empty($view->style_plugin->definition['even empty']) ? $view->style_plugin->render($view->result) : '';
@@ -104,7 +107,7 @@ function template_preprocess_views_view(&$vars) {
       ),
     );
 
-    drupal_alter('views_admin_links', $vars['admin_links_raw']);
+    drupal_alter('views_admin_links', $vars['admin_links_raw'], $view);
     $vars['admin_links'] = theme('links', $vars['admin_links_raw']);
     views_add_css('views');
   }
@@ -136,6 +139,9 @@ function template_preprocess_views_view(&$vars) {
             'view_display_id' => $view->current_display,
             'view_args' => implode('/', $view->args),
             'view_path' => $_GET['q'],
+            // Pass through URL to ensure we get e.g. language prefixes.
+//            'view_base_path' => isset($view->display['page']) ? substr(url($view->display['page']->display_options['path']), strlen($base_path)) : '',
+            'view_base_path' => $view->get_path(),
             'view_dom_id' => $vars['dom_id'],
             // To fit multiple views on a page, the programmer may have
             // overridden the display's pager_element.
@@ -160,10 +166,12 @@ function template_preprocess_views_view_fields(&$vars) {
   $inline = FALSE;
   $vars['fields'] = array(); // ensure it's at least an empty array.
   foreach ($view->field as $id => $field) {
+    // render this even if set to exclude so it can be used elsewhere.
+    $field_output = $view->field[$id]->theme($vars['row']);
     if (empty($field->options['exclude'])) {
       $object = new stdClass();
 
-      $object->content = $view->field[$id]->theme($vars['row']);
+      $object->content = $field_output;
       if (isset($view->field[$id]->field_alias) && isset($vars['row']->{$view->field[$id]->field_alias})) {
         $object->raw = $vars['row']->{$view->field[$id]->field_alias};
       }
@@ -197,7 +205,7 @@ function template_preprocess_views_view_fields(&$vars) {
  * this: @code { $row->{$field->field_alias} @endcode
  */
 function theme_views_view_field($view, $field, $row) {
-  return $field->render($row);
+  return $field->advanced_render($row);
 }
 
 /**
@@ -205,10 +213,10 @@ function theme_views_view_field($view, $field, $row) {
  *
  * This preprocess function isn't normally run, as a function is used by
  * default, for performance. However, by creating a template, this
- * preprocess should get pickedup.
+ * preprocess should get picked up.
  */
 function template_preprocess_views_view_field(&$vars) {
-  $vars['output'] = $vars['field']->render($vars['row']);
+  $vars['output'] = $vars['field']->advanced_render($vars['row']);
 }
 
 /**
@@ -289,6 +297,16 @@ function template_preprocess_views_view_table(&$vars) {
     $query = '&' . $query;
   }
 
+  // Fields must be rendered in order as of Views 2.3, so we will pre-render
+  // everything.
+  $renders = array();
+  $keys = array_keys($view->field);
+  foreach ($result as $count => $row) {
+    foreach ($keys as $id) {
+      $renders[$count][$id] = $view->field[$id]->theme($row);
+    }
+  }
+
   foreach ($columns as $field => $column) {
     // render the header labels
     if ($field == $column && empty($fields[$field]->options['exclude'])) {
@@ -327,15 +345,15 @@ function template_preprocess_views_view_table(&$vars) {
     // Render each field into its appropriate column.
     foreach ($result as $num => $row) {
       if (!empty($fields[$field]) && empty($fields[$field]->options['exclude'])) {
-        $field_output = $fields[$field]->theme($row);
+        $field_output = $renders[$num][$field];
 
         // Don't bother with separators and stuff if the field does not show up.
-        if (!isset($field_output) && isset($vars['rows'][$num][$column])) {
+        if (empty($field_output) && !empty($vars['rows'][$num][$column])) {
           continue;
         }
 
         // Place the field into the column, along with an optional separator.
-        if (isset($vars['rows'][$num][$column])) {
+        if (!empty($vars['rows'][$num][$column])) {
           if (!empty($options['info'][$column]['separator'])) {
             $vars['rows'][$num][$column] .= filter_xss_admin($options['info'][$column]['separator']);
           }
@@ -347,6 +365,10 @@ function template_preprocess_views_view_table(&$vars) {
         $vars['rows'][$num][$column] .= $field_output;
       }
     }
+  }
+
+  foreach ($vars['rows'] as $num => $row) {
+    $vars['row_classes'][$num][] = ($num % 2 == 0) ? 'odd' : 'even';
   }
 
   $vars['class'] = 'views-table';
@@ -416,7 +438,8 @@ function template_preprocess_views_view_unformatted(&$vars) {
   $vars['classes'] = array();
   // Set up striping values.
   foreach ($rows as $id => $row) {
-    $vars['classes'][$id] = 'views-row-' . ($id + 1);
+    $vars['classes'][$id] = 'views-row';
+    $vars['classes'][$id] .= ' views-row-' . ($id + 1);
     $vars['classes'][$id] .= ' views-row-' . ($id % 2 ? 'even' : 'odd');
     if ($id == 0) {
       $vars['classes'][$id] .= ' views-row-first';
@@ -578,7 +601,14 @@ function theme_views_mini_pager($tags = array(), $limit = 10, $element = 0, $par
 
 
   $li_previous = theme('pager_previous', (isset($tags[1]) ? $tags[1] : t('‹‹')), $limit, $element, 1, $parameters);
+  if (empty($li_previous)) {
+    $li_previous = "&nbsp;";
+  }
+
   $li_next = theme('pager_next', (isset($tags[3]) ? $tags[3] : t('››')), $limit, $element, 1, $parameters);
+  if (empty($li_next)) {
+    $li_next = "&nbsp;";
+  }
 
   if ($pager_total[$element] > 1) {
     $items[] = array(

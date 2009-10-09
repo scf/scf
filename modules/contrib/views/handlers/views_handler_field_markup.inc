@@ -1,5 +1,5 @@
 <?php
-// $Id: views_handler_field_markup.inc,v 1.2 2008/09/24 22:48:20 merlinofchaos Exp $
+// $Id: views_handler_field_markup.inc,v 1.3 2009/01/08 20:01:00 merlinofchaos Exp $
 
 /**
  * A handler to run a field through check_markup, using a companion
@@ -22,7 +22,7 @@ class views_handler_field_markup extends views_handler_field {
 
     $this->additional_fields = array();
     if (!is_numeric($this->format)) {
-      $this->additional_fields['format'] = $this->format;
+      $this->additional_fields['format'] = array('field' => $this->format);
     }
   }
 

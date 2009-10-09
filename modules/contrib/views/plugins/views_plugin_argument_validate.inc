@@ -1,8 +1,17 @@
 <?php
-// $Id: views_plugin_argument_validate.inc,v 1.1 2008/09/03 19:21:30 merlinofchaos Exp $
+// $Id: views_plugin_argument_validate.inc,v 1.2 2009/06/01 23:34:55 merlinofchaos Exp $
 /**
  * @file
  * Contains the base argument validator plugin.
+ */
+
+/**
+ * @defgroup views_argument_validate_plugins Views' argument validate plugins
+ * @{
+ *
+ * Allow specialized methods of validating arguments.
+ *
+ * @see hook_views_plugins
  */
 
 /**
@@ -55,4 +64,8 @@ class views_plugin_argument_validate extends views_plugin {
 
   function validate_argument($arg) { return TRUE; }
 }
+
+/**
+ * @}
+ */
 

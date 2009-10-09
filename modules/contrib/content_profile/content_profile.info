@@ -3,3 +3,9 @@ name = "Content Profile"
 description = "Use content types for user profiles."
 package = "Content Profile"
 core = 6.x
+; Information added by drupal.org packaging script on 2009-06-15
+version = "6.x-1.0-beta4"
+core = "6.x"
+project = "content_profile"
+datestamp = "1245064225"
+

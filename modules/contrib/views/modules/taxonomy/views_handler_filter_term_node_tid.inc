@@ -1,5 +1,5 @@
 <?php
-// $Id: views_handler_filter_term_node_tid.inc,v 1.5 2008/10/20 21:32:28 merlinofchaos Exp $
+// $Id: views_handler_filter_term_node_tid.inc,v 1.8 2009/04/07 23:21:01 merlinofchaos Exp $
 
 /**
  * Filter by term id
@@ -13,6 +13,7 @@ class views_handler_filter_term_node_tid extends views_handler_filter_many_to_on
     $options = parent::option_definition();
 
     $options['type'] = array('default' => 'textfield');
+    $options['limit'] = array('default' => TRUE);
     $options['vid'] = array('default' => 0);
 
     return $options;
@@ -24,21 +25,23 @@ class views_handler_filter_term_node_tid extends views_handler_filter_many_to_on
       $options[$voc->vid] = check_plain($voc->name);
     }
 
-    // We only do this when the form is displayed so this query doesn't run
-    // unnecessarily just when the object is constructed.
-    if ($this->options['vid'] == 0) {
-      $this->options['vid'] = db_result(db_query('SELECT MIN(vid) FROM {vocabulary} v'));
-    }
+    if ($this->options['limit']) {
+      // We only do this when the form is displayed so this query doesn't run
+      // unnecessarily just when the object is constructed.
+      if ($this->options['vid'] == 0) {
+        $this->options['vid'] = db_result(db_query('SELECT MIN(vid) FROM {vocabulary} v'));
+      }
 
-    $form['vid'] = array(
-      '#prefix' => '<div class="views-left-40">',
-      '#suffix' => '</div>',
-      '#type' => 'radios',
-      '#title' => t('Vocabulary'),
-      '#options' => $options,
-      '#description' => t('Select which vocabulary to show terms for in the regular options.'),
-      '#default_value' => $this->options['vid'],
-    );
+      $form['vid'] = array(
+        '#prefix' => '<div class="views-left-40">',
+        '#suffix' => '</div>',
+        '#type' => 'radios',
+        '#title' => t('Vocabulary'),
+        '#options' => $options,
+        '#description' => t('Select which vocabulary to show terms for in the regular options.'),
+        '#default_value' => $this->options['vid'],
+      );
+    }
 
     $form['markup_start'] = array(
       '#value' => '<div class="views-left-40">',
@@ -66,7 +69,7 @@ class views_handler_filter_term_node_tid extends views_handler_filter_many_to_on
 
   function value_form(&$form, &$form_state) {
     $vocabulary = taxonomy_vocabulary_load($this->options['vid']);
-    if (!$vocabulary) {
+    if (empty($vocabulary) && $this->options['limit']) {
       $form['markup'] = array(
         '#prefix' => '<div class="form-item">',
         '#suffix' => '</div>',
@@ -88,14 +91,17 @@ class views_handler_filter_term_node_tid extends views_handler_filter_many_to_on
       }
 
       $form['value'] = array(
-        '#title' => t('Select terms from vocabulary @voc', array('@voc' => $vocabulary->name)),
+        '#title' => $this->options['limit'] ? t('Select terms from vocabulary @voc', array('@voc' => $vocabulary->name)) : t('Select terms'),
         '#type' => 'textfield',
-        '#autocomplete_path' => 'taxonomy/autocomplete/' . $vocabulary->vid,
         '#default_value' => $default,
       );
+
+      if ($this->options['limit']) {
+        $form['value']['#autocomplete_path'] = 'taxonomy/autocomplete/' . $vocabulary->vid;
+      }
     }
     else {
-      if (!empty($this->options['hierarchy'])) {
+      if (!empty($this->options['hierarchy']) && $this->options['limit']) {
         $tree = taxonomy_get_tree($vocabulary->vid);
         $options = array();
 
@@ -109,7 +115,12 @@ class views_handler_filter_term_node_tid extends views_handler_filter_many_to_on
       }
       else {
         $options = array();
-        $result = db_query("SELECT * FROM {term_data} WHERE vid = %d ORDER BY weight, name", $vocabulary->vid);
+        if ($this->options['limit']) {
+          $result = db_query("SELECT * FROM {term_data} WHERE vid = %d ORDER BY weight, name", $vocabulary->vid);
+        }
+        else {
+          $result = db_query("SELECT td.* FROM {term_data} td INNER JOIN {vocabulary} v ON td.vid = v.vid ORDER BY v.weight, v.name, td.weight, td.name");
+        }
         while ($term = db_fetch_object($result)) {
           $options[$term->tid] = $term->name;
         }
@@ -144,7 +155,7 @@ class views_handler_filter_term_node_tid extends views_handler_filter_many_to_on
       }
       $form['value'] = array(
         '#type' => 'select',
-        '#title' => t('Select terms from vocabulary @voc', array('@voc' => $vocabulary->name)),
+        '#title' => $this->options['limit'] ? t('Select terms from vocabulary @voc', array('@voc' => $vocabulary->name)) : t('Select terms'),
         '#multiple' => TRUE,
         '#options' => $options,
         '#size' => min(9, count($options)),
@@ -178,6 +189,10 @@ class views_handler_filter_term_node_tid extends views_handler_filter_many_to_on
   }
 
   function accept_exposed_input($input) {
+    if (empty($this->options['exposed'])) {
+      return TRUE;
+    }
+
     // If it's optional and there's no value don't bother filtering.
     if ($this->options['expose']['optional'] && empty($this->validated_exposed_input)) {
       return FALSE;
@@ -245,7 +260,10 @@ class views_handler_filter_term_node_tid extends views_handler_filter_many_to_on
       return;
     }
 
-    $result = db_query("SELECT * FROM {term_data} WHERE name IN (" . implode(', ', $placeholders) . ")", $args);
+    // add the taxonomy vid to the argument list.
+    $args[] = $this->options['vid'];
+
+    $result = db_query("SELECT * FROM {term_data} WHERE name IN (" . implode(', ', $placeholders) . ") AND vid = %d", $args);
     while ($term = db_fetch_object($result)) {
       unset($missing[strtolower($term->name)]);
       $tids[] = $term->tid;

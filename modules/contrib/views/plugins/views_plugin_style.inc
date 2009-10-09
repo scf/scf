@@ -1,5 +1,20 @@
 <?php
-// $Id: views_plugin_style.inc,v 1.4 2008/10/08 00:14:01 merlinofchaos Exp $
+// $Id: views_plugin_style.inc,v 1.6 2009/06/01 23:34:55 merlinofchaos Exp $
+
+/**
+ * @defgroup views_style_plugins Views' style plugins
+ * @{
+ * Style plugins control how a view is rendered. For example, they
+ * can choose to display a collection of fields, node_view() output,
+ * table output, or any kind of crazy output they want.
+ *
+ * Many style plugins can have an optional 'row' plugin, that displays
+ * a single record. Not all style plugins can utilize this, so it is
+ * up to the plugin to set this up and call through to the row plugin.
+ *
+ * @see hook_views_plugins
+ */
+
 /**
  * Base class to define a style plugin handler.
  */
@@ -193,5 +208,16 @@ class views_plugin_style extends views_plugin {
     }
     return $errors;
   }
+
+  function query() {
+    parent::query();
+    if (isset($this->row_plugin)) {
+      $this->row_plugin->query();
+    }
+  }
 }
+
+/**
+ * @}
+ */
 

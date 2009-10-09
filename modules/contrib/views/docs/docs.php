@@ -1,5 +1,5 @@
 <?php
-// $Id: docs.php,v 1.10 2008/10/02 22:54:56 merlinofchaos Exp $
+// $Id: docs.php,v 1.15 2009/06/01 23:33:37 merlinofchaos Exp $
 /**
  * @file
  * This file contains no working PHP code; it exists to provide additional documentation
@@ -12,6 +12,9 @@
  * Much of this information is actually stored in the advanced help; please
  * check the API topic. This help will primarily be aimed at documenting
  * classes and function calls.
+ *
+ * An online version of the advanced help API documentation is available from:
+ * @link http://views-help.doc.logrus.com/help/views/api @endlink
  *
  * Topics:
  * - @ref view_lifetime
@@ -59,14 +62,146 @@
  */
 
 /**
- * The full documentation for this hook is now in the advanced help.
+ * Describe table structure to Views.
  *
  * This hook should be placed in MODULENAME.views.inc and it will be auto-loaded.
  * This must either be in the same directory as the .module file or in a subdirectory
  * named 'includes'.
+ *
+ * The full documentation for this hook is in the advanced help.
+ * @link http://views-help.doc.logrus.com/help/views/api-tables @endlink
  */
 function hook_views_data() {
-  // example code here
+  // This example describes how to write hook_views_data() for the following
+  // table:
+  //
+  // CREATE TABLE example_table (
+  //   nid INT(11) NOT NULL         COMMENT 'Primary key; refers to {node}.nid.',
+  //   plain_text_field VARCHAR(32) COMMENT 'Just a plain text field.',
+  //   numeric_field INT(11)        COMMENT 'Just a numeric field.',
+  //   boolean_field INT(1)         COMMENT 'Just an on/off field.',
+  //   timestamp_field INT(8)       COMMENT 'Just a timestamp field.',
+  //   PRIMARY KEY(nid)
+  // );
+
+  // The 'group' index will be used as a prefix in the UI for any of this
+  // table's fields, sort criteria, etc. so it's easy to tell where they came
+  // from.
+  $data['example_table']['table']['group'] = t('Example table');
+
+  // Define this as a base table. In reality this is not very useful for
+  // this table, as it isn't really a distinct object of its own, but
+  // it makes a good example.
+  $data['example_table']['table']['base'] = array(
+    'field' => 'nid',
+    'title' => t('Example table'),
+    'help' => t("Example table contains example content and can be related to nodes."),
+    'weight' => -10,
+  );
+
+  // This table references the {node} table.
+  // This creates an 'implicit' relationship to the node table, so that when 'Node'
+  // is the base table, the fields are automatically available.
+  $data['example_table']['table']['join'] = array(
+    // Index this array by the table name to which this table refers.
+    // 'left_field' is the primary key in the referenced table.
+    // 'field' is the foreign key in this table.
+    'node' => array(
+      'left_field' => 'nid',
+      'field' => 'nid',
+    ),
+  );
+
+  // Next, describe each of the individual fields in this table to Views. For
+  // each field, you may define what field, sort, argument, and/or filter
+  // handlers it supports. This will determine where in the Views interface you
+  // may use the field.
+
+  // Node ID field.
+  $data['example_table']['nid'] = array(
+    'title' => t('Example content'),
+    'help' => t('Some example content that references a node.'),
+    // Because this is a foreign key to the {node} table. This allows us to
+    // have, when the view is configured with this relationship, all the fields
+    // for the related node available.
+    'relationship' => array(
+      'base' => 'node',
+      'field' => 'nid',
+      'handler' => 'views_handler_relationship',
+      'label' => t('Example node'),
+    ),
+  );
+
+  // Example plain text field.
+  $data['example_table']['plain_text_field'] = array(
+    'title' => t('Plain text field'),
+    'help' => t('Just a plain text field.'),
+    'field' => array(
+      'handler' => 'views_handler_field',
+      'click sortable' => TRUE,
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_string',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_string',
+    ),
+  );
+
+  // Example numeric text field.
+  $data['example_table']['numeric_field'] = array(
+    'title' => t('Numeric field'),
+    'help' => t('Just a numeric field.'),
+    'field' => array(
+      'handler' => 'views_handler_field_numeric',
+      'click sortable' => TRUE,
+     ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_numeric',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
+
+  // Example boolean field.
+  $data['example_table']['boolean_field'] = array(
+    'title' => t('Boolean field'),
+    'help' => t('Just an on/off field.'),
+    'field' => array(
+      'handler' => 'views_handler_field_boolean',
+      'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_boolean_operator',
+      'label' => t('Published'),
+      'type' => 'yes-no',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
+
+  // Example timestamp field.
+  $data['example_table']['timestamp_field'] = array(
+    'title' => t('Timestamp field'),
+    'help' => t('Just a timestamp field.'),
+    'field' => array(
+      'handler' => 'views_handler_field_date',
+      'click sortable' => TRUE,
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort_date',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_date',
+    ),
+  );
+
+  return $data;
 }
 
 /**
@@ -96,11 +231,21 @@ function hook_views_handlers() {
 
 /**
  * Register View API information. This is required for your module to have
- * its include files loaded.
+ * its include files loaded; for example, when implementing
+ * hook_views_default_views().
  *
- * The full documentation for this hook is in the advanced help.
+ * @return
+ *   An array with the following possible keys:
+ *   - api:  (required) The version of the Views API the module implements.
+ *   - path: (optional) If includes are stored somewhere other than within
+ *       the root module directory or a subdirectory called includes, specify
+ *       its path here.
  */
 function hook_views_api() {
+  return array(
+    'api' => 2,
+    'path' => drupal_get_path('module', 'example') . '/includes/views', 
+  );
 }
 
 /**
@@ -358,6 +503,17 @@ function hook_views_default_views() {
 
   // At the end, return array of default views.
   return $views;
+}
+
+/**
+ * This hook is called right before all default views are cached to the
+ * database. It takes a keyed array of views by reference.
+ */
+function hook_views_default_views_alter(&$views) {
+  if (isset($views['taxonomy_term'])) {
+    $views['taxonomy_term']->set_display('default');
+    $views['taxonomy_term']->display_handler->set_option('title', 'Categories');
+  }
 }
 
 /**

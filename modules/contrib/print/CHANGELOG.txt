@@ -1,354 +1,623 @@
+May 12, 2009
+        Update changelog
+        Coder fixes
+        Fix #457528: When using TCPDF remove queries from the image URL
+May 11, 2009
+        Disable corner link span when empty
+        Add CCK's print_content_build_modes hook (currently disabled)
+May 6, 2009
+        Forgot quotes around UTF-8 in fix for #435578
+        Fix #451036: don't call drupal_get_title when the non-node path was not found
+        Don't try to use URL aliases when the node doesn't have one
+May 5, 2009
+        by Zoltan Balogh: Updated Hungarian translation
+May 4, 2009
+        Last part of the fix for the last part of #435578
+        Fix #420460: When using TCPDF remove imagefield/filefield numerical query from image filenames
+        Fix #449446 by rsantiag: Use the job_queue module to send emails during the cron run
+May 2, 2009
+        Fix another part of #435578: decode HTML entities in TCPDF title
+April 29, 2009
+        Fix #441770: Footer was placed at top of page in TCPDF => 4.6
+April 27, 2009
+        Improve wkhtmltopdf documentation, configuration and add a directory to place external libraries
+        Fix #385994: Printer-friendly pages do not inherit organic group membership from original page
+April 25, 2009
+        by Zoltan Balogh: Updated Hungarian translation
+April 23, 2009
+        Prevent PHP from blocking in the wkhtmltopdf code
+        Use cyclical numbering for the X display instead of random
+        Coder fixes
+April 22, 2009
+        Fix #283950: clean the output buffer to recover from any TCPDF warning/error
+        Fix #440376 by rsantiag: add hooks before and after the email sending action
+        Use Drupal log for wkhtmltopdf errors
+        Fix #429054: decode html entities in image URLs passed to TCPDF
+        Fix a notice with undefined node->type when printing system pages
+        Remove some dead code for an untested fix to #254863
+        Fix #435578: for now, don't use build_mode as CCK is not ready for it yet
+April 21, 2009
+        Updated German translation by rastatt
+        Fix #419296 by noelbush: ** Use wkhtmltopdf for PDF generation **
+        Fix #439314: use better pattern matching for TCPDF's paragraph replacement
+April 20, 2009
+        Fix #437128 by florin: add some bottom padding to the corner link
+April 16, 2009
+        Fix #435386 by rhys: accept recepient lists with consecutive separators \(newlines or commas\)
+April 15, 2009
+        Filter node titles using check_plain
+        Hide TCPDF notices
+        Fix #428024: use build_mode in hook_nodeapi and elsewhere
+March 27, 2009
+        Expand the advanced link options by default (too many users couldn't see it) and move the book link inside the fieldset
+        Fix #391790: display CCK fields (and labels) better in PDFs generated with TCPDF
+        Try to fix #414910 by using a smaller default weight
+        Fix #404052: allow node tabs pages to display the links for system pages
+        Fix #405564: display the content corner links above the content
+        Try to use other functions to convert from UTF-8 to ISO-8859-1 for the PDF generation with dompdf
+March 24, 2009
+        Fix #408238 by chris.cohen: improve PHP in the default print template
+        Updated Italian translation by fabrizioprocopio
+        Updated French translation by xmacinfo
+March 18, 2009
+        SA-CONTRIB-2009-012 Print module can be used as a spam relay
+March 17, 2009
+        Make tests successful again
+        Coder fixes
+March 12, 2009
+        Fix #303506 partly by joostvdl: remove the country code from paths to private image files used in generating PDFs
+        Simpler fix to #388008: Use a 'heavier' weight even in the absense of the CCK module
+March 10, 2009
+        Fix #388008: implement CCK's hook_content_extra_fields to manage the order of the per-content type settings
+March 5, 2009
+        Fix #384294 by ron_s: use padding instead of margin in icons
+        Fix #381586 by Fleshgrinder: add space at the end of the reset button in the send mail form
+        Fix #372250: Add page title to send mail form and the ability to use the !title token
+        Improvements to the API index.php
+        Updated slovak translation by etki
+February 20, 2009
+        Fix #371455: Convert all links in the PDF to absolute
+        Better fix for #371388: handle tbody tags with attributes
+        Fix #375892: Don't validate mail send form when pressing cancel
+        Improved Turkish translation by drupalhizmetleri
+        Document print_[format].tpl better in the README.txt
+February 11, 2009
+        by Zoltan Balogh: Updated Hungarian translation
+February 10, 2009
+        Update changelog
+February 9, 2009
+        Current mimemail 6.x-1.x-dev no longer causes problems for the mail function, so remove the warnings
+        Fix #371388 by victorkane and gurubert: delete tbody tags since dompdf can't handle them
+        Fix #370870: do not delete node-specific settings when users without permission to change them edit a node
+February 5, 2009
+        Update changelog
+        Add warning for incompatible mimemail settings
+        Fix for #364535: add some warnings about incompatibility of custom strings and the localization mechanism
+        Add explanation of the relation between the type- and node-specific print settings
+        Updated all translations (Dutch 100% thanks to joostvdl)
+February 2, 2009
+        Fix #365041: node-specific settings not initialized when adding new content
+        Fix #364535: move custom text strings to separate form to prevent conflicts with the translation mechanism
+        Fix #366835: support RTL languages in TCPDF generated PDFs
+January 27, 2009
+        by Zoltan Balogh: Updated Hungarian translation
+January 21, 2009
+        Updated french translation by remi
+        Coder fixes
+        Fix #361107: Ensure that per-node configurations are available for block view use
+        Revert #349991 until the cause of #359343 can be determined
+January 14, 2009
+        Add configuration for a default sender message
+        Update changelog
+        Fix #349991 by moshe weitzman: Use node build_mode instead of custom property for customizing node fields
+        Fix #351043: Add specific permission to edit the node-specific settings
+        Fix #356073: Check for CSS file before expanding it and replace spaces with %20 in mails sent
+December 19, 2008
+        Use integers as SQL int default values instead of strings
+December 17, 2008
+        Add PHP visibility option
+        Move cache disabling code to print_controller() instead of print_pdf_init()
+December 16, 2008
+        Fix #347518: nid is not yet set in node prepare
+December 13, 2008
+        Remove AdSense module's ads from the output
+        Updated Spanish translation by gusgsm1
+        Updated Portuguese translation
+December 12, 2008
+        Simplify hook_mail
+December 10, 2008
+        Update changelog
+        Update translations
+        Minor coder fixes
+December 8, 2008
+        Fix #344036 by eMPee584: generated PDF filename configurable via tokens (requires the token module)
+        Fix #343985 by eMPee584: improve removal of comment form and links
+        Add ability to configure link text strings
+        Improve variable cleanup at uninstall
+December 6, 2008
+        Fix content corner problem and other minor fixes
+December 3, 2008
+        Fix the different teaser comparison
+        Try to fix #336865: also replace the opening <p>
+        Use different teaser comparison
+December 2, 2008
+        Fix #333049 and #333957: Add ability to change user-visible strings in the settings pages
+        Fix #177358: Link options by node
+        Fix #247578: Print URLs by content type
+        Fix #298063: Most printed, emailed and PDFd blocks
+December 1, 2008
+        Disable footer in dompdf
+        Fix #336860 by Limiting Factor: use realpath for the path replacement when using private files
+        Fix #339111: Disable caching for PDF files
+November 25, 2008
+        Fix #336065: change nodeapi content weight to make sure that the content area link is rendered first
+November 21, 2008
+        by aries and Zoltan Balogh: Updated Hungarian translation
+November 14, 2008
+        Handle unclean URLs when using private files
+November 7, 2008
+        Use link format and icon options also in book links.
+        Fix #315204: Add options to show only the current page in book links
+        Fix #314521: Use file:// access when accessing images if private file system is enabled
+November 5, 2008
+        Use ratio of 0 when image size is not set
+        Updated Hungarian translation
+        Revert multi-file translation
+November 1, 2008
+        Translation of the Print, Print mail and Print PDF modules (complete)
+October 22, 2008
+        coder fixes
+        Improved UTF-8 conversion for dompdf
+October 21, 2008
+        Since dompdf can't handle Unicode, decode it to ISO-8859-1
+October 18, 2008
+        Don't validate the PDF settings when the form is empty
+October 17, 2008
+        Improve handling of no PDF tool installed
+October 16, 2008
+        Change PF link class from print to print_html
+        Fix #319529: Use referer URL if no path is provided
+        Fix #321451: Use reset button on email form
+        Update translations
+October 15, 2008
+        Minor coder fixes
+October 14, 2008
+        Fix #258095: Add block with links to PF versions
+        Fix #318939: Add title tag to icons
+October 8, 2008
+        Fix #314521: Use real path when private download method is enabled
+October 3, 2008
+        Fix #315014: redirect back to original page after sending email from book node
+October 2, 2008
+        Set query to NULL when the link doesn't contain a query
+September 25, 2008
+        Verify print_controller return value to avoid PHP warnings
+        Add option to use URL alias in the link
+September 23, 2008
+        Avoid system CSS conflict with dompdf
+September 22, 2008
+        Fix #311270: Use node_not_found() instead of node_access_denied() when appropriate
+        Make the code closer to Drupal's node_view()
+September 20, 2008
+        Fix #310703 by eMPee584: remove undefined teaser notice
+September 18, 2008
+        Fix #300277: don't break tables when modifying TCPDF's input
+September 18, 2008
+        Add Vietnamese translation by thehong
+        Fix #309084 by gl0tzk0wski: use addslashes in the dompdf footer function
+        Fix #308620 by robertDouglass: cast cid to int
+        Fix #308478 by Obsidiandh: avoid mod_security error in print_mail settings form
+September 13, 2008
+        Remove default front page mail and PDF links
+        Removed useless redirect of pdf theming functions
+September 11, 2008
+        Updated german translation
+        Update changelog
+        Update translations with current .pot
+September 10, 2008
+        Update documentation
+        Remove some more notices
+        Use module's CSS files
+September 8, 2008
+        Footer can now be choice between none, site or user-defined
+        Add footer to the dompdf generation (themeable).
+September 7, 2008
+        Display normal link in pages of type book that are not in books
+September 5, 2008
+        Slightly better API index
+September 4, 2008
+        Repair type-specific link settings
+September 3, 2008
+        Fix wrong fix to #299123
+        Improve documentation
+September 2, 2008
+        Remove some more PHP notices
+        Fix #298654: Drupal's theme function doesn't handle references when using PHP4
+        Fix fix for #301192: don't use drupal_query_string_encode for recursive calls
+        Use quotes around sender's name
+        Force menu rebuild after upgrade
+        Updated german translation
+        Use better system of detecting TCPDF's PHP version being used
+September 1, 2008
+        Fix #301192: handle arrays in queries correctly
+        Fix #299123 and #299133: remove PHP notices
+August 22, 2008
+        index.php for the API module
+August 21, 2008
+        Fix use of TCPDF versions later than 4.0.018
+        Fix use of TCPDF theming with PHP4
+        Fix #297198: Use SCRIPT_FILENAME instead of DOCUMENT_ROOT to determine Drupal's location in the file-system
+        Updated german translation (thanks rastatt)
+August 14, 2008
+        Organize everything in folders before the 1.0 release
+        Some minor coder corrections and updated print.pot
+August 13, 2008
+        Prevent setting of font size to 0 or negative
+        Font family and size in PDFs generated by TCPDF can now be user-configured
+August 9, 2008
+        Updated german translation. Thanks rastatt
+        Added the TCPDF footer layout to the themeable functions
+        Code documentation
+        Misc changes to comply with the coder module
+August 8, 2008
+        Enable theming of the TCPDF output
+August 7, 2008
+        Only use logo in TCPDF if the temporary file copy was successful
+        Use the template some more when using TCPDF
+        Add the links CSS file for the normal link
+        Add the logo to the TCPDF page
+August 6, 2008
+        Fix #291816: Use CCK's 6.x release path for its CSS file
+        Update simpletest test for the 6.x-2.x series (compatible with Drupal 7)
+        Fix bug with visibility where the link was shown when no page was specified but the 'show only in listed pages' was selected
+        Minor fixes
+August 5, 2008
+        Use more accurate pattern matching in the URL rewrite function
+        Add some simpletest unit tests
+        Fix bug where legal characters were being trimmed from the edges of URLS
+        Delete new variables when uninstalling
+        Update translations
+        Prepare _print_friendly_urls for simpletest testing
+August 4, 2008
+        Enable flood control of the send by e-mail functionality
+        Fix #290262 by Asif99: sys pages starting with 2 or 3 would return error 404
+        Fix #290587: When send to printer was enabled, the generated PDF was empty
+August 2, 2008
+        Update Hungarian translation by aries
+August 1, 2008
+        Simplify settings form by using more collapsible fieldsets
+        Added RTL link CSS
+        Remove some coder warnings
+July 30, 2008
+        Fix #282385: Add CSS margin between icon and text
+        Fix #288064: Large books sometimes resulted in blank PDFs
+        Fix #261338: Enable selection of none, theme or user-defined logo. Added also capability to upload logo directly from the settings form.
+        Fix PDF bug that prevented correct PDF generation introduced in the last patch.
+        Move the setting form elements back to the defined fieldsets.
+        Fix #280949: Add macros to the CSS input
+        Fix #285496: prevent re-encoding of the encoded query
+        Fix some minor coder warnings
+        Add some TCPDF calls for better quality output
+July 29, 2008
+        Add option to select location of the links
+July 28, 2008
+        Further improvements to the link enabled detection routines
+        Fix print*_insert_link functions to point to print*/nn and not print*/node/nn
+July 27, 2008
+        Improve link enabled detection routines
+July 25, 2008
+        Prepare a new link area in the upper right corner of the content
+        Replaced all inline styles with a core-loaded CSS file
+        Updated German translation
+July 24, 2008
+        Fix visibility so that it works both with the internal and the aliased paths
+July 23, 2008
+        Re-engineer the variables to no longer use the #tree hierarchy
+July 22, 2008
+        Increase mail form label width to avoid line wrapping
+        Enable translation of mail form buttons text
+July 21, 2008
+        Fix obscure pattern matching bug for sites that still use index.php in the URL
+        Moved taxonomy to lower right corner
+        Remove DOS CR+LF
+July 17, 2008
+        Slightly better current path discovery in the PDF and Web mods
+        Fix #283799: Allow icons in book links
+July 16, 2008
+        Fix #283423: correct the CSS path inclusion when sending by mail
+        Vietnamese translation by thehong.
+        Updated all translations
+        Misc fixes from the coder module
+July 15, 2008
+        Fix #282385: Remove whitespace between icon and text, use margin instead
+July 9, 2008
+        To make the job easier for themers, added access to the $node var inside the template
+        Fix #278922: Add support to the RTL languages
+        Fix #276627: Accept paths of the form node/nnn/args
+June 17, 2008
+        Self configure TCPDF
+June 16, 2008
+        With the new agreement between the major search engines, robots=nocache is obsolete
+        Set PDF version to 1.6 (Acrobat 7.x)
+        Use own panel in node type edit form, instead of workflow and comment panels.
+June 13, 2008
+        Fix #270095 by suit4: prevent validation error when the class field is empty
+June 6, 2008
+        Add path-based visibility options to all modules
+        Minor code documentation fixes
+June 4, 2008
+        Fix #257900: Add capability to use different templates for PDF, mail, etc.
+        Simplify CSS inclusion code a bit.
+        Fix #266186 by aaustin: Use drupal_get_title to obtain the page title
+        Fix #266318 by sun: Use theme_image for the icons (also fix #262900)
+June 3, 2008
+        Added capability to send a user-defined message with the send by e-mail function.
+        Streamlined the look of the send mail form.
+June 2, 2008
+        Change sys link option to list of paths on which to show the link.
+        Add option to choose to send only the message teaser.
+May 30, 2008
+        Fix #263349: Add CCK's CSS file to properly display inlined fields
+May 29, 2008
+        Working implementation of the mail sending code
+May 26, 2008
+        Initial send by e-mail support
+        Fix #262853: Use unicode-enabled fonts in TCPDF
+        Completed the Turkish translation based on the print.pot version 1.7 (by serkan.arikusu)
+May 24, 2008
+        Completed the Turkish translation based on the print.pot version 1.7 (by serkan.arikusu)
+May 23, 2008
+        Small improvements to the PDF admin functions
+        Separate open in new window option, so that PDF and web versions can have different settings
+        Use the template a bit more when using the TCPDF tool.
+        Make the title in the template be a heading 1.
+May 22, 2008
+        Add ability to configure PDF paper size and page orientation
+        Misc changes to PDF processing
+        Add aux vars print['node'] and print['url']
+        Misc improvements
+May 21, 2008
+        Fix the 'Show book link' option in the PDF version module
+        Fix the display of links to PF pages and PDF in individual comments
+May 20, 2008
+        Correct display of README.txt in the help
+        Restore the print_fill_attributes function
+        Remove the greybox and thickbox selection
+        Add ability to specify customised classes to the PF links
+May 19, 2008
+        Fix #258689: remove some undefined var warnings
+May 13, 2008
+        Add capability to open PDFs inline or to a save dialog
+        Added Danish translation. Thanks topsys!
+        Update Changelog for 6.x-1.0-rc3
 May 12, 2008
-      Commit #115838 by jcnventura at 10:30
         Slightly better template vars handling
 May 11, 2008
-      Commit #115798 by jcnventura at 23:51
         Improve translability of template strings
 May 10, 2008
-      Commit #115600 by jcnventura at 02:25
         Improve the documentation
 May 9, 2008
-      Commit #115568 by jcnventura at 21:32
         Revert back the last patch
 May 8, 2008
-      Commit #115378 by jcnventura at 17:14
         Remove what seems to be unnecessary code in print_link
 May 7, 2008
-      Commit #115219 by jcnventura at 22:17
         Small changes to sync better with the 5.x version
 May 6, 2008
-      Commit #115022 by jcnventura at 23:22
         Changes to comply with http://www.drupaltoughlove.com/review/printer-friendly-pages
 April 22, 2008
-      Commit #112305 by jcnventura at 20:41
         Add Printer-friendly module group
 April 21, 2008
-      Commit #112142 by jcnventura at 23:31
         Added Indonesian translation. Thanks SepedaTua!
         Added Slovak translation. Thanks empError!
         Fix #249526: correct German translation
         Try to fix #230013: only call preg_replace with comment author link if there's anything to replace
 April 17, 2008
-      Commit #111188 by jcnventura at 11:08
         Remove PDF admin pages dependecy on PHP5.
         Added Polish translation. Thanks sir_kula!
         Added Swedish translation. Thanks seals!
 April 3, 2008
-      Commit #108934 by jcnventura at 13:55
         Add thickbox module support.
-      Commit #108933 by jcnventura at 13:55
         Fix #239896: Make sure drupal_get_title() returns the original page's title
 April 2, 2008
-      Commit #108770 by jcnventura at 10:35
         Added Turkish translation. Thanks turkyilmaz1963
 March 27, 2008
-      Commit #107835 by jcnventura at 11:20
         Remove hard-coding of the greybox class name, now changes to what greybox uses (#233203)
 March 24, 2008
-      Commit #107382 by jcnventura at 18:35
         Updated Romanian translation. Thanks Andrei
 March 21, 2008
-      Commit #106902 by jcnventura at 04:06
         Updated translation files to match current code
 March 19, 2008
-      Commit #106567 by jcnventura at 04:34
         Remove some more PHP warnings
 March 14, 2008
-      Commit #105780 by jcnventura at 02:58
         Fix #233203: Add option to open in new window using the jQuery Greybox Redux module
 March 11, 2008
-      Commit #105364 by jcnventura at 04:42
         Some more misc changes by zuriel
 March 7, 2008
-      Commit #104684 by jcnventura at 00:04
         Some misc changes suggested by zuriel
 March 5, 2008
-      Commit #104500 by jcnventura at 22:42
         Fix #230318 by shaisachs: include page query in PF link
 March 4, 2008
-      Commit #104311 by jcnventura at 23:21
         Improve the theme_print_format_link functions
-      Commit #104277 by jcnventura at 18:42
         Update changelog for release 6.x-1.0-rc1
-      Commit #104186 by jcnventura at 11:42
         Better fix for #227127: use number of patterns instead of comparing to a
-      Commit #104150 by jcnventura at 03:13
         Separation of the configuration variables for the HTML and common sections
         Ability to configure use of text, icon or both in the PF links
 February 28, 2008
-      Commit #103576 by jcnventura at 17:21
         Adding icons. Thanks to the Plone Foundation
-      Commit #103516 by jcnventura at 01:49
         Fix #227625: add print['url'] var with absolute source url
-      Commit #103514 by jcnventura at 01:26
         Add PDF module settings
 February 27, 2008
-      Commit #103327 by jcnventura at 00:25
         Handle uppercase 'a' tags
 February 26, 2008
-      Commit #103286 by jcnventura at 20:52
         Properly document the PDF tools installation steps
         Rename the print_fill_attributes function back to the previous name
-      Commit #103278 by jcnventura at 20:10
         Correct the support for the PDF per-node-type settings
         Support print.node-.tpl.php filenames
 February 22, 2008
-      Commit #102401 by jcnventura at 02:55
         Auto-discovery of the PDF generation tools
 February 21, 2008
-      Commit #102314 by jcnventura at 19:17
         Make CSS path a full URL so that dompdf can find it
-      Commit #102284 by jcnventura at 14:42
         Add PDF support
 February 16, 2008
-      Commit #101359 by jcnventura at 20:16
         Fix #222234: Use Drupal 6 language var
 February 15, 2008
-      Commit #101076 by jcnventura at 02:22
         Correct print vars when using the printable engine
 February 14, 2008
-      Commit #100728 by jcnventura at 03:34
         Better support for Drupal 6.x (performance enhancements via include files and new translation I/F)
         Add current page title to printed breadcrumb
         Fix #216728 better: if first link was duplicate a new ref was generated
 February 9, 2008
-      Commit #99915 by jcnventura at 02:22
         Better support for Drupal sites that do not reside in the server root.
         Fix the 'printable' engine to display the page title.
-      Commit #99876 by jcnventura at 00:21
         Cleanup code (ran latest coder module)
 February 8, 2008
-      Commit #99779 by jcnventura at 16:56
         Replace module CSS import with an @import statement
 February 5, 2008
-      Commit #99392 by jcnventura at 12:12
         Fix 217928: add default value to variable_get('anonymous')
 February 4, 2008
-      Commit #99299 by jcnventura at 18:56
         Fix #217439: Add defined javascript to the PF page
-      Commit #99294 by jcnventura at 18:37
         Fix #198688: remove added %20
-      Commit #99285 by jcnventura at 17:53
         Remove whitespace immediately before and after the '=' sign
-      Commit #99277 by jcnventura at 17:15
         Fix #216728 by jpereza: Don't show duplicate URLs in the URL list
-      Commit #99274 by jcnventura at 17:04
         Fix #216716: do not process hreflang attributes
 January 25, 2008
-      Commit #97416 by jcnventura at 13:28
         Add rel=nofollow tag to PF link (#213951)
         Add taxonomy terms to the PF page (#214081)
-      Commit #97407 by jcnventura at 11:02
         Small fixes to 6.x
 January 24, 2008
-      Commit #97277 by jcnventura at 17:36
         Sync 5.x to 6.x
-      Commit #97252 by jcnventura at 12:12
         Remove comment forms from PF page (fix for #213425)
 January 23, 2008
-      Commit #97112 by jcnventura at 18:02
         Fix wrong Paginate hack (replace pages_count with page_count)
 January 22, 2008
-      Commit #96919 by jcnventura at 13:14
         Added ability to change the output strings through theming (as per #206365)
-      Commit #96914 by jcnventura at 12:46
         Slightly better solution to #211349.
-      Commit #96913 by jcnventura at 12:40
         Added Portuguese (Brazil) translation (thanks psychopath_mind!)
 January 21, 2008
-      Commit #96693 by jcnventura at 12:45
         Fix #211349: Add current query params to PF link
 January 8, 2008
-      Commit #94766 by jcnventura at 19:09
         Update changelog
 January 5, 2008
-      Commit #94314 by jcnventura at 21:05
         Add div tags around the logo image (fix for #206568)
 January 2, 2008
-      Commit #93687 by jcnventura at 14:01
         Fix #202243: Use the anonymous setting for pages with a blank author variable
 December 14, 2007
-      Commit #91367 by jcnventura at 15:49
         Added ability to theme the print_format_link function (fix for #198397)
         Added access check to the print_insert_link function
 December 4, 2007
-      Commit #90227 by jcnventura at 19:04
         Minor fix to #192855, use full base_url if it does not include subdirs
 December 3, 2007
-      Commit #90155 by jcnventura at 23:21
         Sync print 5.x to 4.7.x
-      Commit #90154 by jcnventura at 23:11
         Sync 5.x to 6.x
-      Commit #90151 by jcnventura at 22:47
         Proper fix to the book_node_visitor_html_pre which was incorrectly committed with 'print' instead of 'view'
-      Commit #90126 by jcnventura at 17:31
         Fix #195917: Use correct module check in hook_link_alter
 December 2, 2007
-      Commit #90019 by jcnventura at 20:25
         Add replacement book_node_visitor_html_pre so that CCK pages in book nodes print correctly
 November 22, 2007
-      Commit #88906 by jcnventura at 11:27
         Fix #192855: If relative links start with '/' just append them to the server name (commit to 5.x-3.x-dev)
-      Commit #88843 by jcnventura at 01:27
         Fix #192855: If relative links start with '/' just append them to the server name
 November 19, 2007
-      Commit #88585 by jcnventura at 23:53
         Sync print 5.x to 4.7.x
-      Commit #88584 by jcnventura at 23:49
         Sync print 5.x to 4.7.x
-      Commit #88583 by jcnventura at 23:35
         Update changelog
-      Commit #88581 by jcnventura at 23:23
         Complete Spanish translation. Thanks gustz!
-      Commit #88487 by jcnventura at 10:21
         Complete French translation. Thanks rondev!
 November 17, 2007
-      Commit #88352 by jcnventura at 23:59
         Complete versions of the Hungarian and German translations. Thanks hinger and hailstorm!
-      Commit #88280 by jcnventura at 00:34
         Try to solve #192855, by checking also for index.php in relative links
 November 15, 2007
-      Commit #88160 by jcnventura at 23:53
         Sync print 5.x to 6.x
-      Commit #88158 by jcnventura at 23:52
         Sync print 5.x to 4.7.x
-      Commit #88133 by jcnventura at 21:42
         Final translation to russian. Thanks VladSavitsky!
-      Commit #88112 by jcnventura at 16:02
         Remove TODOs in the .po files
-      Commit #88111 by jcnventura at 15:46
         Updated Norwegian translation to final. Thanks stenjo!
         Added (partial) Italian translation. Thanks ccattaneo74!
-      Commit #88081 by jcnventura at 12:18
         Added (partial) Ukrainian translation. Thanks artem_sokolov!
-      Commit #88080 by jcnventura at 12:09
         Added (partial) Romanian translation. Thanks baudolino!
 November 15, 2007
-      Commit #88080 by jcnventura at 12:09
         Added (partial) Romanian translation. Thanks baudolino!
 November 13, 2007
-      Commit #87938 by jcnventura at 14:26
         Make anchor tags (#id) links usable in the PF version again (after the base href fix broke it).
-      Commit #87887 by jcnventura at 02:05
         Add setting to control the book PF link via this module
-      Commit #87880 by jcnventura at 03:58
         Update all .po files to the latest print.pot from the potx module
 November 9, 2007
-      Commit #87371 by jcnventura at 01:56
         Add the capability to handle book's PF link via this module
 November 8, 2007
-      Commit #87271 by jcnventura at 03:33
         Enable choice of method to open the new window via radio boxes (now possible to select a Javascript XHTML Strict compliant method)
 November 7, 2007
-      Commit #87223 by jcnventura at 18:24
         Correct fix for the duplicate PF link in book pages
-      Commit #87160 by jcnventura at 03:39
         Sync documentation in HEAD with the 5.x version
-      Commit #87159 by jcnventura at 03:30
         Russian translation by VladSavitsky. Thanks!
-      Commit #87155 by jcnventura at 02:26
         Remove duplicate PF link in book pages
 November 6, 2007
-      Commit #87144 by jcnventura at 20:56
         Updated the installation instructions (INSTALL.txt)
-      Commit #87136 by jcnventura at 19:34
         Update documentation (README, CREDITS and CHANGELOG)
 October 31, 2007
-      Commit #86493 by jcnventura at 12:58
         Fix #172100: use drupal_get_html_head to starting building the head section
 October 30, 2007
-      Commit #86308 by jcnventura at 01:17
         Backport of version 5.x-2.x-dev into Drupal 4.7
-      Commit #86307 by jcnventura at 01:09
         Minor changes
-      Commit #86306 by jcnventura at 01:08
         Minor changes
-      Commit #86305 by jcnventura at 01:06
         Minor changes
 October 29, 2007
-      Commit #86192 by jcnventura at 00:46
         Sync HEAD with latest print-5.x-2.x-dev
         Changes to work with drupal 6.x
 October 28, 2007
-      Commit #86161 by jcnventura at 20:43
         Add an inactive line for an XHTML Strict compliant way of opening the PF page in a new window.
-      Commit #86155 by jcnventura at 17:21
         Fixed small code details raised by the coder module.
         Updated Norwegian and Hungarian translation. Thanks stenjo and hinger!
 October 27, 2007
-      Commit #86098 by jcnventura at 23:59
         Added Portuguese (Portugal) translation. Thanks jcnventura :)
         Fixed settings description bug in the URL list still describing the old link deactivation feature.
-      Commit #86053 by jcnventura at 15:50
         Remove link area in system pages
         Update print.pot to current version (and the fr, de, hu and no .po files)
-      Commit #85997 by jcnventura at 00:13
         Fix problem with printing pages if printing comments is enabled, but the comments module is disabled.
         Move the print/ path to a constant for easier modification of this hard-coded setting.
 October 25, 2007
-      Commit #85892 by jcnventura at 19:38
         Fix some issues with the book detection routine and check for access rights for system pages
-      Commit #85869 by jcnventura at 17:39
         Make the print_insert_link parameter optional.
         Configure the display of the link for non-node types.
         Prevent display of the link in book types.
-      Commit #85864 by jcnventura at 16:29
         Finish comment printing functions (configuration settings and print all comments with node contents capability). Solve #135089
         Add print_insert_link function for use by content writers to position link anywhere in the content. Solves #186216 and (maybe) #180975
         Support templates for specific content types and location of templates in both tthe theme directory (checked first) and the module directory. Solves #181458 and #171172
-      Commit #85825 by jcnventura at 01:37
         Support for printing individual comments
 October 24, 2007
-      Commit #85696 by jcnventura at 01:45
         Support printer-friendly pages everywhere in Drupal (adapted from printable module)
 October 23, 2007
-      Commit #85641 by jcnventura at 16:20
         Fix #184776 by deviantintegral: <a> tag rewrite affected <address>
         No need to transalate spaces and paranthesis on " (retrieved on "
-      Commit #85638 by jcnventura at 15:36
         Changed print.pot to use string locations in print.module and not print.node.tpl.php
         German translation by hailstorm
         Norwegian translation by stenjo
 October 9, 2007
-      Commit #83696 by jcnventura at 02:28
         Re-structure template and code by moving all the printer-friendly-specific output processing to a dedicated function
 October 6, 2007
-      Commit #83469 by jcnventura at 16:03
         Hungarian translation by hinger.. Thanks!
 October 1, 2007
-      Commit #82761 by jcnventura at 00:33
         French translation by rondev
-      Commit #82760 by jcnventura at 00:18
         Fix #178596 and #178743 by Waldemar: Fix base URL, CSS import and logo code problems with IE 6/7
 September 24, 2007
-      Commit #82105 by jcnventura at 13:06
         Fixed bug in url alias destination nid, get it from the dst string now
-      Commit #82083 by jcnventura at 00:14
         Fix #174983: if clean urls is disabled use url() only if it is an a link that does not start with =q?
         Fix #128049: also accept print/url_alias
 September 13, 2007
-      Commit #81039 by jcnventura at 00:09
         Try to fix #174983: handling of URLs with Drupal's ?q=
 September 12, 2007
-      Commit #80885 by jcnventura at 01:22
         Added $node->printing flag to alert other modules.
         Fix #60817, #74949, #171146, #117236, #172252, #173244.
         Fixed buggy link in comments, removed service links and fivestar modules output and removed Paginate's module pagination.
         Correctly handle spaces in filenames and URLs.
 August 30, 2007
-      Commit #79341 by jcnventura at 01:59
         Fix #171039. urldecode() the input URL before calling url(/) so that unicode chars are processed correctly
 August 28, 2007
-      Commit #79063 by jcnventura at 01:04
         Fix bug of printer-friendly link being displayed for teasers
         Fix bug where anchor tags were not correctly converted to absolute and the anchor destination was marked with '[Array]'
         Made anchor links still navigable when the print urls option is selected
         Fix bug of string parsing for t() calls in print.node.tpl.php
         Regenerate po/print.pot with potx module
 August 27, 2007
-      Commit #78962 by jcnventura at 01:26
         File containing the default CSS styles
-      Commit #78960 by jcnventura at 01:25
         Changed the render method to behave more like node_view
         Added the ability to enable/disable the printer-friendly like in the content type form
         Configuration options regarding the Source URL and the ability to open the page in a new window and print it
@@ -356,201 +625,122 @@ August 27, 2007
         Overall definition of CSS classes and style
         Hyphenated the words "printer-friendly"
 August 26, 2007
-      Commit #78882 by jcnventura at 01:38
         New URL rewriting engine; Definition of new CSS classes and styles; Configuration options regarding the Source URL and the ability to open the page in a new window and print it
 August 24, 2007
-      Commit #78705 by jcnventura at 02:32
         Sync with HEAD
-      Commit #78701 by jcnventura at 02:22
         Sync with HEAD
-      Commit #78690 by jcnventura at 02:00
         Profile printing is not working. Since utility is not clear, I am removing itfor now
-      Commit #78681 by jcnventura at 01:45
         Try to fix #71391 and try to display other node types through the use of the drupal render engine
-      Commit #78679 by jcnventura at 01:18
         Change maintainer information
-      Commit #78670 by jcnventura at 00:52
         Fix links to relative/internal URLs (#58100)
-      Commit #78669 by jcnventura at 00:42
         Fix #129535. Use ->url instead of
-      Commit #78668 by jcnventura at 00:35
         Fix #49794 and #89724. Use print/nid instead of node/nid/print
-      Commit #78667 by jcnventura at 00:22
         #60334 by the greenman. Handle 'a name' tags
-      Commit #78666 by jcnventura at 00:18
         Apply to CVS HEAD Andy Kirkham's DRUPAL-SA-2007-014: fixing access bypass bug for private issues
 August 23, 2007
-      Commit #78662 by jcnventura at 23:58
         Add current time/date before the Source URL
-      Commit #78657 by jcnventura at 23:11
         Make the printer friendly page XHTML Strict compliant.
 July 10, 2007
-      Commit #72914 by AjK at 02:31
         DRUPAL-SA-2007-014: fixing access bypass bug for private issues
-      Commit #72913 by AjK at 02:26
         DRUPAL-SA-2007-014: fixing access bypass bug for private issues
 March 26, 2007
-      Commit #62075 by hunmonk at 19:49
         clean up menu.
-      Commit #62074 by hunmonk at 19:48
         clean up menu.
-      Commit #62070 by hunmonk at 19:16
         remove dead code.
-      Commit #62064 by hunmonk at 18:49
         remove dead code.
-      Commit #62012 by hunmonk at 09:10
         adding .info file.
-      Commit #62011 by hunmonk at 08:56
         #88162 -- update to 5.0. patch by hunmonk, diggersf.
 October 23, 2006
-      Commit #43518 by rondev at 15:59
         French translation of print.module Drupal 4.7
 August 2, 2006
-      Commit #37411 by heeckhau at 13:16
         updated Dutch translation
 July 15, 2006
-      Commit #36348 by Whit at 10:35
         Czech translation of print.module
 March 30, 2006
-      Commit #28606 by deekayen at 05:03
         issue #54997: extra slash in URLs
-      Commit #28605 by deekayen at 05:02
         issue #54997: extra slash in URLs
-      Commit #28604 by deekayen at 04:57
         issue #50299: missing t()
-      Commit #28603 by deekayen at 04:56
         issue #50299: missing t()
 January 15, 2006
-      Commit #24003 by deekayen at 06:03
         backport of semi-fix for issue #33909
-      Commit #24001 by deekayen at 05:56
         backport of issue #42857
 December 31, 2005
-      Commit #23078 by peterjohnhartman at 15:22
         Added init_theme to fix bug with logo.
         http://drupal.org/node/42857
 December 30, 2005
-      Commit #23045 by deekayen at 22:19
         update stable to HEAD
-      Commit #23044 by deekayen at 22:15
         put some bug fixes from HEAD into DRUPAL-4-7
-      Commit #23043 by peterjohnhartman at 20:27
         Fixed bug: http://drupal.org/node/25437
-      Commit #23042 by peterjohnhartman at 20:22
         Fixed print url friendly (http://drupal.org/node/18716)
-      Commit #23040 by peterjohnhartman at 20:12
         Updated to DRUPAL-4-7
 December 21, 2005
-      Commit #22804 by deekayen at 04:23
         update version requirements
-      Commit #22803 by deekayen at 04:19
         summarize tonight's changes
-      Commit #22802 by deekayen at 04:11
         contrib by Markus Petrux for Drupal 4.6
-      Commit #22801 by deekayen at 03:56
         remove hardcode print.css location, let robots meta work for print_generate_profile(), update users table query for Drupal 4.7, and fix an error missing parameter to variable_get()
 December 21, 2005
-      Commit #22800 by deekayen at 03:43
         default settings point to a css file and it makes a lot of 404 errors to not have one to match
-      Commit #22798 by deekayen at 02:58
         work on forms API compatability, and fixes towards issues #33909, #28265, #17322, #25437
-      Commit #22797 by deekayen at 02:17
         bug fix #17317
 December 20, 2005
-      Commit #22792 by deekayen at 22:37
         bug fixes #33909, #25275, #31715, #17317
-      Commit #22791 by deekayen at 22:22
         fix bug #18716
-      Commit #22785 by peterjohnhartman at 20:36
         Updated with patch for 4.7.
-      Commit #22783 by peterjohnhartman at 19:38
         Updated for 4.
 August 24, 2005
-      Commit #18626 by Uwe Hermann at 02:39
         Added missing word.
-      Commit #18625 by Uwe Hermann at 02:38
         Added missing word.
 July 27, 2005
-      Commit #17760 by matt westgate at 19:48
         * Renamed file to print.node.tpl.php
-      Commit #17759 by matt westgate at 19:48
         * Created a general print controller to allow modules to generate printer friendly views.
         * Printer friendly profile pages. See INSTALL.txt for details.
         * Renamed the node print template from print.tpl.php to print.node.tpl.php
 July 14, 2005
-      Commit #17389 by Uwe Hermann at 21:52
         Commited my patch from
           http://drupal.org/node/25458
         with permission of the maintainer.
 June 21, 2005
-      Commit #16911 by Uwe Hermann at 19:11
         Added German translation.
 June 1, 2005
-      Commit #16499 by recidive at 22:37
         - Brazilian Portuguese Translation of print.module
-      Commit #16498 by recidive at 22:36
         - Added print.tpl.php strings
 April 26, 2005
-      Commit #15468 by Uwe Hermann at 00:21
         Updated print.pot file.
 February 14, 2005
-      Commit #13508 by km at 15:42
         km - corrected printing of source URL
-      Commit #13507 by km at 15:41
         km - changed the syntax of some lines to pass code-style.pl checks
 January 28, 2005
-      Commit #13134 by km at 16:35
         km - removed hint on site logo
-      Commit #13133 by km at 16:34
         km - changed strings back to 'printer friendly page'
 January 28, 2005
-      Commit #13132 by km at 16:33
         km - introduced printer friendly icon
 January 26, 2005
-      Commit #13053 by km at 15:55
         km - changed line numbers and added strings from print.tpl.php
-      Commit #13052 by km at 15:52
         km - changed strings, added strings from print.tpl.php
-      Commit #13050 by km at 15:18
         km - included changes from HEAD
-      Commit #13049 by km at 15:02
         km - changed link
-      Commit #13048 by km at 14:59
         km - improved layout and localized strings
 January 25, 2005
-      Commit #13022 by km at 16:11
         km - honor themes' global settings for "Display post information"
-      Commit #13021 by km at 15:52
         km - print_link() checks if page is a book
-      Commit #13020 by km at 15:09
         km - changed maintainer
 November 25, 2004
-      Commit #11739 by km at 16:09
         * Made CSS import work
 November 15, 2004
-      Commit #11503 by heeckhau at 14:27
         created pot-file with extractor.php and added dutch translation
 November 12, 2004
-      Commit #11426 by km at 14:51
         added CUSTOMIZATION
 November 5, 2004
-      Commit #11296 by km at 11:46
         Taking over maintainance
 October 30, 2004
-      Commit #11178 by matt westgate at 19:49
         * Created a print.tpl.php template file to give site admins control of what node parts this module renders and how the pages are structured. This feature, combined with the custom print stylesheet option, gives max freedom in rendering print friendly pages.
-      Commit #11177 by matt westgate at 19:49
         * Created a print.tpl.php template file to give site admins control of what node parts this module renders and how the pages are structured. This feature, combined with the custom print stylesheet option, gives max freedom in rendering print friendly pages.
 October 28, 2004
-      Commit #11079 by matt westgate at 06:04
         * Generate printer friendly pages for all node types.  Features include the ability to list $node->body URL references at the end of the page, custom print stylesheet and choosing which node elements to display.
 January 9, 2002
-      Commit #6609 by Kjartan at 15:42
       print.module- initial commit.
       - attempted to fix the bugs with the chatbox module. Feedback requested.
       - need some installation instructions. Anyone?
-      Commit #6610 by Kjartan at 15:42
       file print.module was initially added on branch DRUPAL-3-0.
 October 19, 2001
-      Commit #4860 by Kjartan at 17:10
       file LICENSE was initially added on branch DRUPAL-3-0.

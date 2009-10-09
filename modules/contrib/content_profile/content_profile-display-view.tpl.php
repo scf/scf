@@ -1,5 +1,5 @@
 <?php
-// $Id: content_profile-display-view.tpl.php,v 1.1.2.1 2008/02/01 16:00:24 fago Exp $
+// $Id: content_profile-display-view.tpl.php,v 1.1.2.2 2009/01/04 11:46:29 fago Exp $
 
 /**
  * @file content-profile-display-view.tpl.php
@@ -8,9 +8,11 @@
  */
 ?>
 <?php if (isset($title)): ?>
-  <h3 class="content-profile-title"><?php print $title; ?></h3>
+  <h3 class="content-profile-title" id="content-profile-title-<?php print $type; ?>">
+  <?php print $title; ?>
+  </h3>
 <?php endif; ?>
-<div class="content-profile-display">
+<div class="content-profile-display" id="content-profile-display-<?php print $type; ?>">
   <?php if (isset($tabs)) : ?>
     <ul class="tabs content-profile">
       <?php foreach ($tabs as $tab) : ?>

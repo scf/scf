@@ -1,5 +1,5 @@
 <?php
-// $Id: views_plugin_display_page.inc,v 1.4 2008/12/02 16:45:00 merlinofchaos Exp $
+// $Id: views_plugin_display_page.inc,v 1.7 2009/06/02 20:37:15 merlinofchaos Exp $
 /**
  * @file
  * Contains the page display plugin.
@@ -24,7 +24,9 @@ class views_plugin_display_page extends views_plugin_display {
     $options['menu'] = array(
       'contains' => array(
         'type' => array('default' => 'none'),
-        'title' => array('default' => '', 'transleateable' => TRUE),
+        // Do not translate menu and title as menu system will.
+        'title' => array('default' => '', 'translatable' => FALSE),
+        'description' => array('default' => '', 'translatable' => FALSE),
         'weight' => array('default' => 0),
         'name' => array('default' => 'navigation'),
        ),
@@ -32,7 +34,9 @@ class views_plugin_display_page extends views_plugin_display {
     $options['tab_options'] = array(
       'contains' => array(
         'type' => array('default' => 'none'),
-        'title' => array('default' => '', 'transleateable' => TRUE),
+        // Do not translate menu and title as menu system will.
+        'title' => array('default' => '', 'translatable' => FALSE),
+        'description' => array('default' => '', 'translatable' => FALSE),
         'weight' => array('default' => 0),
        ),
     );
@@ -79,9 +83,10 @@ class views_plugin_display_page extends views_plugin_display {
       if (empty($menu)) {
         $menu = array('type' => 'none');
       }
-      // Set the title if we have one.
+      // Set the title and description if we have one.
       if ($menu['type'] != 'none') {
         $items[$path]['title'] = $menu['title'];
+        $items[$path]['description'] = $menu['description'];
       }
 
       if (isset($menu['weight'])) {
@@ -129,6 +134,7 @@ class views_plugin_display_page extends views_plugin_display {
               // Identify URL embedded arguments and correlate them to a handler
               'load arguments'  => array($this->view->name, $this->display->id, '%index'),
               'title' => $tab_options['title'],
+              'description' => $tab_options['description'],
             );
             switch ($tab_options['type']) {
               default:
@@ -188,7 +194,7 @@ class views_plugin_display_page extends views_plugin_display {
       'title' => t('Page settings'),
     );
 
-    $path = $this->get_option('path');
+    $path = strip_tags($this->get_option('path'));
     if (empty($path)) {
       $path = t('None');
     }
@@ -252,7 +258,9 @@ class views_plugin_display_page extends views_plugin_display {
           '#type' => 'textfield',
           '#description' => t('This view will be displayed by visiting this path on your site. You may use "%" in your URL to represent values that will be used for arguments: For example, "node/%/feed".'),
           '#default_value' => $this->get_option('path'),
-          '#field_prefix' => url(NULL, array('absolute' => TRUE)) . (variable_get('clean_url', 0) ? '' : '?q='),
+	  '#field_prefix' => '<span dir="ltr">' . url(NULL, array('absolute' => TRUE)) . (variable_get('clean_url', 0) ? '' : '?q='),
+	  '#field_suffix' => '</span>&lrm;',
+	  '#attributes' => array('dir'=>'ltr'),
         );
         break;
       case 'menu':
@@ -289,6 +297,14 @@ class views_plugin_display_page extends views_plugin_display {
           '#process' => array('views_process_dependency'),
           '#dependency' => array('radio:menu[type]' => array('normal', 'tab', 'default tab')),
         );
+        $form['menu']['description'] = array(
+          '#title' => t('Description'),
+          '#type' => 'textfield',
+          '#default_value' => $menu['description'],
+          '#description' => t("If set to normal or tab, enter the text to use for the menu item's description."),
+          '#process' => array('views_process_dependency'),
+          '#dependency' => array('radio:menu[type]' => array('normal', 'tab', 'default tab')),
+        );
         $form['menu']['name-warning'] = array(
           '#type' => 'markup',
           '#prefix' => '<div class="warning">',
@@ -296,7 +312,7 @@ class views_plugin_display_page extends views_plugin_display {
           '#suffix' => '</div>',
           '#process' => array('views_process_dependency'),
           '#dependency' => array('radio:menu[type]' => array('normal')),
-          '#access' => (VERSION < 6.5),
+          '#access' => version_compare(VERSION, '6.5', '<'),
         );
 
         // Only display the menu selector if menu module is enabled.
@@ -362,6 +378,14 @@ class views_plugin_display_page extends views_plugin_display {
           '#type' => 'textfield',
           '#default_value' => $tab_options['title'],
           '#description' => t('If creating a parent menu item, enter the title of the item.'),
+          '#process' => array('views_process_dependency'),
+          '#dependency' => array('radio:tab_options[type]' => array('normal', 'tab')),
+        );
+        $form['tab_options']['description'] = array(
+          '#title' => t('Description'),
+          '#type' => 'textfield',
+          '#default_value' => $tab_options['description'],
+          '#description' => t('If creating a parent menu item, enter the description of the item.'),
           '#process' => array('views_process_dependency'),
           '#dependency' => array('radio:tab_options[type]' => array('normal', 'tab')),
         );

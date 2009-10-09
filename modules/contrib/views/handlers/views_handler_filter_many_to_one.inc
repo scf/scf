@@ -1,5 +1,5 @@
 <?php
-// $Id: views_handler_filter_many_to_one.inc,v 1.1 2008/09/03 19:21:28 merlinofchaos Exp $
+// $Id: views_handler_filter_many_to_one.inc,v 1.2 2009/06/01 21:29:11 merlinofchaos Exp $
 
 /**
  * Complex filter to handle filtering for many to one relationships,
@@ -24,15 +24,52 @@ class views_handler_filter_many_to_one extends views_handler_filter_in_operator 
     return $options;
   }
 
-  /**
-   * Provide inclusive/exclusive matching
-   */
-  function operator_options() {
-    return array(
-      'or' => t('Is one of'),
-      'and' => t('Is all of'),
-      'not' => t('Is none of'),
+  function operators() {
+    $operators = array(
+      'or' => array(
+        'title' => t('Is one of'),
+        'short' => t('or'),
+        'short_single' => t('='),
+        'method' => 'op_helper',
+        'values' => 1,
+        'ensure_my_table' => 'helper',
+      ),
+      'and' => array(
+        'title' => t('Is all of'),
+        'short' => t('and'),
+        'short_single' => t('='),
+        'method' => 'op_helper',
+        'values' => 1,
+        'ensure_my_table' => 'helper',
+      ),
+      'not' => array(
+        'title' => t('Is none of'),
+        'short' => t('not'),
+        'short_single' => t('<>'),
+        'method' => 'op_helper',
+        'values' => 1,
+        'ensure_my_table' => 'helper',
+      ),
     );
+    // if the definition allows for the empty operator, add it.
+    if (!empty($this->definition['allow empty'])) {
+      $operators += array(
+        'empty' => array(
+          'title' => t('Is empty (NULL)'),
+          'method' => 'op_empty',
+          'short' => t('empty'),
+          'values' => 0,
+        ),
+        'not empty' => array(
+          'title' => t('Is not empty (NULL)'),
+          'method' => 'op_empty',
+          'short' => t('not empty'),
+          'values' => 0,
+        ),
+      );
+    }
+
+    return $operators;
   }
 
   var $value_form_type = 'select';
@@ -49,10 +86,16 @@ class views_handler_filter_many_to_one extends views_handler_filter_in_operator 
    * The operator actually has influence over joining.
    */
   function ensure_my_table() {
-    $this->helper->ensure_my_table();
+    // Defer to helper if the operator specifies it.
+    $info = $this->operators();
+    if (isset($info[$this->operator]['ensure_my_table']) && $info[$this->operator]['ensure_my_table'] == 'helper') {
+      return $this->helper->ensure_my_table();
+    }
+
+    return parent::ensure_my_table();
   }
 
-  function query() {
+  function op_helper() {
     if (empty($this->value)) {
       return;
     }

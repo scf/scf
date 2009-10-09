@@ -1,4 +1,4 @@
-<!-- $Id: api-tables.html,v 1.6 2008/11/19 23:48:37 merlinofchaos Exp $ -->
+<!-- $Id: api-tables.html,v 1.7 2009/06/02 20:44:13 merlinofchaos Exp $ -->
 Tables are described to Views via hook_views_data(), which returns an array of table information, keyed by the name of the table. For example, if your module is describing three tables, 'foo', 'bar' and 'baz', your array will look like this:
 <pre>$data = array(
   'foo' =&gt; array(
@@ -227,7 +227,7 @@ The following items are allowed in the field definition:
 <dt>sort</dt>
 <dd>A handler definition for the "Sort criteria" section, which will be used to add an ORDER BY clause to the view. The definition is an array; the contents of the array are completely up to the handler, other than the 'handler' definition. If omitted, handler will default to 'views_handler_sort'.</dd>
 <dt>relationship</dt>
-<dd>A handler definition for the "Field" section, which is a way to bring in new or alternative base tables in the view. The definition is an array; the contents of the array are completely up to the handler, other than the 'handler' definition. If omitted, handler will default to 'views_handler_relationship'. The basic relationship handler requires 'base' and 'field' to be set; 'base' and 'field' represent the "right" half of the join that will use this field as the left side.</dd>
+<dd>A handler definition for the "Field" section, which is a way to bring in new or alternative base tables in the view. The definition is an array; the contents of the array are completely up to the handler, other than the 'handler' definition. If omitted, handler will default to 'views_handler_relationship'. The basic relationship handler requires 'base' and 'base field' to be set; 'base' and 'base field' represent the "right" half of the join that will use this field as the left side.</dd>
 <dt>argument</dt>
 <dd>A handler definition for the "Field" section, which is method of accepting user input from the URL or some other source. The definition is an array; the contents of the array are completely up to the handler, other than the 'handler' definition. If omitted, handler will default to 'views_handler_argument'.</dd>
 </dl>

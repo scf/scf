@@ -1,4 +1,4 @@
-; $Id: calais.info,v 1.2 2008/03/11 14:14:16 jscheel Exp $
+; $Id: calais.info,v 1.1 2008/02/11 19:40:53 jscheel Exp $
 name = Calais Semantic Tagging Bridge
 description = Provides a bridge between Drupal and the Calais web service for semantic metadata
 core = 6.x

@@ -1,14 +1,44 @@
 <?php
-// $Id: views_handler_filter_history_user_timestamp.inc,v 1.1 2008/09/03 19:21:29 merlinofchaos Exp $
+// $Id: views_handler_filter_history_user_timestamp.inc,v 1.2 2009/06/02 19:10:40 merlinofchaos Exp $
 /**
  * Filter for new content
  */
 class views_handler_filter_history_user_timestamp extends views_handler_filter {
-  function can_expose() { return FALSE; }
+  // Don't display empty space where the operator would be.
+  var $no_operator = TRUE;
+
+  function expose_form_right() {
+    // We don't want any of the usual options for exposed filters.
+  }
+
+  function value_form(&$form, &$form_state) {
+    // Only present a checkbox for the exposed filter itself. There's no way
+    // to tell the difference between not checked and the default value, so
+    // specifying the default value via the views UI is meaningless.
+    if (!empty($form_state['exposed'])) {
+      if (isset($this->options['expose']['label'])) {
+        $label = $this->options['expose']['label'];
+      }
+      else {
+        $label = t('Has new content');
+      }
+      $form['value'] = array(
+        '#type' => 'checkbox',
+        '#title' => $label,
+        '#default_value' => $this->value,
+      );
+    }
+  }
+
   function query() {
     global $user;
     // This can only work if we're logged in.
     if (!$user || !$user->uid) {
+      return;
+    }
+
+    // Don't filter if we're exposed and the checkbox isn't selected.
+    if (empty($this->value)) {
       return;
     }
 
@@ -33,9 +63,10 @@ class views_handler_filter_history_user_timestamp extends views_handler_filter {
     $this->query->add_where($this->options['group'], "($field IS NULL AND ($node.changed > (***CURRENT_TIME*** - $limit) $clause)) OR $field < $node.changed $clause2");
   }
 
-  /**
-   * Blank this, because there is nothing to say about this one.
-   */
-  function admin_summary() { }
+  function admin_summary() {
+    if (!empty($this->options['exposed'])) {
+      return t('exposed');
+    }
+  }
 }
 

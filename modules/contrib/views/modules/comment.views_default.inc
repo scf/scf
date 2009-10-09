@@ -1,5 +1,5 @@
 <?php
-// $Id: comment.views_default.inc,v 1.6 2008/06/10 21:30:43 merlinofchaos Exp $
+// $Id: comment.views_default.inc,v 1.7 2009/01/27 20:24:09 merlinofchaos Exp $
 /**
  * @file
  * Contains default views on behalf of the comment module.
@@ -231,10 +231,10 @@ function comment_views_default_views() {
     ),
   ));
   $handler->override_option('arguments', array(
-    'uid' => array(
-      'id' => 'uid',
-      'table' => 'users',
-      'field' => 'uid',
+    'uid_touch' => array(
+      'id' => 'uid_touch',
+      'table' => 'node',
+      'field' => 'uid_touch',
       'default_action' => 'ignore',
       'style_plugin' => 'default_summary',
       'style_options' => array(

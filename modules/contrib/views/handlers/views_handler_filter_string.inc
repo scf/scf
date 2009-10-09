@@ -1,5 +1,5 @@
 <?php
-// $Id: views_handler_filter_string.inc,v 1.6 2008/10/28 20:13:34 merlinofchaos Exp $
+// $Id: views_handler_filter_string.inc,v 1.7 2009/01/27 20:40:29 merlinofchaos Exp $
 
 /**
  * Basic textfield filter to handle string filtering commands
@@ -193,7 +193,7 @@ class views_handler_filter_string extends views_handler_filter {
   }
 
   function case_transform() {
-    return empty($this->options['case']) ? '' : 'UPPER';
+    return !empty($this->options['case']) ? '' : 'UPPER';
   }
 
   /**

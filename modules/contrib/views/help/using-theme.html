@@ -1,11 +1,11 @@
-<!-- $Id: using-theme.html,v 1.5 2008/09/10 21:33:12 merlinofchaos Exp $ -->
+<!-- $Id: using-theme.html,v 1.6 2009/02/20 20:46:48 merlinofchaos Exp $ -->
 Views theme templates are straightforward to use with the Drupal theming system. If you are unfamiliar with the theming system at all, you should probably at least read <a href="http://drupal.org/node/173880">drupal.org theming documentation</a>. That said, these are the important things you need to know:
 
 <ol>
 <li> Copy a base Views template to one of the names provided from the Theme: Information section of the View. Copy this template right into your theme directory. </li>
 <li> Clear the theme registry. See the <a href="http://drupal.org/node/173880#theme-registry">instructions</a> for how to do this. </li>
 <li> Your new template should now operate; assuming you picked a nicely named template that includes the view name, that template should now be active for your view. A good example is <strong>views-view-list--foobar.tpl.php</strong> which would work for a view named 'foobar'.</li>
-<li> You can now modify this template all you like.
+<li> You can now modify this template all you like.</li>
 </ol>
 
 For any template that uses fields, the fields will be in array. In order to use this effectively, you will need to understand enough PHP to fetch data from an array. This is a place where the <a href="http://drupal.org/project/devel">devel module</a> can really help you, because you can use its dsm() function right in your template to see what variables it uses. There is an alternative to dsm() that works without devel module, but it's a bit longer to use.

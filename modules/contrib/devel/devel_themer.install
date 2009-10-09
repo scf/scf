@@ -1,12 +1,5 @@
 <?php
 
-/**
- * Implementation of hook_disable().
- */
-function devel_themer_disable() {
-  // nothing yet
-}
-
 function devel_themer_requirements($phase) {
   // Ensure translations don't break at install time
    $t = get_t();
@@ -24,4 +17,17 @@ function devel_themer_requirements($phase) {
     }
   }
   return isset($requirements) ? $requirements : array();
+}
+
+function devel_themer_update_6000() {
+  $ret = array();
+  drupal_install_schema('devel_themer');
+  return $ret;
+}
+
+// We are now using a file based cache to avoid max_packet_size warning.
+function devel_themer_update_6001() {
+  $ret = array();
+  db_drop_table($ret, 'cache_devel_themer');
+  return $ret;
 }

@@ -1,5 +1,5 @@
 <?php
-// $Id: views_handler_field_taxonomy.inc,v 1.2 2008/11/19 22:44:30 merlinofchaos Exp $
+// $Id: views_handler_field_taxonomy.inc,v 1.3 2009/01/30 00:01:42 merlinofchaos Exp $
 
 /**
  * Field handler to provide simple renderer that allows linking to a taxonomy
@@ -31,6 +31,7 @@ class views_handler_field_taxonomy extends views_handler_field {
     parent::options_form($form, $form_state);
     $form['link_to_taxonomy'] = array(
       '#title' => t('Link this field to its taxonomy term page'),
+      '#description' => t('This will override any other link you have set.'),
       '#type' => 'checkbox',
       '#default_value' => !empty($this->options['link_to_taxonomy']),
     );
@@ -46,12 +47,10 @@ class views_handler_field_taxonomy extends views_handler_field {
       $term = new stdClass();
       $term->tid = $values->{$this->aliases['tid']};
       $term->vid = $values->{$this->aliases['vid']};
-
-      return l($data, taxonomy_term_path($term), array('html' => TRUE));
+      $this->options['alter']['make_link'] = TRUE;
+      $this->options['alter']['path'] = taxonomy_term_path($term);
     }
-    else {
-      return $data;
-    }
+    return $data;
   }
 
   function render($values) {

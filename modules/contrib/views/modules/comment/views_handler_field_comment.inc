@@ -1,5 +1,5 @@
 <?php
-// $Id: views_handler_field_comment.inc,v 1.3 2008/11/19 22:44:29 merlinofchaos Exp $
+// $Id: views_handler_field_comment.inc,v 1.5 2009/02/10 20:37:49 merlinofchaos Exp $
 /**
  * Field handler to allow linking to a comment
  */
@@ -28,6 +28,7 @@ class views_handler_field_comment extends views_handler_field {
     parent::options_form($form, $form_state);
     $form['link_to_comment'] = array(
       '#title' => t('Link this field to its comment'),
+      '#description' => t('This will override any other link you have set.'),
       '#type' => 'checkbox',
       '#default_value' => $this->options['link_to_comment'],
     );
@@ -35,11 +36,12 @@ class views_handler_field_comment extends views_handler_field {
 
   function render_link($data, $values) {
     if (!empty($this->options['link_to_comment']) && $data !== NULL && $data !== '') {
-      return l($data, "node/" . $values->{$this->aliases['nid']}, array('html' => TRUE, 'fragment' => "comment-" . $values->{$this->aliases['cid']}));
+      $this->options['alter']['make_link'] = TRUE;
+      $this->options['alter']['path'] = "node/". $values->{$this->aliases['nid']};
+      $this->options['alter']['fragment'] = "comment-" . $values->{$this->aliases['cid']};
     }
-    else {
-      return $data;
-    }
+
+    return $data;
   }
 
   function render($values) {

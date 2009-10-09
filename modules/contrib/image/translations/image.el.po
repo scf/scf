@@ -1,0 +1,377 @@
+# translation of image to Ελληνικά
+# $Id: image.el.po,v 1.1 2008/12/27 11:16:44 hass Exp $
+# Copyright 2008 Vasileios Lourdas <drupal@lourdas.name>
+# Generated from files:
+#  image.imagemagick.inc,v 1.3.2.9 2007/07/10 00:56:19 drewish
+#  image.module,v 1.209.2.41 2007/08/08 16:21:35 drewish
+#  image.info,v 1.2 2006/11/20 04:22:27 walkah
+#  image_attach.module,v 1.9.2.16 2007/07/16 16:23:39 drewish
+#  image_attach.info,v 1.1 2006/11/20 04:54:28 walkah
+#  image_gallery.info,v 1.2 2006/12/26 17:50:32 walkah
+#  image_import.info,v 1.1 2007/02/19 03:40:20 walkah
+#  image.install,v 1.1.4.10 2007/08/07 21:55:02 drewish
+#  image_gallery.module,v 1.5.2.11 2007/08/01 19:55:59 drewish
+#  image_import.module,v 1.1.2.8 2007/07/24 17:34:14 drewish
+msgid ""
+msgstr ""
+"Project-Id-Version: el\n"
+"POT-Creation-Date: 2008-12-20 23:08+0200\n"
+"PO-Revision-Date: 2008-12-20 23:59+0200\n"
+"Last-Translator: Vasileios Lourdas <drupal@lourdas.name>\n"
+"Language-Team: Ελληνικά <en@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms:  nplurals=2; plural=(n != 1);\n"
+"X-Generator: KBabel 1.11.4\n"
+
+#: image.admin.inc:18
+msgid "Image file settings"
+msgstr "Ρυθμίσεις αρχείου εικόνας"
+
+#: image.admin.inc:22
+msgid "Default image path"
+msgstr "Προεπιλεγμένη διαδρομή εικόνων"
+
+#: image.admin.inc:24
+msgid "Subdirectory in the directory \"%dir\" where pictures will be stored. Do not include trailing slash."
+msgstr "Υποκατάλογος μέσα στον κατάλογο \"%dir\" όπου θα αποθηκεύονται οι εικόνες. Μην συμπεριλαμβάνετε το τελικό /."
+
+#: image.admin.inc:29
+msgid "Maximum upload size"
+msgstr "Μέγιστο μέγεθος υποβολής"
+
+#: image.admin.inc:31
+msgid "KB"
+msgstr "KB"
+
+#: image.admin.inc:33
+msgid "Maximum file size for image uploads. When a maximum image dimensions is specified for original images the size is checked after resizing. "
+msgstr "Μέγιστο μέγεθος αρχείου για τις υποβολές των εικόνων. Όταν έχει οριστεί μέγιστο μέγεθος εικόνας σε διαστάσεις, για τις αρχικές εικόνες το μέγεθος αρχείου θα ελεγχθεί μετά την αλλαγή μεγέθους της εικόνας."
+
+#: image.admin.inc:38
+msgid "Image sizes"
+msgstr "Μεγέθη εικόνων"
+
+#: image.admin.inc:41
+msgid "The <em>Scale image</em> operation resizes images so that they fit with in the given dimensions. If only one dimension is specified the other dimension will be computed based on the image's aspect ratio. The <em>Scale and crop image</em> operation resizes images to be exactly the given dimensions. If only one dimension is specified the image will not be cropped, making this is equivalent to <em>Scale image</em>."
+msgstr "Η λειτουργία <em>Κλιμάκωση εικόνας</em> αλλάζει το μέγεθος των εικόνων ώστε να χωράνε σε συγκεκριμένες διαστάσεις. Αν καθορίζεται μία μόνο διάσταση, η άλλη διάσταση θα υπολογιστεί βάσει στο λόγο διαστάσεων της εικόνας. Η λειτουργία <em>Κλιμάκωση και κόψιμο εικόνας</em> αλλάζει το μέγεθος των εικόνων ακριβώς στις οριζόμενες διαστάσεις. Αν έχει καθοριστεί μία μόνο διάσταση, τότε η εικόνα δε θα κοπεί, κάνοντας τη λειτουργία ισοδύναμη με την <em>Κλιμάκωση εικόνας</em>."
+
+#: image.admin.inc:42
+msgid "Note: 'Original' dimensions will only be used to resize images when they are first uploaded. Existing originals will not be modified."
+msgstr "Σημείωση: Οι 'αρχικές' διαστάσεις θα χρησιμοποιούνται για την αλλαγή διαστάσεων των εικόνων όταν αυτές υποβάλλονται στην αρχή. Οι υπάρχουσες αρχικές διαστάσεις δε θα αλλάξουν."
+
+#: image.admin.inc:47
+msgid "Hidden"
+msgstr "Κρυφό"
+
+#: image.admin.inc:48
+msgid "Same window"
+msgstr "Ίδιο παράθυρο"
+
+#: image.admin.inc:49
+msgid "New window"
+msgstr "Νέο παράθυρο"
+
+#: image.admin.inc:82
+msgid "Scale image"
+msgstr "Κλιμάκωση εικόνας"
+
+#: image.admin.inc:82
+msgid "Scale and crop image"
+msgstr "Κλιμάκωση και κόψιμο εικόνας"
+
+#: image.admin.inc:114
+msgid "You must specify width, height or both dimensions."
+msgstr "Πρέπει να ορίσετε πλάτος, ύψος ή και τις δύο διαστάσεις."
+
+#: image.admin.inc:167
+msgid "Changes to the images sizes mean that the derivative images will need to be regenerated."
+msgstr "Αλλαγή στις διαστάσεις των εικόνων σημαίνει ότι οι παράγωγες εικόνες θα πρέπει να επαναδημιουργηθούν."
+
+#: image.admin.inc:173
+msgid "Label"
+msgstr "Ετικέτα"
+
+#: image.admin.inc:173
+msgid "Operation"
+msgstr "Λειτουργία"
+
+#: image.admin.inc:173
+msgid "Width"
+msgstr "Πλάτος"
+
+#: image.admin.inc:173
+msgid "Height"
+msgstr "Ύψος"
+
+#: image.admin.inc:173
+msgid "Link"
+msgstr "Σύνδεσμος"
+
+#: image.imagemagick.inc:19
+msgid "ImageMagick Binary"
+msgstr "Εκτελέσιμο του ImageMagick"
+
+#: image.imagemagick.inc:21
+msgid "ImageMagick is a standalone program used to manipulate images. To use it, it must be installed on your server and you need to know where it is located. If you are unsure of the exact path consult your ISP or server administrator."
+msgstr "Το ImageMagick είναι ένα πρόγραμμα που το εκτελεί κάποιος μόνος του για τη διαχείριση εικόνων. Για να το χρησιμοποιήσετε, θα πρέπει να είναι εγκατεστημένο στο διακομιστή σας και να γνωρίζετε την τοποθεσία του. Αν δεν είστε σίγουρος για την ακριβή διαδρομή του, συμβουλευτείτε τον παροχέα φιλοξενίας ιστοσελίδων (ISP) ή τον διαχειριστή του διακομιστή σας."
+
+#: image.imagemagick.inc:25
+msgid "Path to the \"convert\" binary"
+msgstr "Διαδρομή για το εκτελέσιμο του \"convert\""
+
+#: image.imagemagick.inc:28
+msgid "Specify the complete path to the ImageMagic <kbd>convert</kbd> binary. For example: <kbd>/usr/bin/convert</kbd> or <kbd>C:\\Program Files\\ImageMagick-6.3.4-Q16\\convert.exe</kbd>"
+msgstr "Ορίστε την πλήρη διαδρομή για το εκτελέσιμο του <kbd>convert</kbd> του ImageMagick. Για παράδειγμα: <kbd>/usr/bin/convert</kbd> ή <kbd>C:\\Program Files\\ImageMagick-6.3.4-Q16\\convert.exe</kbd>"
+
+#: image.imagemagick.inc:32
+msgid "Display debugging information"
+msgstr "Εμφάνιση πληροφοριών αποσφαλμάτωσης"
+
+#: image.imagemagick.inc:34
+msgid "Checking this option will display the ImageMagick commands and ouput to users with the <em>administer site configuration</em> permission."
+msgstr "Η ενεργοποίηση της επιλογής αυτής θα προκαλεί την εμφάνιση των εντολών του ImageMagick και των εξόδων τους στους χρήστες με την άδεια <em>διαχείριση διευθέτησης ιστοτόπου</em>."
+
+#: image.imagemagick.inc:60
+msgid "No file %file could be found. PHP's <a href='!open-basedir'>open_basedir</a> security resriction is set to %open-basedir, which may be interfering with the attempts to locate ImageMagick."
+msgstr "Δε βρέθηκε το αρχείο %file. Ο περιορισμός ασφαλείας <a href='!open-basedir'>open_basedir</a> της PHP έχει οριστεί στο %open-basedir, γεγονός που μπορεί να επηρεάζει τον εντοπισμό του ImageMagick."
+
+#: image.imagemagick.inc:63
+msgid "The specified ImageMagic path %file does not exist."
+msgstr "Η καθορισμένη διαδρομή %file για το ImageMagick δεν υπάρχει."
+
+#: image.imagemagick.inc:141
+msgid "ImageMagick could not be found. The admin will need to set the path on the <a href='@image-toolkit-settings'>image toolkit page</a>."
+msgstr "Δεν ήταν δυνατό να βρεθεί το ImageMagick. Ο διαχειριστής θα πρέπει να ορίσει τη διαδρομή στη <a href='@image-toolkit-settings'>σελίδα εργαλειοθήκης εικόνων</a>."
+
+#: image.imagemagick.inc:171
+msgid "ImageMagick command: @command"
+msgstr "Εντολή ImageMagick: @command"
+
+#: image.imagemagick.inc:172
+msgid "ImageMagick output: @output"
+msgstr "Έξοδος ImageMagick: @output"
+
+#: image.imagemagick.inc:176
+msgid "ImageMagick reported an error: %error"
+msgstr "Το ImageMagick ανέφερε ένα σφάλμα: %error"
+
+#: image.module:18
+msgid "The image module is used to create and administer images for your site. Each image is stored as a post, with thumbnails of the original generated automatically. There are two default thumbnail sizes, thumbnail and preview. The thumbnail size is shown as the preview for image posts and when browsing image galleries. The preview is the default size when first displaying an image node."
+msgstr "Η μονάδα image χρησιμοποιείται για τη δημιουργία και διαχείριση των εικόνων του ιστοτόπου σας. Κάθε εικόνα αποθηκεύεται ως μια καταχώριση, με μικρογραφίες της αρχικής να δημιουργούνται αυτόματα. Υπάρχουν δύο προεπιλεγμένα μεγέθη μικρογραφιών, η μικρογραφία και η προεπισκόπηση. Το μέγεθος της μικρογραφίας εμφανίζεται ως η προεπισκόπηση για τις καταχωρήσεις των εικόνων και κατά την πλοήγηση στις γκαλερί των εικόνων. Η προεπισκόπηση είναι το προεπιλεγμένο μέγεθος κατά την αρχική εμφάνιση ενός κόμβου εικόνας."
+
+#: image.module:19
+msgid ""
+"Image administration allows the image directory and the image sizes to be set.</p><p>\n"
+"Image galleries are used to organize and display images in galleries.   The list tab allows users to edit existing image gallery names, descriptions, parents and relative position, known as a weight.  The add galleries tab allows you to create a new image gallery defining name, description, parent and weight."
+msgstr ""
+"Η διαχείριση εικόνων επιτρέπει τον ορισμό του καταλόγου εικόνων και των μεγεθών τους.</p><p>\n"
+"Οι γκαλερί εικόνων χρησιμοποιούνται για την οργάνωση και εμφάνιση εικόνων στις γκαλερί. Η καρτέλα λίστα επιτρέπει στους χρήστες να επεξεργάζονται τα ονόματα των υπάρχουσων γκαλερί, τις περιγραφές τους, τους γονείς και τη σχετική τους θέση, γνωστή ως βάρος. Η καρτέλα προσθήκη γκαλερί σάς επιτρέπει να δημιουργήσετε μία νέα γκαλερί ορίζοντας το όνομά της, την περιγραφή, το γονέα και το βάρος."
+
+#: image.module:21
+msgid ""
+"<p>You can</p>\n"
+"<ul>\n"
+"<li>view image handling messages in <a href=\"!admin-settings\">administer &gt;&gt; settings</a>.</li>\n"
+"<li>configure image sizes and file directories at <a href=\"!admin-settings-image\">administer &gt;&gt; settings &gt;&gt; image</a>.</li>\n"
+"<li>use the <a href=\"!external-http-drupal-org-project-img_assist\">image assist module</a> to upload and insert images into posts.</li>\n"
+msgstr ""
+"<p>Μπορείτε να</p>\n"
+"<ul>\n"
+"<li>δείτε τα μηνύματα χειρισμού εικόνων στη <a href=\"!admin-settings\">διαχείριση &gt;&gt; ρυθμίσεις</a>.</li>\n"
+"<li>ρυθμίσετε τα μεγέθη των εικόνων και τους καταλόγους αρχείων στη <a href=\"!admin-settings-image\">διαχείριση &gt;&gt; ρυθμίσεις &gt;&gt; εικόνα</a>.</li>\n"
+"<li>χρησιμοποιήσετε τη <a href=\"!external-http-drupal-org-project-img_assist\">μονάδα image assist</a> για την υποβολή και την εισαγωγή εικόνων στις καταχωρήσεις.</li>\n"
+
+#: image.module:27
+msgid "For more information please read the configuration and customization handbook <a href=\"!image\">Image page</a>."
+msgstr "Για περισσότερες πληροφορίες διαβάστε το εγχειρίδιο ρύθμισης και προσαρμογής, <a href=\"!image\">σελίδα Image</a>."
+
+#: image.module:69;390 image.info:0;0
+msgid "Image"
+msgstr "Εικόνα"
+
+#: image.module:71
+msgid "An image (with thumbnail). This is ideal for publishing photographs or screenshots."
+msgstr "Μια εικόνα (με μικρογραφία). Είναι ιδανική για τη δημοσίευση φωτογραφιών ή εικόνων οθονών."
+
+#: image.module:154
+msgid "Rebuild image thumbnails"
+msgstr "Επαναδημιουργία των μικρογραφιών εικόνων"
+
+#: image.module:203
+msgid "The original image was resized to fit within the maximum allowed resolution of %width x %height pixels."
+msgstr "Οι διαστάσεις της αρχικής εικόνας άλλαξαν προκειμένου να χωρέσει στη μέγιστη ανάλυση των %width x %height pixel."
+
+#: image.module:209
+msgid "The image you uploaded was too big. You are only allowed upload files less than %max_size but your file was %file_size."
+msgstr "Η εικόνα που υποβάλλατε είναι πολύ μεγάλη. Μπορείτε να υποβάλλετε εικόνες μικρότερες του %max_size, αλλά το αρχείο σας είχε μέγεθος %file_size."
+
+#: image.module:311;320
+msgid "Latest image"
+msgstr "Πιο πρόσφατη εικόνα"
+
+#: image.module:312;325
+msgid "Random image"
+msgstr "Τυχαία εικόνα"
+
+#: image.module:337;880 image.install:199
+msgid "Thumbnail"
+msgstr "Μικρογραφία"
+
+#: image.module:382
+msgid "Rebuild derivative images."
+msgstr "Επαναδημιουργία των παραγώγων εικόνων."
+
+#: image.module:384
+msgid "Check this to rebuild the derivative images for this node."
+msgstr "Επιλέξτε την επιλογή αυτή για την επαναδημιουργία των παραγώγων εικόνων για αυτό τον κόμβο."
+
+#: image.module:392
+msgid "Click \"Browse...\" to select an image to upload."
+msgstr "Πατήστε στο \"Browse...\" για να επιλέξτε εικόνα για υποβολή."
+
+#: image.module:405
+msgid "You must upload an image."
+msgstr "Πρέπει να υποβάλλετε μια εικόνα."
+
+#: image.module:479
+msgid "%title's has an unneeded %key derivative images. The derivatives will be rebuilt to remove it."
+msgstr "Το %title έχει μια παράγωγη εικόνα %key που δεν χρειάζεται. Οι παράγωγες εικόνες θα επαναδημιουργηθούν για να αφαιρεθεί."
+
+#: image.module:491
+msgid "%title's %key derivative image %filepath was missing. The derivatives will be rebuilt to regenerate it."
+msgstr "Η διαδρομή %filepath της παράγωγης εικόνας %key του %title δεν υπάρχει. Οι παράγωγες εικόνες θα επαναδημιουργηθούν για να δημιουργηθεί ξανά."
+
+#: image.module:497
+msgid "%title's %key derivative image had a timestamp (%filetime) that predates the last changes to the image size settings (%vartime). The derivatives will be rebuilt to regenerate it."
+msgstr "Η παράγωγη εικόνα %key του %title είχε χρονική ετικέτα (%filetime) που προηγούνταν της τελευταίας αλλαγής στις ρυθμίσεις του μεγέθους εικόνας (%vartime). Οι παράγωγες εικόνες θα επαναδημιουργηθούν για να δημιουργηθεί ξανά."
+
+#: image.module:506
+msgid "view"
+msgstr "εμφάνιση"
+
+#: image.module:583
+msgid "The derivative images for <a href=\"!link\">%title</a> have been regenerated."
+msgstr "Οι παράγωγες εικόνες για το <a href=\"!link\">%title</a> επαναδημιουργήθηκαν."
+
+#: image.module:740 image.install:72
+msgid "No image toolkit is currently enabled. Without one the image module will not be able to resize your images. You can select one from the <a href=\"!link\">image toolkit settings page</a>."
+msgstr "Δεν υπάρχει εγκατεστημένη εργαλειοθήκη εικόνων. Χωρίς μία, η μονάδα Image δε θα μπορεί να αλλάξει τις διαστάσεις των εικόνων σας. Μπορείτε να επιλέξετε μια εργαλειοθήκη στη <a href=\"!link\">σελίδα ρυθμίσεων εργαλειοθήκης εικόνων</a>."
+
+#: image.module:823
+msgid "Unable to create scaled %label image"
+msgstr "Δεν ήταν δυνατή η αλλαγή μεγέθους της εικόνας %label"
+
+#: image.module:879 image.install:114
+msgid "Original"
+msgstr "Αρχικό"
+
+#: image.module:881 image.install:196
+msgid "Preview"
+msgstr "Προεπισκόπηση"
+
+#: image.module:506;110;0
+msgid "image"
+msgstr "εικόνα"
+
+#: image.module:506
+msgid "Derivative images were regenerated for %title."
+msgstr "Οι παράγωγες εικόνες επαναδημιουργήθηκαν για το %title."
+
+#: image.module:80
+msgid "create images"
+msgstr "δημιουργία εικόνων"
+
+#: image.module:80
+msgid "view original images"
+msgstr "εμφάνιση αρχικών εικόνων"
+
+#: image.module:80
+msgid "edit own images"
+msgstr "επεξεργασία δικών τους εικόνων"
+
+#: image.module:80
+msgid "edit images"
+msgstr "επεξεργασία εικόνων"
+
+#: image.module:116
+msgid "Images"
+msgstr "Εικόνες"
+
+#: image.module:117
+msgid "Configure the location of image files and image sizes. Also, if enabled, configure image attachments and options for image galleries and image imports."
+msgstr "Διευθέτηση της τοποθεσίας των αρχείων εικόνων και των μεγεθών των εικόνων. Επίσης, αν είναι ενεργοποιημένο, διευθέτηση των συνημμένων εικόνων και επιλογές για τις γκαλερί και τις επισυνάψεις εικόνων."
+
+#: image.module:125
+msgid "Files and sizes"
+msgstr "Αρχεία και μεγέθη"
+
+#: image.module:126
+msgid "Configure the location of image files and image sizes."
+msgstr "Διευθέτηση της τοποθεσίας των αρχείων εικόνων και των μεγεθών των εικόνων."
+
+#: image.install:9
+msgid "Stores image files information."
+msgstr "Αποθηκεύει τις πληροφορίες αρχείων εικόνων."
+
+#: image.install:12
+msgid "Primary Key: The {node}.nid of the image node."
+msgstr "Πρωτεύον Κλειδί: Το {node}.nid του αρχείου εικόνας."
+
+#: image.install:18
+msgid "Index: The {files}.fid of the image file."
+msgstr "Ευρετήριο: Το {files}.fid του αρχείου εικόνας."
+
+#: image.install:24
+msgid "Primary Key: The {files}.filename of the image file.  For image module this indicates the file size."
+msgstr "Πρωτεύον Κλειδί: Το {files}.filename του αρχείου εικόνας. Για τη μονάδα image δείχνει το μέγεθος του αρχείου."
+
+#: image.install:64
+msgid "The %toolkit-name toolkit is installed"
+msgstr "Η εργαλειοθήκη %toolkit-name δεν έχει εγκατασταθεί"
+
+#: image.install:70
+msgid "Not installed"
+msgstr "Δεν έχει εγκατασταθεί"
+
+#: image.install:75
+msgid "Image toolkit"
+msgstr "Εργαλειοθήκη εικόνων"
+
+#: image.install:83
+msgid "Missing directory"
+msgstr "Δεν υπάρχει ο κατάλογος"
+
+#: image.install:85
+msgid "The image module's image directory %image-dir is missing."
+msgstr "Ο κατάλογος εικόνων %image-dir της μονάδας image δεν υπάρχει."
+
+#: image.install:90
+msgid "Missing temp directory"
+msgstr "Ο προσωρινός κατάλογος δεν υπάρχει"
+
+#: image.install:92
+msgid "The image module's temp directory %temp-dir is missing."
+msgstr "Ο προσωρινός κατάλογος %temp-dir της μονάδας image δεν υπάρχει."
+
+#: image.install:97
+msgid "Exists (%path)"
+msgstr "Υπάρχει (%path)"
+
+#: image.install:101
+msgid "Image module directories"
+msgstr "Κατάλογοι μονάδας Image"
+
+#: image.install:189
+msgid ""
+"The original image size was missing so no changes were made. See this <a href='!link'>image module issue</a> for more information. Include the following:<br /><pre>@old_sizes\n"
+"</pre>"
+msgstr ""
+"Η αρχική διάσταση της εικόνας δεν υπήρχε, οπότε δεν έγιναν αλλαγές. Δείτε αυτό το <a href='!link'>θέμα της μονάδας image</a> για περισσότερες πληροφορίες. Συμπεριλάβετε τα παρακάτω: <br /><pre>@old_sizes\n"
+"</pre>"
+
+#: image.info:0
+msgid "Allows uploading, resizing and viewing of images."
+msgstr "Επιτρέπει την υποβολή, αλλαγή μεγέθους και εμφάνιση εικόνων."
+

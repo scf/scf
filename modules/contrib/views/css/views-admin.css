@@ -1,4 +1,4 @@
-/* $Id: views-admin.css,v 1.12 2008/12/02 19:09:25 merlinofchaos Exp $ */
+/* $Id: views-admin.css,v 1.13 2009/04/07 19:34:35 merlinofchaos Exp $ */
 
 /*
  * Summary pad
@@ -590,6 +590,8 @@ html.js .views-hidden {
   white-space: pre-wrap; /* CSS 2.1 */
   white-space: pre-line; /* CSS 3 (and 2.1 as well, actually) */
   word-wrap: break-word; /* IE */
+  max-height: 200px;
+  overflow: scroll;
 }
 
 .views-quick-links {

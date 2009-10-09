@@ -1,26 +1,5 @@
 <?php
-//$Id: biblio.contributors.inc,v 1.1.2.18 2008/11/24 03:19:00 rjerome Exp $
-/**
- * @param $authors
- * @param $withLinks
- * @return unknown_type
- */
-function biblio_get_contributor_strings($authors, $withLinks = TRUE) {
-  if (count($authors)) {
-    foreach ($authors as $key => $author) {
-      $author_array[$author['ct_id']] .= (!empty ($author_array[$author['ct_id']])) ? '; ' . $author['name'] : $author['name']; // $author['firstname'] .' '. $author['initials'].' '.$author['lastname'];
-    }
-  }
-  if (count($author_array)) {
-    //ksort($author_array);
-    return $author_array;
-  }
-  else {
-    return array(
-    1 => t('No author information available'
-    ));
-  }
-}
+//$Id: biblio.contributors.inc,v 1.1.2.29 2009/09/08 00:30:31 rjerome Exp $
 /**
  * @param $aid
  * @return unknown_type
@@ -39,81 +18,111 @@ function biblio_get_contributor($aid) {
  * @return unknown_type
  */
 function biblio_load_contributors($vid) {
-  $authors = array();
-  $query = 'SELECT bcd.*, bct.type, bct.ct_id, bct.ctdid, bc.rank
-    				  FROM    {biblio_contributor} bc,
-    					 {biblio_contributor_data} bcd,
-    					 {biblio_contributor_type} bct
-    				  WHERE bc.vid = %d
-    				  	 AND bc.cid = bcd.cid
-    				  	 AND  bc.ct_id = bct.ct_id
-    				  ORDER BY bc.ct_id ASC, bc.rank ASC;';
-  $result = db_query($query, array($vid));
+  $contributors = array();
+  $query = "SELECT * FROM {biblio_contributor} bc
+			INNER JOIN {biblio_contributor_data} bcd ON bc.cid=bcd.cid
+			WHERE bc.vid=%d
+			ORDER BY bc.rank ASC"; // do not change order of presentation
+
+  $result = db_query($query, $vid);
   while ($creator = db_fetch_array($result)) {
-    $contributors[] = $creator;
+    $contributors[$creator['auth_category']][] = $creator;
   }
   return $contributors;
 }
 /**
- * @param $node
- * @param $update
- * @return unknown_type
+ * Add separate author named "et al" to the end of the author array
+ * 
+ * @param $authors - author array to augment
+ * @param $type - auth_type
+ * @return true if author was added, false if "etal" was already there
  */
-function biblio_save_contributors($node, $update = FALSE) {
-  if (!empty ($node->biblio_contributors))
-  biblio_parse_save($node->biblio_contributors, $node->nid, $node->vid, $update);
+function biblio_authors_add_etal (&$authors, $type) {
+  $etal = "et al"; $max_rank = 0;
+  foreach ($authors as $author) { // et al author should be added only once per type
+    if ($author['auth_type'] != $type) continue;
+    if ($author['name'] == $etal) return false;
+    $max_rank = max($max_rank, $author['rank']);
+  }
+  $authors[] = biblio_parse_author(array('name' => $etal, 'auth_type' => $type, 'lastname' => $etal, 'rank' => $max_rank + 1));
+  return true;
 }
 /**
+ * Parse initial contributor array and augment with additional info
+ * @param $contributors initial contributor array
+ * @return augmented contributor array
+ */
+function biblio_parse_contributors($contributors) {
+  $result = array();
+  foreach ($contributors as $cat => $authors) {
+    $etal = array();   
+    foreach ($authors as $author) {
+      // remove any form of "et al" from name field, because it confuses biblio_parse_author
+      $author_cleaned = preg_replace("/et\.?\s+al\.?/",'',$author['name']);
+      if ($author_cleaned != $author['name']) { // if "et al" was present:
+        $author['name'] = $author_cleaned;  // store cleaned name 
+        $etal[$author['auth_type']] = true; // mark it as "to be added" in $etal array 
+      }
+      $author['name'] = trim($author['name']);
+      if (strlen($author['name'])) {
+        $result[$cat][] = biblio_parse_author($author, $cat);
+      }
+    }
+    // add "et al" authors for all neccessary author types
+    foreach ($etal as $type => $dummy) {
+      if (isset($result[$cat])) { // add "et al" only if plain authors exists
+        biblio_authors_add_etal ($result[$cat], $type);
+      }
+    }
+  }
+  return $result;
+}
+/**
+ * Save $node->biblio_contributors to database
+ * @param $node
+ * @param $update
+ * @return success of database operations
+ */
+function biblio_save_contributors($node, $update = FALSE) {
+  if (empty ($node->biblio_contributors)) return true;
+  return _save_contributors($node->biblio_contributors, $node->nid, $node->vid, $update);
+}
+/**
+ * Save contributors to the database
  * @param $authors
  * @param $nid
  * @param $vid
  * @param $update
- * @return unknown_type
+ * @return success of database operations
  */
-function _save_contributors($authors, $nid, $vid, $update = FALSE) {
-  $rank = array();
+function _save_contributors($contributors, $nid, $vid, $update = FALSE) {
   $md5 = _loadMD5();
   db_query('DELETE FROM {biblio_contributor} WHERE nid = %d AND vid = %d', array($nid, $vid));
-  foreach ($authors as $key => $author) {
-    if ($update && !empty($author['cid']))  $author['cid'] = null; // null out the cid so we don't do a global change
-    if (empty ($author['cid']) && !empty ($md5))
-    $author['cid'] = array_search($author['md5'], $md5);
-    if (empty ($author['cid'])) {
-      drupal_write_record('biblio_contributor_data', $author);
-      $cid = db_last_insert_id('biblio_contributor_data', 'cid');
-    } else {
-      $cid = $author['cid'];
-    }
-    $author = (array) $author;
-    $link_array = array(
-      'nid' => $nid,
-      'vid' => $vid,
-      'cid' => $cid,
-      'rank' => $rank[$author['type']]++,
-      'ct_id' => $author['ct_id']
-    );
-    drupal_write_record('biblio_contributor', $link_array);
-  }
-}
-/**
- * @param $authors_array
- * @param $nid
- * @param $vid
- * @param $update
- * @return unknown_type
- */
-function biblio_parse_save($authors_array, $nid, $vid, $update = FALSE) {
-  $authors = array();
-  foreach ($authors_array as $author) {
-    if (strlen(trim($author['name']))) {
-      //$author['type'] = $ctid;
-      biblio_parse_author($author);
-      $authors[] = (array) $author;
+  foreach ($contributors as $cat => $authors) { 
+    foreach ($authors as $key => $author) {
+      if ($update && !empty($author['cid']))  $author['cid'] = null; // null out the cid so we don't do a global change
+      if (empty ($author['cid']) && !empty ($md5))
+        $author['cid'] = array_search($author['md5'], $md5);
+      if (empty ($author['cid'])) {
+        if (!drupal_write_record('biblio_contributor_data', $author)) return false;
+        $cid = db_last_insert_id('biblio_contributor_data', 'cid');
+      } else {
+        $cid = $author['cid'];
+      }
+      $link_array = array(
+        'nid' => $nid,
+        'vid' => $vid,
+        'cid' => $cid,
+        'rank' => (isset($author['rank']) && is_numeric($author['rank'])) ? $author['rank'] : $key,
+        'auth_type' => $author['auth_type'],
+        'auth_category' => $cat,
+      );
+  
+      if (!drupal_write_record('biblio_contributor', $link_array)) return false;
     }
   }
-  if (!empty ($authors))
-  _save_contributors($authors, $nid, $vid, $update);
-  return;
+  db_query("UPDATE {biblio_contributor_data} SET aka = cid WHERE aka = 0 OR aka IS NULL");
+  return true; // successfully saved all contributors
 }
 /*
  Released through http://bibliophile.sourceforge.net under the GPL licence.
@@ -149,55 +158,63 @@ function biblio_parse_save($authors_array, $nid, $vid, $update = FALSE) {
  * @param $author_array
  * @return unknown_type
  */
-function biblio_parse_author(& $author_array) {
-  $value = trim($author_array['name']);
-  $appellation = $prefix = $surname = $firstname = $initials = '';
-  $prefix = "";
-  //		$prefix2= array();
-  $author = explode(",", preg_replace("/\s{2,}/", ' ', trim($value)));
-  $size = sizeof($author);
-  // No commas therefore something like Mark Grimshaw, Mark Nicholas Grimshaw, M N Grimshaw, Mark N. Grimshaw
-  if ($size == 1) {
-    // Is complete surname enclosed in {...}, unless the string starts with a backslash (\) because then it is
-    // probably a special latex-sign..
-    // 2006.02.11 DR: in the last case, any NESTED curly braces should also be taken into account! so second
-    // clause rules out things such as author="a{\"{o}}"
-    //
-    if (preg_match("/(.*){([^\\\].*)}/", $value, $matches) && !(preg_match("/(.*){\\\.{.*}.*}/", $value, $matches2))) {
-      $author = split(" ", $matches[1]);
-      $surname = $matches[2];
-    }
-    else {
-      $author = split(" ", $value);
-      // last of array is surname (no prefix if entered correctly)
-      $surname = array_pop($author);
-    }
+function biblio_parse_author($author_array, $cat = 0) {
+  if ($cat == 5){
+    $author_array['firstname'] = '';
+    $author_array['initials'] = '';
+    $author_array['lastname'] = trim($author_array['name']);
+    $author_array['prefix'] = '';
   }
-  // Something like Grimshaw, Mark or Grimshaw, Mark Nicholas  or Grimshaw, M N or Grimshaw, Mark N.
-  else
-  if ($size == 2) {
-    // first of array is surname (perhaps with prefix)
-    list ($surname, $prefix) = _grabSurname(array_shift($author));
-  }
-  // If $size is 3, we're looking at something like Bush, Jr. III, George W
   else {
-    // middle of array is 'Jr.', 'IV' etc.
-    $appellation = join(' ', array_splice($author, 1, 1));
-    // first of array is surname (perhaps with prefix)
-    list ($surname, $prefix) = _grabSurname(array_shift($author));
+    $value = trim($author_array['name']);
+    $appellation = $prefix = $surname = $firstname = $initials = '';
+    $prefix = "";
+    $value = preg_replace("/\s{2,}/", ' ', $value); // replace multiple white space by single space
+    $author = explode(",", $value);
+    $size = sizeof($author);
+    // No commas therefore something like Mark Grimshaw, Mark Nicholas Grimshaw, M N Grimshaw, Mark N. Grimshaw
+    if ($size == 1) {
+      // Is complete surname enclosed in {...}, unless the string starts with a backslash (\) because then it is
+      // probably a special latex-sign..
+      // 2006.02.11 DR: in the last case, any NESTED curly braces should also be taken into account! so second
+      // clause rules out things such as author="a{\"{o}}"
+      //
+      if (preg_match("/(.*){([^\\\].*)}/", $value, $matches) && !(preg_match("/(.*){\\\.{.*}.*}/", $value, $matches2))) {
+        $author = split(" ", $matches[1]);
+        $surname = $matches[2];
+      }
+      else {
+        $author = split(" ", $value);
+        // last of array is surname (no prefix if entered correctly)
+        $surname = array_pop($author);
+      }
+    }
+    // Something like Grimshaw, Mark or Grimshaw, Mark Nicholas  or Grimshaw, M N or Grimshaw, Mark N.
+    else
+    if ($size == 2) {
+      // first of array is surname (perhaps with prefix)
+      list ($surname, $prefix) = _grabSurname(array_shift($author));
+    }
+    // If $size is 3, we're looking at something like Bush, Jr. III, George W
+    else {
+      // middle of array is 'Jr.', 'IV' etc.
+      $appellation = join(' ', array_splice($author, 1, 1));
+      // first of array is surname (perhaps with prefix)
+      list ($surname, $prefix) = _grabSurname(array_shift($author));
+    }
+    $remainder = join(" ", $author);
+    list ($firstname, $initials, $prefix2) = _grabFirstnameInitials($remainder);
+    if (!empty ($prefix2))
+    $prefix .= $prefix2;
+    //var_dump($prefix);
+    $surname = $surname . ' ' . $appellation;
+    $author_array['firstname'] = trim($firstname);
+    $author_array['initials'] = trim($initials);
+    $author_array['lastname'] = trim($surname);
+    $author_array['prefix'] = trim($prefix);
   }
-  $remainder = join(" ", $author);
-  list ($firstname, $initials, $prefix2) = _grabFirstnameInitials($remainder);
-  if (!empty ($prefix2))
-  $prefix .= $prefix2;
-  //var_dump($prefix);
-  $surname = $surname . ' ' . $appellation;
-  $author_array['firstname'] = trim($firstname);
-  $author_array['initials'] = trim($initials);
-  $author_array['lastname'] = trim($surname);
-  $author_array['prefix'] = trim($prefix);
   $author_array['md5'] =  _md5sum($author_array);
-  return;
+  return $author_array;
 }
 /**
  * @param $creator
@@ -224,12 +241,11 @@ function _grabFirstnameInitials($remainder) {
     } else if (preg_match("/[a-zA-Z]{2,}/", trim($value))){
       $firstnameArray[] = trim($value);
     } else {
-      $initialsArray[] = str_replace(".", " ", trim($value));
+      $initialsArray[] = trim(str_replace(".", " ", trim($value)));
     }
   }
   if (isset ($initialsArray)) {
-    foreach ($initialsArray as $initial)
-    $initials .= ' ' . trim($initial);
+    $initials = join(" ", $initialsArray);
   }
   if (isset ($firstnameArray)) {
     $firstname = join(" ", $firstnameArray);
@@ -272,27 +288,18 @@ function _grabSurname($input) {
   );
 }
 /**
- * @param $type
- * @return unknown_type
- */
-function _typeMap($type) {
-  static $typeMap = array();
-  if (empty ($typeMap)) {
-    $result = db_query("SELECT * FROM {biblio_contributor_type} ;");
-    while ($type = db_fetch_object($result)) {
-      $typeMap[$type->type] = $type->ct_id;
-    }
-  }
-  return $typeMap[$type];
-}
-/**
  * @return unknown_type
  */
 function _loadMD5() {
-  $md5 = array();
-  $result = db_query('SELECT md5,cid	FROM {biblio_contributor_data} ');
-  while ($row = db_fetch_array($result)) {
-    $md5[$row['cid']] = $row['md5'];
+  static $md5 = array();
+  static $count =0;
+  $db_count = db_result(db_query("SELECT COUNT(*) FROM {biblio_contributor_data"));
+  if ($db_count > $count){
+    $count = $db_count;
+    $result = db_query('SELECT md5,cid	FROM {biblio_contributor_data} ');
+    while ($row = db_fetch_array($result)) {
+      $md5[$row['cid']] = $row['md5'];
+    }
   }
   return (count($md5)) ? $md5 : NULL;
 }

@@ -1,32 +1,38 @@
 <?php
-// $Id: image.install,v 1.15 2008/01/06 22:15:24 drewish Exp $
+// $Id: image.install,v 1.33 2009/09/05 15:12:00 joachim Exp $
 
 /**
  * Implementation of hook_schema().
  */
 function image_schema() {
   $schema['image'] = array(
-    'description' => t('Stores image files information.'),
+    'description' => 'Stores image files information.',
     'fields' => array(
       'nid' => array(
-        'description' => t('Primary Key: The {node}.nid of the image node.'),
+        'description' => 'Primary Key: The {node}.nid of the image node.',
         'type' => 'int',
+        'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
       ),
       'fid' => array(
-        'description' => t('Index: The {files}.fid of the image file.'),
+        'description' => 'Index: The {files}.fid of the image file.',
         'type' => 'int',
+        'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
       ),
       'image_size' => array(
-        'description' => t('Primary Key: The {files}.filename of the image file.  For image module this indicates the file size.'),
+        'description' => 'Primary Key: The {files}.filename of the image file. For image module this indicates the file size.',
         'type' => 'varchar',
         'length' => 32,
         'not null' => TRUE,
         'default' => '',
       ),
+    ),
+    'primary key' => array('nid', 'image_size'),
+    'indexes' => array(
+      'fid' => array('fid'),
     ),
   );
   return $schema;
@@ -37,6 +43,8 @@ function image_schema() {
  */
 function image_install() {
   drupal_install_schema('image');
+  // Set reasonable default node options (not promoted to front page).
+  variable_set('node_options_image', array('status'));
 }
 
 /**
@@ -49,6 +57,8 @@ function image_uninstall() {
   variable_del('image_updated');
   variable_del('image_default_path');
   variable_del('image_sizes');
+  variable_del('image_block_0_number_images');
+  variable_del('image_block_1_number_images');
 }
 
 /**
@@ -61,40 +71,40 @@ function image_requirements($phase) {
     // Make sure we've got a working toolkit
     if ($toolkit = image_get_toolkit()) {
       $requirements['image_toolkit'] = array(
-        'value' => t('The %toolkit-name toolkit is installed', array('%toolkit-name' => $toolkit)),
+        'value' => t('The %toolkit_name toolkit is installed.', array('%toolkit_name' => $toolkit)),
         'severity' => REQUIREMENT_OK,
       ); 
     }
     else {
       $requirements['image_toolkit'] = array(
-        'value' => t('Not installed'),
+        'value' => t('Not installed.'),
         'severity' => REQUIREMENT_ERROR,
-        'description' => t('No image toolkit is currently enabled. Without one the image module will not be able to resize your images. You can select one from the <a href="!link">image toolkit settings page</a>.', array('!link' => url('admin/settings/image-toolkit'))),
+        'description' => t('No image toolkit is currently enabled. Without one the image module will not be able to resize your images. You can select one from the <a href="@link">image toolkit settings page</a>.', array('@link' => url('admin/settings/image-toolkit'))),
       );
     }
     $requirements['image_toolkit']['title'] = t('Image toolkit');
 
 
     // File paths
-    $image_path = file_create_path(rtrim(variable_get('image_default_path', 'images')));
-    $temp_path = rtrim($image_path, '/') .'/temp';
+    $image_path = file_create_path(file_directory_path() .'/'. variable_get('image_default_path', 'images'));
+    $temp_path = $image_path . '/temp';
     if (!file_check_directory($image_path, FILE_CREATE_DIRECTORY)) {
       $requirements['image_dirs'] = array(
-        'value' => t('Missing directory'),
+        'value' => t('Missing directory.'),
         'severity' => REQUIREMENT_ERROR,
-        'description' => t("The image module's image directory %image-dir is missing.", array('%image-dir' => $image_path)),
+        'description' => t("The image module's image directory %image_dir is missing.", array('%image_dir' => $image_path)),
       );
     }
     else if (!file_check_directory($temp_path, FILE_CREATE_DIRECTORY)) {
       $requirements['image_dirs'] = array(
-        'value' => t('Missing temp directory'),
+        'value' => t('Missing temp directory.'),
         'severity' => REQUIREMENT_ERROR,
-        'description' => t("The image module's temp directory %temp-dir is missing.", array('%temp-dir' => $temp_path)),
+        'description' => t("The image module's temp directory %temp_dir is missing.", array('%temp_dir' => $temp_path)),
       );
     }
     else {
       $requirements['image_dirs'] = array(
-        'value' => t('Exists (%path)', array('%path' => $image_path)),
+        'value' => t('Exists (%path).', array('%path' => $image_path)),
         'severity' => REQUIREMENT_OK,
       );
     }
@@ -186,7 +196,7 @@ function image_update_5() {
   if ($old_sizes = variable_get('image_sizes', FALSE)) {
     // Make sure all the required sizes are represented.
     if (!isset($old_sizes[IMAGE_ORIGINAL])) {
-      drupal_set_message(t("The original image size was missing so no changes were made. See this <a href='!link'>image module issue</a> for more information. Include the following:<br /><pre>@old_sizes\n</pre>", array('!link' => url('http://drupal.org/node/158334'), '@old_sizes' => print_r($old_sizes, 1))), 'error');
+      drupal_set_message(t("The original image size was missing so no changes were made. See this <a href='@link'>image module issue</a> for more information. Include the following:<br /><pre>@old_sizes\n</pre>", array('@link' => 'http://drupal.org/node/158334', '@old_sizes' => print_r($old_sizes, 1))), 'error');
       return array();
     }
     // These sizes may already exist under incorrect keys. We'll put a default
@@ -224,6 +234,14 @@ function image_update_5() {
  */
 function image_update_5200() {
   $ret = array();
+  
+  // Versions prior to 5 had an {image} table which is no longer used on 5.1
+  // but not removed.
+  if (db_table_exists('image')) {
+    db_rename_table($ret, 'image', 'image_old');    
+    // Notify the user that their table has been moved. 
+    drupal_set_message('Your existing {image} table has been renamed {image_old}.');
+  }  
 
   switch ($GLOBALS['db_type']) {
     case 'mysql':
@@ -247,12 +265,22 @@ function image_update_5200() {
       break;
   }
   // Copy image files records into the new table.
+  drupal_load('module', 'image');
   $args = array_map('db_escape_string', array_keys(image_get_sizes()));
   $cond = " IN ('". implode("', '",  $args) ."')";
-  $ret[] = update_sql("INSERT INTO {image} SELECT DISTINCT f.nid, f.fid, f.filename FROM {files} f INNER JOIN {node} n ON f.nid = n.nid WHERE n.type='image' AND f.filename". $cond);
 
-  // Remove old file_revision records.
-  $ret[] = update_sql("DELETE FROM {file_revisions} WHERE EXISTS (SELECT * FROM {image} WHERE {image}.fid = {file_revisions}.fid)");
+  // Upgrade from 5.x-1.x to 5.x-2.x.
+  // Group by clause prevents duplicate insertions from bad data:
+  // @see http://drupal.org/node/207557
+  if (db_table_exists('file_revisions')) {
+    $ret[] = update_sql("INSERT INTO {image} SELECT DISTINCT f.nid, f.fid, f.filename FROM {files} f INNER JOIN {node} n ON f.nid = n.nid WHERE n.type = 'image' AND f.filename" . $cond . " GROUP BY nid,filename");
+    $ret[] = update_sql("DELETE FROM {file_revisions} WHERE EXISTS (SELECT * FROM {image} WHERE {image}.fid = {file_revisions}.fid)");
+  }
+  // Upgrade from 5.x to 6.x-1.x.
+  else {
+    $ret[] = update_sql("INSERT INTO {image} SELECT DISTINCT u.nid, f.fid, f.filename FROM {upload} u INNER JOIN {files} f ON u.fid = f.fid INNER JOIN {node} n ON u.nid = n.nid WHERE n.type = 'image' AND f.filename" . $cond . " GROUP BY nid,filename");
+    $ret[] = update_sql("DELETE FROM {upload} WHERE EXISTS (SELECT * FROM {image} WHERE {image}.fid = {upload}.fid)");
+  }
 
   return $ret;
 }
@@ -261,11 +289,90 @@ function image_update_5200() {
  * Updating image size settings to use scaling as the default operation.
  */
 function image_update_5201() {
-  $sizes = _image_get_sizes();
+  drupal_load('module', 'image');
+  $sizes = image_get_sizes();
   foreach ($sizes as $key => $size) {
     $sizes[$key]['operation'] = 'scale';
   }
   variable_set('image_sizes', $sizes);
   
   return array();
+}
+
+/**
+ * Add primary key and index on 'fid' to {image} table.
+ */
+function image_update_6100() {
+  $ret = array();
+  db_change_field($ret, 'image', 'nid', 'nid', array(
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+    'default' => 0,
+  ));
+  db_change_field($ret, 'image', 'fid', 'fid', array(
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+    'default' => 0,
+  ));
+  
+  /**
+   * We remove and re-add primary keys and indexes because the column types
+   * are changed.
+   * Sometimes however these don't exist in the first place (@see 
+   * <http://drupal.org/node/562810>; the @ takes care of suppressing the 
+   * error message this causes.
+   */  
+  @db_drop_primary_key($ret, 'image');
+  db_add_primary_key($ret, 'image', array('nid', 'image_size'));
+  @db_drop_index($ret, 'image', 'image_fid');
+  db_add_index($ret, 'image', 'fid', array('fid'));
+  
+  // Notify the user that they may get harmless fail messages here.
+  $ret[] = array('success' => TRUE, 'query' => t('If you see a message of the form "Failed: ALTER TABLE {image} DROP PRIMARY KEY" or "DROP INDEX image_fid" here it is harmless.'));
+  return $ret;
+}
+
+/**
+ * Ensure that 'image_default_path' variable contains no trailing slash.
+ */
+function image_update_6101() {
+  $ret = array();
+  $path = variable_get('image_default_path', NULL);
+  if (!empty($path)) {
+    variable_set('image_default_path', rtrim($path, '/'));
+  }
+  return $ret;
+}
+
+/**
+ * Set reasonable default node options (not promoted to front page).
+ */
+function image_update_6102() {
+  $ret = array();
+  variable_set('node_options_image', variable_get('node_options_image', array('status')));
+  return $ret;
+}
+
+/**
+ * Rename permission "edit images" to "edit any images".
+ */
+function image_update_6103() {
+  $ret = array();
+  $result = db_query("SELECT rid, perm FROM {permission} ORDER BY rid");
+  while ($role = db_fetch_object($result)) {
+    $renamed_permission = strtr($role->perm, array(
+      'edit images' => 'edit any images, delete any images',
+      'edit own images' => 'edit own images, delete own images',
+    ));
+    if ($renamed_permission != $role->perm) {
+      $args = array($renamed_permission, $role->rid);
+      $query = "UPDATE {permission} SET perm = '%s' WHERE rid = %d";
+      _db_query_callback($args, TRUE);
+      $query = preg_replace_callback(DB_QUERY_REGEXP, '_db_query_callback', $query);
+      $ret[] = update_sql($query);
+    }
+  }
+  return $ret;
 }

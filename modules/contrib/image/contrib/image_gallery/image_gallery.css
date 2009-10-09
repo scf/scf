@@ -1,3 +1,5 @@
+/* $Id: image_gallery.css,v 1.10 2009/08/27 12:10:57 joachim Exp $ */
+
 ul.galleries {
   list-style-type : none;
   margin : 0;
@@ -6,7 +8,7 @@ ul.galleries {
 
 ul.galleries li {
   position : relative;
-  background : #eeeeee;
+  background: transparent none;
   border : 1px #cccccc solid;
   margin : 1em 0;
   padding : 1em;
@@ -45,5 +47,18 @@ ul.images h3 {
 ul.images li {
   float : left;
   margin : 1em;
-  background: transparent;
+  background: transparent none;
+  list-style: none;
+}
+
+/* Views: gallery terms style plugin. */
+.view .image-gallery-terms li {
+  background: transparent none;
+  border : 1px #cccccc solid;
+  margin : 1em 0;
+  padding : 1em;
+}
+.image-gallery-terms .image-gallery-view-cover-thumbnail {
+  float: left;
+  margin-right: 1em;
 }

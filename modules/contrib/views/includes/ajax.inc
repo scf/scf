@@ -1,5 +1,5 @@
 <?php
-// $Id: ajax.inc,v 1.19 2008/09/22 20:50:58 merlinofchaos Exp $
+// $Id: ajax.inc,v 1.20 2009/06/01 23:12:22 merlinofchaos Exp $
 
 /**
  * @file ajax.inc
@@ -27,6 +27,13 @@ function views_ajax() {
     $object->status = FALSE;
     $object->display = '';
 
+    $arg = explode('/', $_REQUEST['view_path']);
+    
+    if ($arg[0] == 'admin' || (variable_get('node_admin_theme', '0') && $arg[0] == 'node' && ($arg[1] == 'add' || $arg[2] == 'edit'))) {
+        global $custom_theme;
+        $custom_theme = variable_get('admin_theme', '0');
+        drupal_add_css(drupal_get_path('module', 'system') .'/admin.css', 'module');
+    }
     // Load the view.
     if ($view = views_get_view($name)) {
       if ($view->access($display_id)) {

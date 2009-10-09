@@ -44,10 +44,10 @@ Image Import module installation instructions
     Administer > Site building > Modules
 
 2.) Define the server directory that Image import will use at:
-    Administer > Site configuration > Image import
+    Administer > Site configuration > Image > Image import
 
 3.) Decide what roles can use Image import at:
-    Administer > User management > Access control
+    Administer > User management > Permissions
 
 
 ImageMagick toolkit installation instructions
