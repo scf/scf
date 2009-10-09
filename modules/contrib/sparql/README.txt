@@ -1,4 +1,4 @@
-// $Id: README.txt,v 1.1 2008/04/28 13:59:49 arto Exp $
+// $Id: README.txt,v 1.2 2008/06/06 10:09:07 arto Exp $
 
 SPARQL for Drupal 6.x
 =====================
@@ -18,3 +18,6 @@ Post bug reports and feature requests to the issue tracking system at:
 CREDITS
 -------
 Developed and maintained by Arto Bendiken <http://bendiken.net/>
+Sponsored by MakaluMedia Group <http://www.makalumedia.com/>
+Sponsored by M.C. Dean, Inc. <http://www.mcdean.com/>
+Sponsored by SPAWAR <http://www.spawar.navy.mil/>

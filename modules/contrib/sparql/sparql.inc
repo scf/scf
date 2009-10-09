@@ -1,5 +1,5 @@
 <?php
-// $Id: sparql.inc,v 1.1 2008/04/28 13:59:49 arto Exp $
+// $Id: sparql.inc,v 1.2 2008/06/06 10:09:07 arto Exp $
 /**
  * sparql.inc - SPARQL API query engine implementation.
  *

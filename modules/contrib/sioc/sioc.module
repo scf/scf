@@ -1,5 +1,5 @@
 <?php
-// $Id: sioc.module,v 1.32.2.3.2.8 2008/03/27 14:59:40 scor Exp $
+// $Id: sioc.module,v 1.32.2.3.2.11 2008/10/08 21:42:18 scor Exp $
 
 /**
  * @file
@@ -29,50 +29,85 @@ function sioc_help($path, $arg) {
 function sioc_menu() {  
   sioc_autodiscovery();
   doap_autodiscovery();
-  $items['sioc/blog/%user'] = array(
+  $items['sioc/blog/%'] = array(
     'title' => 'sioc blog',
     'page callback' => 'sioc_page',
-    'access callback' => TRUE,
+    'access arguments' => array('access content'),
     'weight' => '9',
     'type' => MENU_CALLBACK,
   );
-  $items['sioc/user/%user'] = array(
+  $items['sioc/user/%'] = array(
     'title' => 'sioc user',
     'page callback' => 'sioc_page',
-    'access callback' => TRUE,
+    'access arguments' => array('access user profiles'),
+    'weight' => '9',
+    'type' => MENU_CALLBACK,
+  );
+  $items['sioc/role/%'] = array(
+    'title' => 'sioc role',
+    'page callback' => 'sioc_page',
+    'access arguments' => array('administer permissions'),
+    'weight' => '9',
+    'type' => MENU_CALLBACK,
+  );
+  $items['sioc/comment/%'] = array(
+    'title' => 'sioc comment',
+    'page callback' => 'sioc_page',
+    'access arguments' => array('access comments'),
     'weight' => '9',
     'type' => MENU_CALLBACK,
   );
   $items['sioc/node/%node'] = array(
     'title' => 'sioc post',
     'page callback' => 'sioc_page',
-    'access callback' => node_access('view', node_load(array('nid' => arg(2)))),
+    'access callback' => 'node_access',
+    'access arguments' => array('view', 2),
     'weight' => '9',
     'type' => MENU_CALLBACK,
   );
-  $items['sioc/story/%node'] = array(
+  $items['sioc/stories/%node'] = array(
     'title' => 'sioc story',
     'page callback' => 'sioc_page',
-    'access callback' => node_access('view', node_load(array('nid' => arg(2)))),
+    'access callback' => 'node_access',
+    'access arguments' => array('view', 2),
     'weight' => '9',
     'type' => MENU_CALLBACK,
   );
-  $items['sioc/forum/%forum_term'] = array(
+  $items['sioc/forum/%'] = array(
     'title' => 'sioc forum',
     'page callback' => 'sioc_page',
-    'access callback' => TRUE,
+    'access arguments' => array('access content'),
+    'weight' => '9',
+    'type' => MENU_CALLBACK,
+  );
+  $items['sioc/site'] = array(
+    'title' => 'sioc forum',
+    'page callback' => 'sioc_page',
+    'access callback' => 'sioc_access',
+    'access arguments' => array('administer users', 'administer nodes'),
     'weight' => '9',
     'type' => MENU_CALLBACK,
   );
   $items['sioc'] = array(
     'title' => 'sioc',
     'page callback' => 'sioc_page',
-    'access callback' => TRUE,
+    'access arguments' => array('access content'),
     'weight' => '9',
     'type' => MENU_CALLBACK,
   );
   
   return $items;
+}
+
+function sioc_access() {
+  $args = func_get_args();
+  $access = !empty($args);
+
+  foreach ($args as $perm) {
+    $access &= user_access($perm);
+  }
+
+  return $access;
 }
 
 /**
@@ -135,7 +170,7 @@ function export_sioc_forum($type, $uid = 0, $tid = 0, $start = 0, $limit = 15) {
   
   if ($type == 'blog') { 
     $account = user_load(array('uid' => $uid, 'status' => 1));
-    $result = db_query_range("SELECT n.nid, n.title, n.created, u.name, u.uid FROM {node} n INNER JOIN {users} u ON n.uid = u.uid WHERE n.type = '$type' AND u.uid = %d AND n.status = 1 ORDER BY n.created DESC", $uid, $start, $limit);
+    $result = db_query_range(db_rewrite_sql("SELECT n.nid, n.title, n.created, u.name, u.uid FROM {node} n INNER JOIN {users} u ON n.uid = u.uid WHERE n.type = 'blog' AND u.uid = %d AND n.status = 1 ORDER BY n.created DESC"), $uid, $start, $limit);
 
     // A link to this blog
     $resources[] = array(
@@ -145,7 +180,7 @@ function export_sioc_forum($type, $uid = 0, $tid = 0, $start = 0, $limit = 15) {
     );
   }
   elseif ($type == 'stories') {
-    $result = db_query_range("SELECT n.nid, n.title, n.created, u.name, u.uid FROM {node} n INNER JOIN {users} u ON n.uid = u.uid WHERE n.type = '$type' AND u.uid = %d AND n.status = 1 ORDER BY n.created DESC", $uid, $start, $limit);  
+    $result = db_query_range(db_rewrite_sql("SELECT n.nid, n.title, n.created, u.name, u.uid FROM {node} n INNER JOIN {users} u ON n.uid = u.uid WHERE n.type = 'story' AND u.uid = %d AND n.status = 1 ORDER BY n.created DESC"), $uid, $start, $limit);  
     // A link to the stories
     $resources[] = array(
       'property' => 'sioc:link',
@@ -186,7 +221,7 @@ function export_sioc_forum($type, $uid = 0, $tid = 0, $start = 0, $limit = 15) {
       }
     }
 
-    $result = db_query_range("SELECT n.nid, n.title, n.created, t.name, t.tid FROM {node} n INNER JOIN {forum} f ON n.nid = f.nid LEFT JOIN {term_data} t ON t.tid = f.tid WHERE n.type = '$type' AND t.tid = %d AND n.status = 1 ORDER BY n.created DESC", $tid, $start, $limit);
+    $result = db_query_range(db_rewrite_sql("SELECT n.nid, n.title, n.created, t.name, t.tid FROM {node} n INNER JOIN {forum} f ON n.nid = f.nid LEFT JOIN {term_data} t ON t.tid = f.tid WHERE n.type = 'forum' AND t.tid = %d AND n.status = 1 ORDER BY n.created DESC"), $tid, $start, $limit);
   }
 
   // $limit posts that this forum contains
@@ -194,7 +229,7 @@ function export_sioc_forum($type, $uid = 0, $tid = 0, $start = 0, $limit = 15) {
 
   // If no nodes exist, get some default ones
   if (!$nodes) {
-    $nodes = db_query_range('SELECT n.nid, n.title FROM {node} n WHERE n.promote = 1 AND n.status = 1 ORDER BY n.created DESC', $start, $limit);
+    $nodes = db_query_range(db_rewrite_sql('SELECT n.nid, n.title FROM {node} n WHERE n.promote = 1 AND n.status = 1 ORDER BY n.created DESC'), $start, $limit);
   }
 
   $posts_counter = 0;
@@ -212,6 +247,7 @@ function export_sioc_forum($type, $uid = 0, $tid = 0, $start = 0, $limit = 15) {
     }
   }
 
+  $output = '';
   if ($type == "blog") {
     if ($posts_counter >= $limit) {
       $resources[] = array(
@@ -247,12 +283,11 @@ function export_sioc_forum($type, $uid = 0, $tid = 0, $start = 0, $limit = 15) {
         'dc:title' => $term->name." Forum",
         'dc:description' => $term->name ." Forum at ".variable_get('site_name', 'drupal'),
       ),
-      $resources,
-      $subject
+      $resources
     );
   }
   elseif ($type == 'stories') {
-    $stories_counter = db_result(db_query('SELECT COUNT(*) as count from {node} where type=\'story\''));
+    $stories_counter = db_result(db_query(db_rewrite_sql("SELECT COUNT(*) as count from {node} where type = 'story'")));
     if ($stories_counter >= $limit) {
       $resources[] = array(
         'property' => 'rdfs:seeAlso',
@@ -366,6 +401,7 @@ function export_sioc_post($type, $nid = 0, $cid = 0, $start = 0, $limit = 15) {
     );
   }  
 
+  $output = '';
   if ($type == "node" || $type == "story") {
     if ($replies_counter >= $limit) {
       $resources[] = array(
@@ -428,7 +464,7 @@ function export_sioc_role($rid = 0) {
 
   if (!$role->perm) { $role = db_fetch_object(db_query("SELECT r.name AS name, \"no permissions\" AS perm FROM {users_roles} ur, {role} r WHERE ur.rid = %d AND ur.rid = r.rid GROUP BY r.rid", $rid)); }
 
-  $output .= output_sioc_concept(
+  $output = output_sioc_concept(
     "sioc:Role",
     url("sioc/role/".$rid, array('absolute' => TRUE)),
     array(
@@ -451,7 +487,7 @@ function export_sioc_site($start = 0, $limit = 15) {
   
   $forums_counter = 0;
   $blogs_counter = 0;
-  $stories_counter = db_result(db_query('SELECT COUNT(*) as count from {node} where type=\'story\''));
+  $stories_counter = db_result(db_query(db_rewrite_sql("SELECT COUNT(*) as count from {node} where type = 'story'")));
   // $forums = db_query_range('SELECT td.tid AS tid, td.name AS name FROM {term_hierarchy} th, {term_data} td, {forum} f WHERE f.tid = td.tid AND th.tid = td.tid AND th.parent = 0 GROUP BY f.tid ORDER BY f.tid', $start, $limit);
   $forums = db_query_range("SELECT td.tid AS tid, td.name AS name FROM {term_hierarchy} th, {term_data} td, {vocabulary_node_types} v WHERE v.vid = td.vid AND v.type = 'forum' AND th.tid = td.tid AND th.parent = 0 ORDER BY td.tid", $start, $limit);
 
@@ -467,7 +503,7 @@ function export_sioc_site($start = 0, $limit = 15) {
     );
   }
   
-  $blogs = db_query_range("SELECT u.name AS name, u.uid AS uid FROM {users} u, {node} n WHERE n.type = 'blog' AND n.uid = u.uid GROUP BY u.uid ORDER BY u.uid", $start, $limit);
+  $blogs = db_query_range(db_rewrite_sql("SELECT u.name AS name, u.uid AS uid FROM {users} u, {node} n WHERE n.type = 'blog' AND n.uid = u.uid GROUP BY u.uid ORDER BY u.uid"), $start, $limit);
 
   while ($blog = db_fetch_object($blogs)) {
     $blogs_counter++;
@@ -513,7 +549,6 @@ function export_sioc_site($start = 0, $limit = 15) {
     );
   }
 
-//  $output .= output_sioc_concept(
   $output = output_sioc_concept(
     "sioc:Site",
     url("", array('absolute' => TRUE)),
@@ -560,7 +595,6 @@ function export_sioc_user($uid = 0) {
     );
   }
 
-//  $output .= output_sioc_concept(
   $output = output_sioc_concept(
     "sioc:User",
     url("user/".$uid, array('absolute' => TRUE)),
@@ -676,7 +710,7 @@ function doap_autodiscovery() {
   if (arg(0)=='node' && is_numeric($id=arg(1))) $type = "node/$id";
   else return;
   
-  $node = db_fetch_object(db_query('SELECT DISTINCT body FROM {node} n, {node_revisions} r WHERE n.vid = r.vid AND n.nid = %d', $id));
+  $node = db_fetch_object(db_query(db_rewrite_sql('SELECT DISTINCT body FROM {node} n, {node_revisions} r WHERE n.vid = r.vid AND n.nid = %d'), $id));
 
   if (($doap = extractLinks($node->body)) != '')
     drupal_set_html_head($doap);

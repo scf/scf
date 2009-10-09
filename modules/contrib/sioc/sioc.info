@@ -3,3 +3,9 @@ name = SIOC
 description = "Allows export of SIOC meta-data from your site."
 
 core = "6.x"
+; Information added by drupal.org packaging script on 2008-10-08
+version = "6.x-1.1"
+core = "6.x"
+project = "sioc"
+datestamp = "1223502322"
+

@@ -1,5 +1,5 @@
 <?php
-// $Id: sparql.module,v 1.2 2008/04/28 13:59:49 arto Exp $
+// $Id: sparql.module,v 1.3 2008/06/06 10:09:07 arto Exp $
 /**
  * sparql.module - Enables the use of SPARQL queries with the RDF API.
  *
@@ -48,6 +48,7 @@ function sparql_perm() {
  */
 function sparql_menu() {
   return array(
+    // SPARQL endpoint
     'sparql' => array(
       'title' => 'SPARQL query',
       'description' => '',
@@ -64,6 +65,7 @@ function sparql_menu() {
     'admin/settings/sparql' => array(
       'title' => 'SPARQL settings',
       'description' => 'Settings for the SPARQL API.',
+      'access arguments' => array('administer site configuration'),
       'page callback' => 'drupal_get_form',
       'page arguments' => array('sparql_admin_settings'),
       'file' => 'sparql.admin.inc',
